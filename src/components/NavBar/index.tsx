@@ -46,6 +46,12 @@ const MenuItem = ({ href, dataTestId, id, isActive, children }: MenuItemProps) =
 export const PageTabs = () => {
   const { pathname } = useLocation()
 
+  const isTradeActive =
+    pathname.startsWith('/trade') ||
+    pathname.startsWith('/limit_order') ||
+    pathname.startsWith('/market_order') ||
+    pathname.startsWith('/grid_order')
+
   const isPoolActive =
     pathname.startsWith('/pool') ||
     pathname.startsWith('/add') ||
@@ -55,8 +61,8 @@ export const PageTabs = () => {
 
   return (
     <>
-      <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
-        <Trans>Swap</Trans>
+      <MenuItem href="/trade" isActive={isTradeActive}>
+        <Trans>Trade</Trans>
       </MenuItem>
       <MenuItem href="/pool" id="pool-nav-link" isActive={isPoolActive}>
         <Trans>Pool</Trans>

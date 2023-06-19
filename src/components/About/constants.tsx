@@ -8,7 +8,7 @@ import lightArrowImgSrc from './images/aboutArrowLight.png'
 import darkDollarImgSrc from './images/aboutDollarDark.png'
 import darkTerminalImgSrc from './images/aboutTerminalDark.png'
 //import nftCardImgSrc from './images/nftCard.png'
-import swapCardImgSrc from './images/swapCard.png'
+import tradeCardImgSrc from './images/tradeCard.png'
 import earnCardImgSrc from './images/earnCard.png'
 
 
@@ -22,12 +22,12 @@ const StyledCardLogo = styled.img`
 
 export const MAIN_CARDS = [
   {
-    to: '/swap',
-    title: 'Swap tokens',
-    description: 'Buy, sell, and explore tokens on Ethereum, Polygon, Optimism, and more.',
+    to: '/trade',
+    title: 'Trade tokens',
+    description: 'Trade tokens on Base.',
     cta: 'Trade Tokens',
-    darkBackgroundImgSrc: swapCardImgSrc,
-    lightBackgroundImgSrc: swapCardImgSrc,
+    darkBackgroundImgSrc: tradeCardImgSrc,
+    lightBackgroundImgSrc: tradeCardImgSrc,
     elementName: ElementName.ABOUT_PAGE_SWAP_CARD,
   },
   /*
@@ -44,7 +44,7 @@ export const MAIN_CARDS = [
   {
     to: '/pool',
     title: 'Earn',
-    description: 'Provide liquidity to pools on Hyswap and earn fees on swaps and reinvestment vaults.',
+    description: 'Create a grid order pool and earn recurring income as the markets shift.',
     cta: 'Provide liquidity',
     darkBackgroundImgSrc: earnCardImgSrc,
     lightBackgroundImgSrc: earnCardImgSrc,
@@ -73,7 +73,7 @@ export const MORE_CARDS = [
     elementName: ElementName.ABOUT_PAGE_EARN_CARD,
   },
   {
-    to: 'https://docs.uniswap.org',
+    to: 'https://docs.hydrogendefi.xyz',
     external: true,
     title: 'Build dApps',
     description: 'Build apps and tools on the largest DeFi protocol on Ethereum.',

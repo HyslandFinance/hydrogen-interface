@@ -39,6 +39,12 @@ import RemoveLiquidity from './RemoveLiquidity'
 import RemoveLiquidityV3 from './RemoveLiquidity/V3'
 import Swap from './Swap'
 import { RedirectPathToSwapOnly } from './Swap/redirects'
+
+import TradePage from './Trade'
+import LimitOrderPage from './LimitOrder'
+import MarketOrderPage from './MarketOrder'
+import GridOrderPage from './GridOrder'
+
 import Tokens from './Tokens'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
@@ -216,8 +222,14 @@ export default function App() {
                 />
                 <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
                 */}
+                {/*
                 <Route path="send" element={<RedirectPathToSwapOnly />} />
                 <Route path="swap" element={<Swap />} />
+                */}
+                <Route path="trade" element={<TradePage />} />
+                <Route path="limit_order" element={<LimitOrderPage />} />
+                <Route path="market_order" element={<MarketOrderPage />} />
+                <Route path="grid_order" element={<GridOrderPage />} />
 
                 {/*}
                 <Route path="pool/v2/find" element={<PoolFinder />} />
