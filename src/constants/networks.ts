@@ -87,6 +87,10 @@ export const FALLBACK_URLS: { [key in SupportedChainId]: string[] } = {
     // "Safe" URLs
     `https://alfajores-forno.celo-testnet.org`,
   ],
+  [SupportedChainId.BASE_GOERLI]: [
+    // "Fallback" URLs
+    `https://base-goerli.public.blastapi.io`,
+  ],
 }
 
 /**
@@ -134,4 +138,5 @@ export const RPC_URLS: { [key in SupportedChainId]: string[] } = {
   ],
   [SupportedChainId.CELO]: FALLBACK_URLS[SupportedChainId.CELO],
   [SupportedChainId.CELO_ALFAJORES]: FALLBACK_URLS[SupportedChainId.CELO_ALFAJORES],
+  [SupportedChainId.BASE_GOERLI]: FALLBACK_URLS[SupportedChainId.BASE_GOERLI],
 }

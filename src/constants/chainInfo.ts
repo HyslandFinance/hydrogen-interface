@@ -5,11 +5,12 @@ import { default as arbitrumCircleLogoUrl, default as arbitrumLogoUrl } from 'as
 import celoLogo from 'assets/svg/celo_logo.svg'
 import optimismLogoUrl from 'assets/svg/optimistic_ethereum.svg'
 import polygonMaticLogo from 'assets/svg/polygon-matic-logo.svg'
+import baseLogo from 'assets/images/base-logo.png'
 import ms from 'ms.macro'
 import { darkTheme } from 'theme/colors'
 
-import { SupportedChainId, SupportedL1ChainId, SupportedL2ChainId } from './chains'
-import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST } from './lists'
+import { SupportedChainId, SupportedL1ChainId, SupportedL2ChainId, DEFAULT_CHAIN_ID } from './chains'
+import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST, HYDROGEN_BASE_GOERLI_LIST } from './lists'
 
 export const AVERAGE_L1_BLOCK_TIME = ms`12s`
 
@@ -217,6 +218,21 @@ const CHAIN_INFO: ChainInfoMap = {
     nativeCurrency: { name: 'Celo', symbol: 'CELO', decimals: 18 },
     defaultListUrl: CELO_LIST,
   },
+  [SupportedChainId.BASE_GOERLI]: {
+    networkType: NetworkType.L2,
+    blockWaitMsBeforeWarning: ms`25m`,
+    bridge: 'https://bridge.base.org/',
+    defaultListUrl: HYDROGEN_BASE_GOERLI_LIST,
+    docs: 'https://base.org/',
+    explorer: 'https://goerli.basescan.org/',
+    infoLink: 'https://analytics.hydrogendefi.xyz/#/base_goerli/',
+    label: 'Base Göerli',
+    logoUrl: baseLogo,
+    statusPage: '',
+    helpCenterUrl: '',
+    nativeCurrency: { name: 'Optimism Goerli Ether', symbol: 'baseGörETH', decimals: 18 },
+    color: darkTheme.chain_84531,
+  },
 }
 
 export function getChainInfo(chainId: SupportedL1ChainId): L1ChainInfo
@@ -241,7 +257,7 @@ export function getChainInfo(chainId: any): any {
   return undefined
 }
 
-const MAINNET_INFO = CHAIN_INFO[SupportedChainId.MAINNET]
+const DEFAULT_INFO = CHAIN_INFO[DEFAULT_CHAIN_ID]
 export function getChainInfoOrDefault(chainId: number | undefined) {
-  return getChainInfo(chainId) ?? MAINNET_INFO
+  return getChainInfo(chainId) ?? DEFAULT_INFO
 }

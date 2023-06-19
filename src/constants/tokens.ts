@@ -32,9 +32,9 @@ const USDC_RINKEBY = new Token(
   'tUSDC',
   'test USD//C'
 )
-const USDC_GOERLI = new Token(
+export const USDC_GOERLI = new Token(
   SupportedChainId.GOERLI,
-  '0x07865c6e87b9f70255377e024ace6630c1eaa37f',
+  '0x16E673DF61D13594b0002D8A6865c8BF5c3d80f4',
   6,
   'USDC',
   'USD//C'
@@ -88,6 +88,13 @@ export const PORTAL_USDC_CELO = new Token(
   6,
   'USDCet',
   'USDC (Portal from Ethereum)'
+)
+export const USDC_BASE_GOERLI = new Token(
+  SupportedChainId.BASE_GOERLI,
+  '0x35CD54a3547190056A0F690357b1B2692B90Fb00',
+  6,
+  'USDC',
+  'USD//C'
 )
 export const AMPL = new Token(
   SupportedChainId.MAINNET,
@@ -375,6 +382,13 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } =
     'CELO',
     'Celo native asset'
   ),
+  [SupportedChainId.BASE_GOERLI]: new Token(
+    SupportedChainId.BASE_GOERLI,
+    '0x4200000000000000000000000000000000000006',
+    18,
+    'WETH',
+    'Wrapped Ether'
+  ),
 }
 
 export function isCelo(chainId: number): chainId is SupportedChainId.CELO | SupportedChainId.CELO_ALFAJORES {
@@ -457,5 +471,6 @@ export const TOKEN_SHORTHANDS: { [shorthand: string]: { [chainId in SupportedCha
     [SupportedChainId.RINKEBY]: USDC_RINKEBY.address,
     [SupportedChainId.KOVAN]: USDC_KOVAN.address,
     [SupportedChainId.ROPSTEN]: USDC_ROPSTEN.address,
+    [SupportedChainId.BASE_GOERLI]: USDC_BASE_GOERLI.address,
   },
 }

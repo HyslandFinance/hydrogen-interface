@@ -19,7 +19,11 @@ export enum SupportedChainId {
 
   CELO = 42220,
   CELO_ALFAJORES = 44787,
+
+  BASE_GOERLI = 84531,
 }
+
+export const DEFAULT_CHAIN_ID = SupportedChainId.BASE_GOERLI
 
 export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.MAINNET]: 'mainnet',
@@ -35,6 +39,7 @@ export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.ARBITRUM_RINKEBY]: 'arbitrum_rinkeby',
   [SupportedChainId.OPTIMISM]: 'optimism',
   [SupportedChainId.OPTIMISM_GOERLI]: 'optimism_goerli',
+  [SupportedChainId.BASE_GOERLI]: 'base_goerli',
 }
 
 /**
@@ -73,6 +78,7 @@ export const TESTNET_CHAIN_IDS = [
   SupportedChainId.POLYGON_MUMBAI,
   SupportedChainId.ARBITRUM_RINKEBY,
   SupportedChainId.OPTIMISM_GOERLI,
+  SupportedChainId.BASE_GOERLI,
 ] as const
 
 export type SupportedTestnetChainId = typeof TESTNET_CHAIN_IDS[number]
@@ -103,6 +109,7 @@ export const L2_CHAIN_IDS = [
   SupportedChainId.ARBITRUM_RINKEBY,
   SupportedChainId.OPTIMISM,
   SupportedChainId.OPTIMISM_GOERLI,
+  SupportedChainId.BASE_GOERLI,
 ] as const
 
 export type SupportedL2ChainId = typeof L2_CHAIN_IDS[number]

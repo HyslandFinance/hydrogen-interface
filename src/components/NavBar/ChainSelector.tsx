@@ -20,11 +20,15 @@ import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
 
 const NETWORK_SELECTOR_CHAINS = [
-  SupportedChainId.MAINNET,
+  //SupportedChainId.MAINNET,
+  SupportedChainId.GOERLI,
+  SupportedChainId.BASE_GOERLI,
+  /*
   SupportedChainId.POLYGON,
   SupportedChainId.OPTIMISM,
   SupportedChainId.ARBITRUM_ONE,
   SupportedChainId.CELO,
+  */
 ]
 
 interface ChainSelectorProps {
@@ -62,6 +66,12 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
   if (!chainId) {
     return null
   }
+
+  if(chainId != 84531) {
+    //console.log("forcing network to base goerli")
+    onSelectChain(84531)
+  }
+
 
   const isSupported = !!info
 

@@ -16,11 +16,15 @@ export const OPTIMISM_LIST = 'https://static.optimism.io/optimism.tokenlist.json
 export const ARBITRUM_LIST = 'https://bridge.arbitrum.io/token-list-42161.json'
 export const CELO_LIST = 'https://celo-org.github.io/celo-token-list/celo.tokenlist.json'
 
+export const HYDROGEN_BASE_GOERLI_LIST = 'https://assets.hydrogendefi.xyz/token-lists/hydrogen-default.json'
+
 export const UNSUPPORTED_LIST_URLS: string[] = [BA_LIST, UNI_UNSUPPORTED_LIST]
 
 // default lists to be 'active' aka searched across
-export const DEFAULT_ACTIVE_LIST_URLS: string[] = [UNI_LIST]
+export const DEFAULT_ACTIVE_LIST_URLS: string[] = [HYDROGEN_BASE_GOERLI_LIST]
 export const DEFAULT_INACTIVE_LIST_URLS: string[] = [
+  /*
+  UNI_LIST,
   UNI_EXTENDED_LIST,
   COMPOUND_LIST,
   AAVE_LIST,
@@ -35,6 +39,7 @@ export const DEFAULT_INACTIVE_LIST_URLS: string[] = [
   OPTIMISM_LIST,
   CELO_LIST,
   ...UNSUPPORTED_LIST_URLS,
+  */
 ]
 
 export const DEFAULT_LIST_OF_LISTS: string[] = [...DEFAULT_ACTIVE_LIST_URLS, ...DEFAULT_INACTIVE_LIST_URLS]

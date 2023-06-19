@@ -93,6 +93,7 @@ export const colors = {
   networkArbitrum: '#28A0F0',
   networkPolygonSoft: 'rgba(164, 87, 255, 0.16)',
   networkEthereumSoft: 'rgba(98, 126, 234, 0.16)',
+  networkBaseGoerli: '#627EEA', // TODO
 }
 
 type Theme = typeof darkTheme
@@ -112,6 +113,7 @@ const commonTheme = {
   chain_42161: colors.networkEthereum,
   chain_421611: colors.networkEthereum,
   chain_80001: colors.networkPolygon,
+  chain_84531: colors.networkBaseGoerli,
   chain_137_background: colors.purple900,
   chain_10_background: colors.red900,
   chain_42161_background: colors.blue900,

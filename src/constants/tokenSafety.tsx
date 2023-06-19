@@ -82,7 +82,7 @@ export function checkWarning(tokenAddress: string) {
     return null
   }
   switch (WarningCache.checkToken(tokenAddress.toLowerCase())) {
-    case TOKEN_LIST_TYPES.UNI_DEFAULT:
+    case TOKEN_LIST_TYPES.HYDROGEN_DEFAULT:
       return null
     case TOKEN_LIST_TYPES.UNI_EXTENDED:
       return MediumWarning
@@ -92,5 +92,7 @@ export function checkWarning(tokenAddress: string) {
       return BlockedWarning
     case TOKEN_LIST_TYPES.BROKEN:
       return BlockedWarning
+    default:
+      return null
   }
 }
