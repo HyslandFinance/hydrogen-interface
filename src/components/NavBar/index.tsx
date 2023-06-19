@@ -57,19 +57,23 @@ export const PageTabs = () => {
     pathname.startsWith('/increase') ||
     pathname.startsWith('/find')
 
-  const isNftPage = useIsNftPage()
+  //const isNftPage = useIsNftPage()
 
   return (
     <>
       <MenuItem href="/swap" isActive={pathname.startsWith('/swap')}>
         <Trans>Swap</Trans>
       </MenuItem>
+      {/*
       <MenuItem href={`/tokens/${chainName.toLowerCase()}`} isActive={pathname.startsWith('/tokens')}>
         <Trans>Tokens</Trans>
       </MenuItem>
+      */}
+      {/*
       <MenuItem dataTestId="nft-nav" href="/nfts" isActive={isNftPage}>
         <Trans>NFTs</Trans>
       </MenuItem>
+      */}
       <MenuItem href="/pool" id="pool-nav-link" isActive={isPoolActive}>
         <Trans>Pool</Trans>
       </MenuItem>
@@ -78,7 +82,7 @@ export const PageTabs = () => {
 }
 
 const Navbar = () => {
-  const isNftPage = useIsNftPage()
+  //const isNftPage = useIsNftPage()
   const navigate = useNavigate()
 
   return (
@@ -100,7 +104,7 @@ const Navbar = () => {
                 }}
               />
             </Box>
-            {!isNftPage && (
+            {/*!isNftPage && */(
               <Box display={{ sm: 'flex', lg: 'none' }}>
                 <ChainSelector leftAlign={true} />
               </Box>
@@ -120,8 +124,8 @@ const Navbar = () => {
               <Box display={{ sm: 'none', lg: 'flex' }}>
                 <MenuDropdown />
               </Box>
-              {isNftPage && <Bag />}
-              {!isNftPage && (
+              {/*isNftPage && <Bag />*/}
+              {/*!isNftPage && */(
                 <Box display={{ sm: 'none', lg: 'flex' }}>
                   <ChainSelector />
                 </Box>

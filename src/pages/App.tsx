@@ -42,11 +42,11 @@ import { RedirectPathToSwapOnly } from './Swap/redirects'
 import Tokens from './Tokens'
 
 const TokenDetails = lazy(() => import('./TokenDetails'))
-const Vote = lazy(() => import('./Vote'))
-const NftExplore = lazy(() => import('nft/pages/explore'))
-const Collection = lazy(() => import('nft/pages/collection'))
-const Profile = lazy(() => import('nft/pages/profile/profile'))
-const Asset = lazy(() => import('nft/pages/asset/Asset'))
+//const Vote = lazy(() => import('./Vote'))
+//const NftExplore = lazy(() => import('nft/pages/explore'))
+//const Collection = lazy(() => import('nft/pages/collection'))
+//const Profile = lazy(() => import('nft/pages/profile/profile'))
+//const Asset = lazy(() => import('nft/pages/asset/Asset'))
 
 // Placeholder API key. Actual API key used in the proxy server
 const ANALYTICS_DUMMY_KEY = '00000000000000000000000000000000'
@@ -103,20 +103,20 @@ function getCurrentPageFromLocation(locationPathname: string): PageName | undefi
   switch (true) {
     case locationPathname.startsWith('/swap'):
       return PageName.SWAP_PAGE
-    case locationPathname.startsWith('/vote'):
-      return PageName.VOTE_PAGE
+    //case locationPathname.startsWith('/vote'):
+      //return PageName.VOTE_PAGE
     case locationPathname.startsWith('/pool'):
       return PageName.POOL_PAGE
     case locationPathname.startsWith('/tokens'):
       return PageName.TOKENS_PAGE
-    case locationPathname.startsWith('/nfts/profile'):
-      return PageName.NFT_PROFILE_PAGE
-    case locationPathname.startsWith('/nfts/asset'):
-      return PageName.NFT_DETAILS_PAGE
-    case locationPathname.startsWith('/nfts/collection'):
-      return PageName.NFT_COLLECTION_PAGE
-    case locationPathname.startsWith('/nfts'):
-      return PageName.NFT_EXPLORE_PAGE
+    //case locationPathname.startsWith('/nfts/profile'):
+      //return PageName.NFT_PROFILE_PAGE
+    //case locationPathname.startsWith('/nfts/asset'):
+      //return PageName.NFT_DETAILS_PAGE
+    //case locationPathname.startsWith('/nfts/collection'):
+      //return PageName.NFT_COLLECTION_PAGE
+    //case locationPathname.startsWith('/nfts'):
+      //return PageName.NFT_EXPLORE_PAGE
     default:
       return undefined
   }
@@ -199,10 +199,13 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
 
+                {/*
                 <Route path="tokens" element={<Tokens />}>
                   <Route path=":chainName" />
                 </Route>
                 <Route path="tokens/:chainName/:tokenAddress" element={<TokenDetails />} />
+                */}
+                {/*
                 <Route
                   path="vote/*"
                   element={
@@ -212,21 +215,26 @@ export default function App() {
                   }
                 />
                 <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
-
+                */}
                 <Route path="send" element={<RedirectPathToSwapOnly />} />
                 <Route path="swap" element={<Swap />} />
 
+                {/*}
                 <Route path="pool/v2/find" element={<PoolFinder />} />
                 <Route path="pool/v2" element={<PoolV2 />} />
                 <Route path="pool" element={<Pool />} />
                 <Route path="pool/:tokenId" element={<PositionPage />} />
+                */}
+                <Route path="pool/find" element={<PoolFinder />} />
+                <Route path="pool" element={<PoolV2 />} />
 
+                {/*
                 <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
                   <Route path=":currencyIdA" />
                   <Route path=":currencyIdA/:currencyIdB" />
                 </Route>
                 <Route path="add" element={<RedirectDuplicateTokenIds />}>
-                  {/* this is workaround since react-router-dom v6 doesn't support optional parameters any more */}
+                  { this is workaround since react-router-dom v6 doesn't support optional parameters any more }
                   <Route path=":currencyIdA" />
                   <Route path=":currencyIdA/:currencyIdB" />
                   <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
@@ -238,13 +246,20 @@ export default function App() {
                   <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
                   <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
                 </Route>
+                */}
+                <Route path="add" element={<RedirectDuplicateTokenIdsV2 />}>
+                  <Route path=":currencyIdA" />
+                  <Route path=":currencyIdA/:currencyIdB" />
+                </Route>
 
                 <Route path="remove/v2/:currencyIdA/:currencyIdB" element={<RemoveLiquidity />} />
-                <Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />
+                {/*<Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />*/}
 
+                {/*
                 <Route path="migrate/v2" element={<MigrateV2 />} />
                 <Route path="migrate/v2/:address" element={<MigrateV2Pair />} />
-
+                */}
+                {/*
                 <Route
                   path="/nfts"
                   element={
@@ -285,7 +300,7 @@ export default function App() {
                     </Suspense>
                   }
                 />
-
+                */}
                 <Route path="*" element={<Navigate to="/not-found" replace />} />
                 <Route path="/not-found" element={<NotFound />} />
               </Routes>

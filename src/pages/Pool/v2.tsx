@@ -192,21 +192,21 @@ export default function Pool() {
                 <TitleRow style={{ marginTop: '1rem' }} padding="0">
                   <HideSmall>
                     <ThemedText.DeprecatedMediumHeader style={{ marginTop: '0.5rem', justifySelf: 'flex-start' }}>
-                      <Trans>Your V2 liquidity</Trans>
+                      <Trans>Your liquidity</Trans>
                     </ThemedText.DeprecatedMediumHeader>
                   </HideSmall>
                   <ButtonRow>
-                    <ResponsiveButtonSecondary as={Link} padding="6px 8px" to="/add/v2/ETH">
+                    <ResponsiveButtonSecondary as={Link} padding="6px 8px" to="/add/ETH">
                       <Trans>Create a pair</Trans>
                     </ResponsiveButtonSecondary>
-                    <ResponsiveButtonPrimary id="find-pool-button" as={Link} to="/pool/v2/find" padding="6px 8px">
+                    <ResponsiveButtonPrimary id="find-pool-button" as={Link} to="/pool/find" padding="6px 8px">
                       <Text fontWeight={500} fontSize={16}>
                         <Trans>Import Pool</Trans>
                       </Text>
                     </ResponsiveButtonPrimary>
-                    <ResponsiveButtonPrimary id="join-pool-button" as={Link} to="/add/v2/ETH" padding="6px 8px">
+                    <ResponsiveButtonPrimary id="join-pool-button" as={Link} to="/add/ETH" padding="6px 8px">
                       <Text fontWeight={500} fontSize={16}>
-                        <Trans>Add V2 Liquidity</Trans>
+                        <Trans>Add Liquidity</Trans>
                       </Text>
                     </ResponsiveButtonPrimary>
                   </ButtonRow>
@@ -251,6 +251,7 @@ export default function Pool() {
                           />
                         )
                     )}
+                    {/*
                     <RowFixed justify="center" style={{ width: '100%' }}>
                       <ButtonOutlined
                         as={Link}
@@ -268,6 +269,7 @@ export default function Pool() {
                         <Trans>Migrate Liquidity to V3</Trans>
                       </ButtonOutlined>
                     </RowFixed>
+                    */}
                   </>
                 ) : (
                   <EmptyProposals>

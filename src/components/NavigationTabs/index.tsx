@@ -47,7 +47,7 @@ export function FindPoolTabs({ origin }: { origin: string }) {
           <StyledArrowLeft />
         </HistoryLink>
         <ActiveText style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
-          <Trans>Import V2 Pool</Trans>
+          <Trans>Import Pool</Trans>
         </ActiveText>
       </RowBetween>
     </Tabs>
@@ -74,10 +74,13 @@ export function AddRemoveTabs({
   const location = useLocation()
 
   // detect if back should redirect to v3 or v2 pool page
+  /*
   const poolLink = location.pathname.includes('add/v2')
     ? '/pool/v2'
     : '/pool' + (positionID ? `/${positionID.toString()}` : '')
-
+  */
+  const poolLink = '/pool'
+  
   return (
     <Tabs>
       <RowBetween style={{ padding: '1rem 1rem 0 1rem' }}>

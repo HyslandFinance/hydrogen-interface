@@ -316,9 +316,9 @@ export default function Landing() {
             <Glow />
           </GlowContainer>
           <ContentContainer isDarkMode={isDarkMode}>
-            <TitleText isDarkMode={isDarkMode}>Trade crypto & NFTs with confidence</TitleText>
+            <TitleText isDarkMode={isDarkMode}>Trade crypto with confidence</TitleText>
             <SubTextContainer>
-              <SubText>Buy, sell, and explore tokens and NFTs</SubText>
+              <SubText>Buy, sell, and explore tokens</SubText>
             </SubTextContainer>
             <ActionsContainer>
               <TraceEvent
@@ -350,13 +350,17 @@ export default function Landing() {
                 />
               ))}
             </CardGrid>
+            {/*
             <CardGrid cols={3}>
               {MORE_CARDS.map(({ darkIcon, lightIcon, ...card }) => (
                 <Card {...card} icon={isDarkMode ? darkIcon : lightIcon} key={card.title} type={CardType.Secondary} />
               ))}
             </CardGrid>
+            */}
+            {/*
             <ProtocolBanner />
             <AboutFooter />
+            */}
           </AboutContentContainer>
         </PageContainer>
       )}

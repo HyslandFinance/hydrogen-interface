@@ -7,8 +7,18 @@ import darkArrowImgSrc from './images/aboutArrowDark.png'
 import lightArrowImgSrc from './images/aboutArrowLight.png'
 import darkDollarImgSrc from './images/aboutDollarDark.png'
 import darkTerminalImgSrc from './images/aboutTerminalDark.png'
-import nftCardImgSrc from './images/nftCard.png'
+//import nftCardImgSrc from './images/nftCard.png'
 import swapCardImgSrc from './images/swapCard.png'
+import earnCardImgSrc from './images/earnCard.png'
+
+
+
+const StyledCardLogo = styled.img`
+  min-width: 20px;
+  min-height: 20px;
+  max-height: 48px;
+  max-width: 48px;
+`
 
 export const MAIN_CARDS = [
   {
@@ -20,6 +30,7 @@ export const MAIN_CARDS = [
     lightBackgroundImgSrc: swapCardImgSrc,
     elementName: ElementName.ABOUT_PAGE_SWAP_CARD,
   },
+  /*
   {
     to: '/nfts',
     title: 'Trade NFTs',
@@ -29,14 +40,17 @@ export const MAIN_CARDS = [
     lightBackgroundImgSrc: nftCardImgSrc,
     elementName: ElementName.ABOUT_PAGE_NFTS_CARD,
   },
+  */
+  {
+    to: '/pool',
+    title: 'Earn',
+    description: 'Provide liquidity to pools on Hyswap and earn fees on swaps and reinvestment vaults.',
+    cta: 'Provide liquidity',
+    darkBackgroundImgSrc: earnCardImgSrc,
+    lightBackgroundImgSrc: earnCardImgSrc,
+    elementName: ElementName.ABOUT_PAGE_EARN_CARD,
+  },
 ]
-
-const StyledCardLogo = styled.img`
-  min-width: 20px;
-  min-height: 20px;
-  max-height: 48px;
-  max-width: 48px;
-`
 
 export const MORE_CARDS = [
   {

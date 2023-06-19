@@ -90,23 +90,23 @@ export default function PoolFinder() {
         {!account ? (
           <Trans>Connect to a wallet to find pools</Trans>
         ) : (
-          <Trans>Select a token to find your v2 liquidity.</Trans>
+          <Trans>Select a token to find your liquidity.</Trans>
         )}
       </Text>
     </LightCard>
   )
 
   return (
-    <Trace page={PageName.POOL_PAGE} shouldLogImpression>
+    <Trace page={PageName.POOL_PAGE} shouldLogImpression={false}>
       <>
         <AppBody>
-          <FindPoolTabs origin={query.get('origin') ?? '/pool/v2'} />
+          <FindPoolTabs origin={query.get('origin') ?? '/pool'} />
           <AutoColumn style={{ padding: '1rem' }} gap="md">
             <BlueCard>
               <AutoColumn gap="10px">
                 <ThemedText.DeprecatedLink fontWeight={400} color="accentAction">
                   <Trans>
-                    <b>Tip:</b> Use this tool to find v2 pools that don&apos;t automatically appear in the interface.
+                    <b>Tip:</b> Use this tool to find pools that don&apos;t automatically appear in the interface.
                   </Trans>
                 </ThemedText.DeprecatedLink>
               </AutoColumn>
@@ -162,7 +162,7 @@ export default function PoolFinder() {
                 <Text textAlign="center" fontWeight={500}>
                   <Trans>Pool Found!</Trans>
                 </Text>
-                <StyledInternalLink to="/pool/v2">
+                <StyledInternalLink to="/pool">
                   <Text textAlign="center">
                     <Trans>Manage this pool.</Trans>
                   </Text>

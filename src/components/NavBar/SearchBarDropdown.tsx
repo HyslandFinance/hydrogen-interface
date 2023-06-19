@@ -227,7 +227,8 @@ export const SearchBarDropdown = ({
           </Box>
         )
 
-      const collectionSearchResults =
+      const collectionSearchResults = {}
+      /*
         collections.length > 0 ? (
           <SearchBarDropdownSection
             hoveredIndex={hoveredIndex}
@@ -244,7 +245,7 @@ export const SearchBarDropdown = ({
         ) : (
           <Box className={styles.notFoundContainer}>No NFT collections found.</Box>
         )
-
+        */
       const currentState = () =>
         hasInput ? (
           // Empty or Up to 8 combined tokens and nfts
@@ -295,7 +296,7 @@ export const SearchBarDropdown = ({
                 isLoading={trendingTokensAreLoading}
               />
             )}
-            {!isTokenPage && (
+            {/*!isTokenPage && (
               <SearchBarDropdownSection
                 hoveredIndex={hoveredIndex}
                 startingIndex={shortenedHistory.length + (isNFTPage ? 0 : trendingTokens?.length ?? 0)}
@@ -310,7 +311,7 @@ export const SearchBarDropdown = ({
                 headerIcon={<TrendingArrow />}
                 isLoading={trendingCollectionsAreLoading}
               />
-            )}
+            )*/}
           </Column>
         )
 
