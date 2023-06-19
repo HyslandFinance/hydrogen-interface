@@ -49,12 +49,19 @@ const StyledLinkOut = styled(ArrowDown)`
 const EXTERNAL_APIS = [
   {
     name: 'Auto Router',
-    description: <Trans>The app fetches the optimal trade route from a Uniswap Labs server.</Trans>,
+    description: <Trans>The app fetches the optimal trade route from a Hysland Labs server.</Trans>,
   },
   {
-    name: 'Infura',
-    description: <Trans>The app fetches on-chain data and constructs contract calls with an Infura API.</Trans>,
+    name: 'Web3 Provider',
+    description: <Trans>The app fetches on-chain data and constructs contract calls with a Web3 Provider API. This may be Alchemy, Infura, or your wallet provider.</Trans>,
   },
+  {
+    name: 'The Graph',
+    description: <Trans>The app fetches blockchain data from The Graph’s hosted service.</Trans>,
+  },
+]
+
+const EXTERNAL_APIS_UNWANTED = [
   {
     name: 'TRM Labs',
     description: (
@@ -72,10 +79,6 @@ const EXTERNAL_APIS = [
   {
     name: 'Google Analytics & Amplitude',
     description: <Trans>The app logs anonymized usage statistics in order to improve over time.</Trans>,
-  },
-  {
-    name: 'The Graph',
-    description: <Trans>The app fetches blockchain data from The Graph’s hosted service.</Trans>,
   },
 ]
 
@@ -123,6 +126,8 @@ function PrivacyPolicy() {
     >
       <AutoColumn gap="16px">
         <AutoColumn gap="sm" style={{ width: '100%' }}>
+          <p style={{fontWeight:"500",fontSize:"14px",color:"#98A1C0"}}>Terms of Service and Privacy Policy not yet available</p>
+          {/*
           <StyledExternalCard>
             <ExternalLink href="https://uniswap.org/terms-of-service">
               <RowBetween>
@@ -149,12 +154,27 @@ function PrivacyPolicy() {
               </RowBetween>
             </ExternalLink>
           </StyledExternalCard>
+        */}
         </AutoColumn>
         <ThemedText.DeprecatedMain fontSize={14}>
           <Trans>This app uses the following third-party APIs:</Trans>
         </ThemedText.DeprecatedMain>
         <AutoColumn gap="md">
           {EXTERNAL_APIS.map(({ name, description }, i) => (
+            <DarkGrayCard key={i}>
+              <AutoColumn gap="sm">
+                <AutoRow gap="4px">
+                  <Info size={18} />
+                  <ThemedText.DeprecatedMain fontSize={14} color="textPrimary">
+                    {name}
+                  </ThemedText.DeprecatedMain>
+                </AutoRow>
+                <ThemedText.DeprecatedMain fontSize={14}>{description}</ThemedText.DeprecatedMain>
+              </AutoColumn>
+            </DarkGrayCard>
+          ))}
+          <p style={{fontWeight:"500",fontSize:"14px",color:"#98A1C0"}}>Hysland inherited a codebase with these third-party trackers and is in the process of removing them</p>
+          {EXTERNAL_APIS_UNWANTED.map(({ name, description }, i) => (
             <DarkGrayCard key={i}>
               <AutoColumn gap="sm">
                 <AutoRow gap="4px">

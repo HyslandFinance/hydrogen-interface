@@ -143,7 +143,7 @@ export const MenuDropdown = () => {
                     <Trans>Vote in governance</Trans>
                   </PrimaryMenuRow.Text>
                 </PrimaryMenuRow>
-                <PrimaryMenuRow href="https://info.uniswap.org/#/">
+                <PrimaryMenuRow href="https://analytics.hydrogendefi.xyz/#/">
                   <Icon>
                     <BarChartIcon width={24} height={24} />
                   </Icon>
@@ -163,7 +163,7 @@ export const MenuDropdown = () => {
                 <SecondaryLinkedText href="https://help.uniswap.org/en/">
                   <Trans>Help center</Trans> ↗
                 </SecondaryLinkedText>
-                <SecondaryLinkedText href="https://docs.uniswap.org/">
+                <SecondaryLinkedText href="https://docs.hydrogendefi.xyz/">
                   <Trans>Documentation</Trans> ↗
                 </SecondaryLinkedText>
                 <SecondaryLinkedText
@@ -181,7 +181,7 @@ export const MenuDropdown = () => {
                 )}
               </Box>
               <IconRow>
-                <Icon href="https://discord.com/invite/FCfyBSbCU5">
+                <Icon href="https://discord.gg/dmSFJGqeK2">
                   <DiscordIconMenu
                     className={styles.hover}
                     width={24}
@@ -189,7 +189,7 @@ export const MenuDropdown = () => {
                     color={themeVars.colors.textSecondary}
                   />
                 </Icon>
-                <Icon href="https://twitter.com/Uniswap">
+                <Icon href="https://twitter.com/HydrogenDefi">
                   <TwitterIconMenu
                     className={styles.hover}
                     width={24}
@@ -197,7 +197,7 @@ export const MenuDropdown = () => {
                     color={themeVars.colors.textSecondary}
                   />
                 </Icon>
-                <Icon href="https://github.com/Uniswap">
+                <Icon href="https://github.com/HyslandFinance">
                   <GithubIconMenu
                     className={styles.hover}
                     width={24}

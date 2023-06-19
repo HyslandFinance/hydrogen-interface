@@ -723,7 +723,7 @@ export default function Swap({ className }: { className?: string }) {
                             </ThemedText.SubHeader>
                           ) : (
                             <ThemedText.SubHeader width="100%" textAlign="center" color="white">
-                              <Trans>Allow the Uniswap Protocol to use your {currencies[Field.INPUT]?.symbol}</Trans>
+                              <Trans>Allow the Hydrogen Protocol to use your {currencies[Field.INPUT]?.symbol}</Trans>
                             </ThemedText.SubHeader>
                           )}
 
