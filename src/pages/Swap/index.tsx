@@ -308,11 +308,11 @@ export default function Swap({ className }: { className?: string }) {
     try {
       const approval = await permit.callback?.()
       if (approval) {
-        sendAnalyticsEvent(EventName.APPROVE_TOKEN_TXN_SUBMITTED, {
+        /*sendAnalyticsEvent(EventName.APPROVE_TOKEN_TXN_SUBMITTED, {
           chain_id: chainId,
           token_symbol: maximumAmountIn?.currency.symbol,
           token_address: maximumAmountIn?.currency.address,
-        })
+        })*/
 
         const { response, info } = approval
         addTransaction(response, info)
@@ -509,10 +509,10 @@ export default function Swap({ className }: { className?: string }) {
       // Set the current datetime as the time of receipt of latest swap quote.
       setSwapQuoteReceivedDate(now)
       // Log swap quote.
-      sendAnalyticsEvent(
+      /*sendAnalyticsEvent(
         EventName.SWAP_QUOTE_RECEIVED,
         formatSwapQuoteReceivedEventProperties(trade, trade.gasUseEstimateUSD ?? undefined, fetchingSwapQuoteStartTime)
-      )
+      )*/
       // Latest swap quote has just been logged, so we don't need to log the current trade anymore
       // unless user inputs change again and a new trade is in the process of being generated.
       setNewSwapQuoteNeedsLogging(false)
@@ -541,7 +541,7 @@ export default function Swap({ className }: { className?: string }) {
   )
 
   return (
-    <Trace page={PageName.SWAP_PAGE} shouldLogImpression>
+    <Trace page={PageName.SWAP_PAGE} shouldLogImpression={false}>
       <>
         <TokenSafetyModal
           isOpen={importTokensNotInDefault.length > 0 && !dismissTokenWarning}
@@ -573,7 +573,7 @@ export default function Swap({ className }: { className?: string }) {
 
             <div style={{ display: 'relative' }}>
               <SwapSection>
-                <Trace section={SectionName.CURRENCY_INPUT_PANEL}>
+                <Trace section={SectionName.CURRENCY_INPUT_PANEL} shouldLogImpression={false}>
                   <SwapCurrencyInputPanel
                     label={
                       independentField === Field.OUTPUT && !showWrap ? (
@@ -622,7 +622,7 @@ export default function Swap({ className }: { className?: string }) {
             <AutoColumn gap="md">
               <div>
                 <OutputSwapSection showDetailsDropdown={showDetailsDropdown}>
-                  <Trace section={SectionName.CURRENCY_OUTPUT_PANEL}>
+                  <Trace section={SectionName.CURRENCY_OUTPUT_PANEL} shouldLogImpression={false}>
                     <SwapCurrencyInputPanel
                       value={formattedAmounts[Field.OUTPUT]}
                       onUserInput={handleTypeOutput}

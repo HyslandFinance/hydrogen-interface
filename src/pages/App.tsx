@@ -52,12 +52,12 @@ const TokenDetails = lazy(() => import('./TokenDetails'))
 const ANALYTICS_DUMMY_KEY = '00000000000000000000000000000000'
 const ANALYTICS_PROXY_URL = process.env.REACT_APP_AMPLITUDE_PROXY_URL
 const COMMIT_HASH = process.env.REACT_APP_GIT_COMMIT_HASH
-initializeAnalytics(ANALYTICS_DUMMY_KEY, OriginApplication.INTERFACE, {
+/*initializeAnalytics(ANALYTICS_DUMMY_KEY, OriginApplication.INTERFACE, {
   proxyUrl: ANALYTICS_PROXY_URL,
   defaultEventName: EventName.PAGE_VIEWED,
   commitHash: COMMIT_HASH,
   isProductionEnv: isProductionEnv(),
-})
+})*/
 
 const BodyWrapper = styled.div`
   display: flex;
@@ -153,15 +153,15 @@ export default function App() {
   }, [pathname])
 
   useEffect(() => {
-    sendAnalyticsEvent(EventName.APP_LOADED)
+    //sendAnalyticsEvent(EventName.APP_LOADED)
     user.set(CustomUserProperties.USER_AGENT, navigator.userAgent)
     user.set(CustomUserProperties.BROWSER, getBrowser())
     user.set(CustomUserProperties.SCREEN_RESOLUTION_HEIGHT, window.screen.height)
     user.set(CustomUserProperties.SCREEN_RESOLUTION_WIDTH, window.screen.width)
-    getCLS(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { cumulative_layout_shift: delta }))
-    getFCP(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { first_contentful_paint_ms: delta }))
-    getFID(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { first_input_delay_ms: delta }))
-    getLCP(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { largest_contentful_paint_ms: delta }))
+    //getCLS(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { cumulative_layout_shift: delta }))
+    //getFCP(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { first_contentful_paint_ms: delta }))
+    //getFID(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { first_input_delay_ms: delta }))
+    //getLCP(({ delta }: Metric) => sendAnalyticsEvent(EventName.WEB_VITALS, { largest_contentful_paint_ms: delta }))
   }, [])
 
   useEffect(() => {
@@ -186,7 +186,7 @@ export default function App() {
     <ErrorBoundary>
       <DarkModeQueryParamReader />
       <ApeModeQueryParamReader />
-      <Trace page={currentPage}>
+      <Trace page={currentPage} shouldLogImpression={false}>
         <HeaderWrapper transparent={isHeaderTransparent}>
           <NavBar />
         </HeaderWrapper>

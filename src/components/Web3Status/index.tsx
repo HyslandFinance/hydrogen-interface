@@ -209,7 +209,7 @@ function Web3StatusInner() {
   const theme = useTheme()
   const toggleWalletDropdown = useToggleWalletDropdown()
   const handleWalletDropdownClick = useCallback(() => {
-    sendAnalyticsEvent('FOR Account Dropdown Button Clicks')
+    //sendAnalyticsEvent('FOR Account Dropdown Button Clicks')
     toggleWalletDropdown()
   }, [toggleWalletDropdown])
   const toggleWalletModal = useToggleWalletModal()

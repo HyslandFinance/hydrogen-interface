@@ -582,7 +582,7 @@ export function PositionPage() {
       <div />
     </LoadingRows>
   ) : (
-    <Trace page={PageName.POOL_PAGE} shouldLogImpression>
+    <Trace page={PageName.POOL_PAGE} shouldLogImpression={false}>
       <>
         <PageWrapper>
           <TransactionConfirmationModal

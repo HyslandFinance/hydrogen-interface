@@ -192,7 +192,7 @@ export const SearchBar = () => {
                     !isOpen && toggleOpen()
                     setSearchValue(event.target.value)
                   }}
-                  onBlur={() => sendAnalyticsEvent(EventName.NAVBAR_SEARCH_EXITED, navbarSearchEventProperties)}
+                  onBlur={() => {}/*sendAnalyticsEvent(EventName.NAVBAR_SEARCH_EXITED, navbarSearchEventProperties)*/}
                   className={`${styles.searchBarInput} ${styles.searchContentLeftAlign}`}
                   value={searchValue}
                   ref={inputRef}

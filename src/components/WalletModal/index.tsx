@@ -125,12 +125,12 @@ const sendAnalyticsEventAndUserInfo = (
   chainId: number | undefined,
   isReconnect: boolean
 ) => {
-  sendAnalyticsEvent(EventName.WALLET_CONNECT_TXN_COMPLETED, {
+  /*sendAnalyticsEvent(EventName.WALLET_CONNECT_TXN_COMPLETED, {
     result: WalletConnectionResult.SUCCEEDED,
     wallet_address: account,
     wallet_type: walletType,
     is_reconnect: isReconnect,
-  })
+  })*/
   user.set(CustomUserProperties.WALLET_ADDRESS, account)
   user.set(CustomUserProperties.WALLET_TYPE, walletType)
   if (chainId) {
@@ -207,7 +207,7 @@ export default function WalletModal({
       const walletType = getConnectionName(getConnection(connector).type, getIsMetaMask())
       const isReconnect =
         connectedWallets.filter((wallet) => wallet.account === account && wallet.walletType === walletType).length > 0
-      sendAnalyticsEventAndUserInfo(account, walletType, chainId, isReconnect)
+      //sendAnalyticsEventAndUserInfo(account, walletType, chainId, isReconnect)
       if (!isReconnect) addWalletToConnectedWallets({ account, walletType })
     }
     setLastActiveWalletAddress(account)
@@ -236,10 +236,10 @@ export default function WalletModal({
         console.debug(`web3-react connection error: ${error}`)
         dispatch(updateConnectionError({ connectionType, error: error.message }))
 
-        sendAnalyticsEvent(EventName.WALLET_CONNECT_TXN_COMPLETED, {
+        /*sendAnalyticsEvent(EventName.WALLET_CONNECT_TXN_COMPLETED, {
           result: WalletConnectionResult.FAILED,
           wallet_type: getConnectionName(connectionType, getIsMetaMask()),
-        })
+        })*/
       }
     },
     [dispatch]

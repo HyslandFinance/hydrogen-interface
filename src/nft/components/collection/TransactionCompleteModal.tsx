@@ -118,7 +118,7 @@ const TxCompleteModal = () => {
                   ...formatAssetEventProperties(nftsPurchased),
                   ...trace,
                 }}
-                shouldLogImpression
+                shouldLogImpression={false}
               >
                 <Box className={styles.successModal} onClick={stopPropagation}>
                   <UniIcon color={vars.color.pink400} width="36" height="36" className={styles.uniLogo} />
@@ -193,7 +193,7 @@ const TxCompleteModal = () => {
                     transaction_hash: txHash,
                     ...trace,
                   }}
-                  shouldLogImpression
+                  shouldLogImpression={false}
                 >
                   <Box className={styles.mixedRefundModal} onClick={stopPropagation}>
                     <Box
@@ -269,7 +269,7 @@ const TxCompleteModal = () => {
                     refund_amount_usd: totalUSDRefund,
                     ...trace,
                   }}
-                  shouldLogImpression
+                  shouldLogImpression={false}
                 >
                   <Box className={styles.fullRefundModal} onClick={stopPropagation}>
                     <Box marginLeft="auto" marginRight="auto" display="flex">

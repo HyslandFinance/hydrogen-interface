@@ -46,7 +46,7 @@ export default function NotFound() {
 
   return (
     <PageWrapper>
-      <Trace page="404-page" shouldLogImpression>
+      <Trace page="404-page" shouldLogImpression={false}>
         <Header>
           <Container>
             <Title>404</Title>

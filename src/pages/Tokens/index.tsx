@@ -91,7 +91,7 @@ const Tokens = () => {
   })
 
   return (
-    <Trace page={PageName.TOKENS_PAGE} shouldLogImpression>
+    <Trace page={PageName.TOKENS_PAGE} shouldLogImpression={false}>
       <ExploreContainer>
         <TitleContainer>
           <ThemedText.LargeHeader>

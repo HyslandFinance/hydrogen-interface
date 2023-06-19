@@ -68,7 +68,7 @@ export default memo(function SwapRoute({ trade, syncing, fixedOpen = false, ...r
         events={[BrowserEvent.onClick]}
         name={EventName.SWAP_AUTOROUTER_VISUALIZATION_EXPANDED}
         element={ElementName.AUTOROUTER_VISUALIZATION_ROW}
-        shouldLogImpression={!open}
+        shouldLogImpression={false}
       >
         <RowBetween onClick={() => setOpen(!open)}>
           <AutoRow gap="4px" width="auto">

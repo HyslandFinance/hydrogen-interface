@@ -120,7 +120,7 @@ export const BuyCell = ({
             e.preventDefault()
             isSelected ? removeAsset([asset]) : selectAsset([asset])
             !isSelected && !cartExpanded && !isMobile && toggleCart()
-            !isSelected && sendAnalyticsEvent(EventName.NFT_BUY_ADDED, { eventProperties })
+            /*!isSelected && sendAnalyticsEvent(EventName.NFT_BUY_ADDED, { eventProperties })*/
           }}
           disabled={event.orderStatus !== OrderStatus.VALID}
         >

@@ -140,7 +140,7 @@ export default function Pool() {
   })
 
   return (
-    <Trace page={PageName.POOL_PAGE} shouldLogImpression>
+    <Trace page={PageName.POOL_PAGE} shouldLogImpression={false}>
       <>
         <PageWrapper>
           <VoteCard>

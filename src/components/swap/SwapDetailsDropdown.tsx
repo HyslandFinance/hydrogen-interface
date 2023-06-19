@@ -125,7 +125,7 @@ export default function SwapDetailsDropdown({ trade, syncing, loading, allowedSl
           events={[BrowserEvent.onClick]}
           name={EventName.SWAP_DETAILS_EXPANDED}
           element={ElementName.SWAP_DETAILS_DROPDOWN}
-          shouldLogImpression={!showDetails}
+          shouldLogImpression={false}
         >
           <StyledHeaderRow onClick={() => setShowDetails(!showDetails)} disabled={!trade} open={showDetails}>
             <RowFixed style={{ position: 'relative' }}>

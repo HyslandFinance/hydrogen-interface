@@ -45,7 +45,7 @@ export function useSyncWidgetInputs({
   const onAmountChange = useCallback(
     (field: Field, amount: string, origin?: 'max') => {
       if (origin === 'max') {
-        sendAnalyticsEvent(EventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED, { ...trace })
+        //sendAnalyticsEvent(EventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED, { ...trace })
       }
       setType(field === Field.INPUT ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT)
       setAmount(amount)
@@ -54,7 +54,7 @@ export function useSyncWidgetInputs({
   )
 
   const onSwitchTokens = useCallback(() => {
-    sendAnalyticsEvent(EventName.SWAP_TOKENS_REVERSED, { ...trace })
+    //sendAnalyticsEvent(EventName.SWAP_TOKENS_REVERSED, { ...trace })
     setType((type) => invertTradeType(type))
     setTokens((tokens) => ({
       [Field.INPUT]: tokens[Field.OUTPUT],

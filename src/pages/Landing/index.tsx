@@ -297,7 +297,7 @@ export default function Landing() {
   }, [navigate, selectedWallet, queryParams.intro])
 
   return (
-    <Trace page={PageName.LANDING_PAGE} shouldLogImpression>
+    <Trace page={PageName.LANDING_PAGE} shouldLogImpression={false}>
       {showContent && (
         <PageContainer isDarkMode={isDarkMode} data-testid="landing-page">
           <LandingSwapContainer>

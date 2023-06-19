@@ -61,7 +61,7 @@ const TraitItem = ({
       removeTrait(trait)
       setCheckboxSelected(false)
     }
-    sendAnalyticsEvent(EventName.NFT_FILTER_SELECTED, { filter_type: FilterTypes.TRAIT })
+    //sendAnalyticsEvent(EventName.NFT_FILTER_SELECTED, { filter_type: FilterTypes.TRAIT })
   }
 
   const showFullTraitName = shouldShow && trait_type === trait.trait_type && trait_value === trait.trait_value

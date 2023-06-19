@@ -30,7 +30,7 @@ const NftExplore = () => {
 
   return (
     <>
-      <Trace page={PageName.NFT_EXPLORE_PAGE} shouldLogImpression>
+      <Trace page={PageName.NFT_EXPLORE_PAGE} shouldLogImpression={false}>
         <ExploreContainer>
           <Banner />
           <TrendingCollections />

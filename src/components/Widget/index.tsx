@@ -72,7 +72,7 @@ export default function Widget({ token, onTokenChange, onReviewSwapClick }: Widg
         ),
         ...trace,
       }
-      sendAnalyticsEvent(EventName.SWAP_QUOTE_RECEIVED, eventProperties)
+      //sendAnalyticsEvent(EventName.SWAP_QUOTE_RECEIVED, eventProperties)
     },
     [trace]
   )
@@ -85,10 +85,10 @@ export default function Widget({ token, onTokenChange, onReviewSwapClick }: Widg
       token_address: getTokenAddress(input),
       ...trace,
     }
-    sendAnalyticsEvent(EventName.APPROVE_TOKEN_TXN_SUBMITTED, eventProperties)
+    //sendAnalyticsEvent(EventName.APPROVE_TOKEN_TXN_SUBMITTED, eventProperties)
   }, [inputs.value.INPUT, trace])
   const onExpandSwapDetails = useCallback(() => {
-    sendAnalyticsEvent(EventName.SWAP_DETAILS_EXPANDED, { ...trace })
+    //sendAnalyticsEvent(EventName.SWAP_DETAILS_EXPANDED, { ...trace })
   }, [trace])
   const onSwapPriceUpdateAck = useCallback(
     (stale: Trade<Currency, Currency, TradeType>, update: Trade<Currency, Currency, TradeType>) => {
@@ -100,7 +100,7 @@ export default function Widget({ token, onTokenChange, onReviewSwapClick }: Widg
         price_update_basis_points: getPriceUpdateBasisPoints(stale.executionPrice, update.executionPrice),
         ...trace,
       }
-      sendAnalyticsEvent(EventName.SWAP_PRICE_UPDATE_ACKNOWLEDGED, eventProperties)
+      //sendAnalyticsEvent(EventName.SWAP_PRICE_UPDATE_ACKNOWLEDGED, eventProperties)
     },
     [trace]
   )
@@ -127,7 +127,7 @@ export default function Widget({ token, onTokenChange, onReviewSwapClick }: Widg
         swap_quote_block_number: undefined,
         ...trace,
       }
-      sendAnalyticsEvent(EventName.SWAP_SUBMITTED_BUTTON_CLICKED, eventProperties)
+      //sendAnalyticsEvent(EventName.SWAP_SUBMITTED_BUTTON_CLICKED, eventProperties)
     },
     [initialQuoteDate, trace]
   )

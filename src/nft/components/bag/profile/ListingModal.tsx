@@ -107,7 +107,7 @@ const ListingModal = () => {
   // handles the modal wide listing state based on conglomeration of the wallet, collection, and listing states
   const startListingFlow = async () => {
     if (!signer) return
-    sendAnalyticsEvent(EventName.NFT_SELL_START_LISTING, { ...startListingEventProperties })
+    //sendAnalyticsEvent(EventName.NFT_SELL_START_LISTING, { ...startListingEventProperties })
     setListingStatus(ListingStatus.SIGNING)
     const addresses = addressesByNetwork[SupportedChainId.MAINNET]
     const signerAddress = await signer.getAddress()
@@ -168,12 +168,12 @@ const ListingModal = () => {
     } else if (!paused) {
       setListingStatus(ListingStatus.FAILED)
     }
-    sendAnalyticsEvent(EventName.NFT_LISTING_SIGNED, {
+    /*sendAnalyticsEvent(EventName.NFT_LISTING_SIGNED, {
       signatures_approved: listings.filter((asset) => asset.status === ListingStatus.APPROVED),
       list_quantity: listings.length,
       usd_value: ethPriceInUSD * totalEthListingValue,
       ...trace,
-    })
+    })*/
     await logListing(listings, (await signer?.getAddress()) ?? '')
   }
 
@@ -207,7 +207,7 @@ const ListingModal = () => {
   const showSuccessScreen = useMemo(() => listingStatus === ListingStatus.APPROVED, [listingStatus])
 
   return (
-    <Trace modal={ModalName.NFT_LISTING}>
+    <Trace modal={ModalName.NFT_LISTING} shouldLogImpression={false}>
       <Column paddingTop="20" paddingBottom="20" paddingLeft="12" paddingRight="12">
         <Row className={headlineSmall} marginBottom="10">
           {isMobile && !showSuccessScreen && (
@@ -236,7 +236,7 @@ const ListingModal = () => {
             <Trace
               name={EventName.NFT_LISTING_COMPLETED}
               properties={{ list_quantity: listings.length, usd_value: ethPriceInUSD * totalEthListingValue, ...trace }}
-              shouldLogImpression
+              shouldLogImpression={false}
             >
               <ListingSection
                 sectionTitle={`Listed ${listings.length} item${pluralize(listings.length)} for sale`}

@@ -44,7 +44,7 @@ const ProfileContent = () => {
   const cartExpanded = useBag((state) => state.bagExpanded)
 
   return (
-    <Trace page={PageName.NFT_PROFILE_PAGE} shouldLogImpression>
+    <Trace page={PageName.NFT_PROFILE_PAGE} shouldLogImpression={false}>
       <Box className={styles.profileWrapper}>
         {/* <Head> TODO: figure out metadata tagging
           <title>Genie | Sell</title>

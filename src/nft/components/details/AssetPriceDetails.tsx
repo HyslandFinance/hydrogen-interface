@@ -230,11 +230,11 @@ const OwnerContainer = ({ asset }: { asset: WalletAsset }) => {
     resetSellAssets()
     navigate('/nfts/profile')
     selectSellAsset(asset)
-    sendAnalyticsEvent(EventName.NFT_SELL_ITEM_ADDED, {
+    /*sendAnalyticsEvent(EventName.NFT_SELL_ITEM_ADDED, {
       collection_address: asset.asset_contract.address,
       token_id: asset.tokenId,
       ...trace,
-    })
+    })*/
     setSellPageState(ProfilePageStateType.LISTING)
   }
 

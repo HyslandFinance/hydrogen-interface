@@ -82,7 +82,7 @@ export default function Updater() {
       const tx = transactions[chainId]?.[hash]
 
       if (tx.info.type === TransactionType.SWAP && trade) {
-        sendAnalyticsEvent(
+        /*sendAnalyticsEvent(
           EventName.SWAP_TRANSACTION_COMPLETED,
           formatAnalyticsEventProperties({
             trade,
@@ -90,7 +90,7 @@ export default function Updater() {
             allowedSlippage,
             succeeded: receipt.status === 1,
           })
-        )
+        )*/
       }
       addPopup(
         {

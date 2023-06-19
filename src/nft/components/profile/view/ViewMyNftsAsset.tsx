@@ -77,11 +77,11 @@ export const ViewMyNftsAsset = ({
       removeSellAsset(asset)
     } else {
       selectSellAsset(asset)
-      sendAnalyticsEvent(EventName.NFT_SELL_ITEM_ADDED, {
+      /*sendAnalyticsEvent(EventName.NFT_SELL_ITEM_ADDED, {
         collection_address: asset.asset_contract.address,
         token_id: asset.tokenId,
         ...trace,
-      })
+      })*/
     }
     if (
       !cartExpanded &&

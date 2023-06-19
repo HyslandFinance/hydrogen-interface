@@ -262,7 +262,7 @@ export default function Pool() {
   ]
 
   return (
-    <Trace page={PageName.POOL_PAGE} shouldLogImpression>
+    <Trace page={PageName.POOL_PAGE} shouldLogImpression={false}>
       <PageWrapper>
         <AutoColumn gap="lg" justify="center">
           <AutoColumn gap="lg" style={{ width: '100%' }}>

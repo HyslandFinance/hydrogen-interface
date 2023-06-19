@@ -113,7 +113,7 @@ export function FiatOnrampAnnouncement() {
 
   const toggleWalletDropdown = useToggleWalletDropdown()
   const handleClick = useCallback(() => {
-    sendAnalyticsEvent('FOR Banner Click')
+    //sendAnalyticsEvent('FOR Banner Click')
     toggleWalletDropdown()
     acknowledge({ user: true })
   }, [acknowledge, toggleWalletDropdown])

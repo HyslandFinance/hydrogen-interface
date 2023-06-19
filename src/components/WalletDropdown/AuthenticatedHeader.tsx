@@ -252,7 +252,7 @@ const AuthenticatedHeader = () => {
 
   const openFiatOnrampModal = useOpenModal(ApplicationModal.FIAT_ONRAMP)
   const openFoRModalWithAnalytics = useCallback(() => {
-    sendAnalyticsEvent('Fiat OnRamp Widget Opened')
+    //sendAnalyticsEvent('Fiat OnRamp Widget Opened')
     openFiatOnrampModal()
   }, [openFiatOnrampModal])
 

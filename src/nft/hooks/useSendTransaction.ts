@@ -50,7 +50,7 @@ export const useSendTransaction = create<TxState>()(
           const res = await signer.sendTransaction(tx)
           set({ state: TxStateType.Confirming })
           set({ txHash: res.hash })
-          sendAnalyticsEvent(EventName.NFT_BUY_BAG_SIGNED, { transaction_hash: res.hash })
+          //sendAnalyticsEvent(EventName.NFT_BUY_BAG_SIGNED, { transaction_hash: res.hash })
 
           const txReceipt = await res.wait()
 

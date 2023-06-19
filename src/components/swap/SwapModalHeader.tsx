@@ -90,10 +90,10 @@ export default function SwapModalHeader({
 
   useEffect(() => {
     if (shouldLogModalCloseEvent && showAcceptChanges)
-      sendAnalyticsEvent(
+      /*sendAnalyticsEvent(
         EventName.SWAP_PRICE_UPDATE_ACKNOWLEDGED,
         formatAnalyticsEventProperties(trade, priceUpdate, SwapPriceUpdateUserResponse.REJECTED)
-      )
+      )*/
     setShouldLogModalCloseEvent(false)
   }, [shouldLogModalCloseEvent, showAcceptChanges, setShouldLogModalCloseEvent, trade, priceUpdate])
 

@@ -97,7 +97,7 @@ export function useApproval(
           token_symbol: token?.symbol,
           token_address: getTokenAddress(token),
         }
-        sendAnalyticsEvent(EventName.APPROVE_TOKEN_TXN_SUBMITTED, eventProperties)
+        //sendAnalyticsEvent(EventName.APPROVE_TOKEN_TXN_SUBMITTED, eventProperties)
         return {
           response,
           tokenAddress: token.address,

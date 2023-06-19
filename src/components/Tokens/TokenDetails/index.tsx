@@ -178,7 +178,7 @@ export default function TokenDetails({
     <Trace
       page={PageName.TOKEN_DETAILS_PAGE}
       properties={{ tokenAddress: address, tokenName: token?.name }}
-      shouldLogImpression
+      shouldLogImpression={false}
     >
       <TokenDetailsLayout>
         {token && !isPending ? (

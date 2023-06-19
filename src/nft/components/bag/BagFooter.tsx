@@ -175,7 +175,7 @@ export const BagFooter = ({
           name={EventName.NFT_BUY_BAG_PAY}
           element={ElementName.NFT_BUY_BAG_PAY_BUTTON}
           properties={{ ...eventProperties }}
-          shouldLogImpression={connected && !disabled}
+          shouldLogImpression={false}
         >
           <Warning>{warningText}</Warning>
           <ActionButton onClick={handleClick} disabled={disabled}>

@@ -122,7 +122,7 @@ export default function ConfirmSwapModal({
   )
 
   return (
-    <Trace modal={ModalName.CONFIRM_SWAP}>
+    <Trace modal={ModalName.CONFIRM_SWAP} shouldLogImpression={false}>
       <TransactionConfirmationModal
         isOpen={isOpen}
         onDismiss={onModalDismiss}

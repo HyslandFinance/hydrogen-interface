@@ -47,7 +47,7 @@ const AssetPage = () => {
       <Trace
         page={PageName.NFT_DETAILS_PAGE}
         properties={{ collection_address: contractAddress, token_id: tokenId }}
-        shouldLogImpression
+        shouldLogImpression={false}
       >
         {!!asset && !!collection && (
           <AssetContainer>

@@ -49,7 +49,7 @@ export function useSyncWidgetTransactions() {
           type: type === WidgetTransactionType.WRAP ? WrapType.WRAP : WrapType.UNWRAP,
           ...trace,
         }
-        sendAnalyticsEvent(EventName.WRAP_TOKEN_TXN_SUBMITTED, eventProperties)
+        //sendAnalyticsEvent(EventName.WRAP_TOKEN_TXN_SUBMITTED, eventProperties)
         const { amount } = transaction.info
         addTransaction(response, {
           type: AppTransactionType.WRAP,
@@ -67,7 +67,7 @@ export function useSyncWidgetTransactions() {
           }),
           ...trace,
         }
-        sendAnalyticsEvent(EventName.SWAP_SIGNED, eventProperties)
+        //sendAnalyticsEvent(EventName.SWAP_SIGNED, eventProperties)
         const baseTxInfo = {
           type: AppTransactionType.SWAP,
           tradeType,
