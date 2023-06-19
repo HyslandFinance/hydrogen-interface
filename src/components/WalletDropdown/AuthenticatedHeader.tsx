@@ -313,62 +313,6 @@ const AuthenticatedHeader = () => {
           </Text>
           {amountUSD !== undefined && <USDText>{formatUSDPrice(amountUSD)} USD</USDText>}
         </BalanceWrapper>
-        <ProfileButton
-          data-testid="nft-view-self-nfts"
-          onClick={navigateToProfile}
-          size={ButtonSize.medium}
-          emphasis={ButtonEmphasis.medium}
-        >
-          <Trans>View and sell NFTs</Trans>
-        </ProfileButton>
-        {fiatOnrampFlag === BaseVariant.Enabled && (
-          <>
-            <BuyCryptoButton
-              $animateBorder={animateBuyCryptoButtonBorder}
-              size={ButtonSize.medium}
-              emphasis={ButtonEmphasis.medium}
-              onClick={handleBuyCryptoClick}
-              disabled={disableBuyCryptoButton}
-            >
-              {error ? (
-                <ThemedText.BodyPrimary>{error}</ThemedText.BodyPrimary>
-              ) : (
-                <>
-                  {fiatOnrampAvailabilityLoading ? <StyledLoadingButtonSpinner /> : <CreditCard />}{' '}
-                  <Trans>Buy crypto</Trans>
-                </>
-              )}
-            </BuyCryptoButton>
-            {Boolean(!fiatOnrampAvailable && fiatOnrampAvailabilityChecked) && (
-              <FiatOnrampNotAvailableText marginTop="8px">
-                <Trans>Not available in your region</Trans>
-                <Tooltip
-                  show={showFiatOnrampUnavailableTooltip}
-                  text={<Trans>Moonpay is not available in some regions. Click to learn more.</Trans>}
-                >
-                  <FiatOnrampAvailabilityExternalLink
-                    onMouseEnter={openFiatOnrampUnavailableTooltip}
-                    onMouseLeave={closeFiatOnrampUnavailableTooltip}
-                    style={{ color: 'inherit' }}
-                    href="https://support.uniswap.org/hc/en-us/articles/11306664890381-Why-isn-t-MoonPay-available-in-my-region-"
-                  >
-                    <StyledInfoIcon />
-                  </FiatOnrampAvailabilityExternalLink>
-                </Tooltip>
-              </FiatOnrampNotAvailableText>
-            )}
-          </>
-        )}
-        {isUnclaimed && (
-          <UNIButton onClick={openClaimModal} size={ButtonSize.medium} emphasis={ButtonEmphasis.medium}>
-            <Trans>Claim</Trans> {unclaimedAmount?.toFixed(0, { groupSeparator: ',' } ?? '-')} <Trans>reward</Trans>
-          </UNIButton>
-        )}
-        {isClaimAvailable && (
-          <UNIButton size={ButtonSize.medium} emphasis={ButtonEmphasis.medium} onClick={openNftModal}>
-            <Trans>Claim Uniswap NFT Airdrop</Trans>
-          </UNIButton>
-        )}
       </Column>
     </AuthenticatedHeaderWrapper>
   )

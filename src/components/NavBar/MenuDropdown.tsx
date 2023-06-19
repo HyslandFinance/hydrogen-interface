@@ -9,7 +9,6 @@ import {
   DiscordIconMenu,
   EllipsisIcon,
   GithubIconMenu,
-  GovernanceIcon,
   TwitterIconMenu,
 } from 'nft/components/icons'
 import { body, bodySmall } from 'nft/css/common.css'
@@ -135,14 +134,6 @@ export const MenuDropdown = () => {
           <NavDropdown top={{ sm: 'unset', lg: '56' }} bottom={{ sm: '56', lg: 'unset' }} right="0">
             <Column gap="16">
               <Column paddingX="8" gap="4">
-                <PrimaryMenuRow to="/vote" close={toggleOpen}>
-                  <Icon>
-                    <GovernanceIcon width={24} height={24} />
-                  </Icon>
-                  <PrimaryMenuRow.Text>
-                    <Trans>Vote in governance</Trans>
-                  </PrimaryMenuRow.Text>
-                </PrimaryMenuRow>
                 <PrimaryMenuRow href="https://analytics.hydrogendefi.xyz/#/">
                   <Icon>
                     <BarChartIcon width={24} height={24} />
@@ -160,9 +151,6 @@ export const MenuDropdown = () => {
                 alignItems={{ sm: 'center', md: 'flex-start' }}
                 paddingX="8"
               >
-                <SecondaryLinkedText href="https://help.uniswap.org/en/">
-                  <Trans>Help center</Trans> ↗
-                </SecondaryLinkedText>
                 <SecondaryLinkedText href="https://docs.hydrogendefi.xyz/">
                   <Trans>Documentation</Trans> ↗
                 </SecondaryLinkedText>
