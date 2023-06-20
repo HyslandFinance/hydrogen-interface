@@ -32,7 +32,7 @@ export const getMarketplaceIcon = (marketplace: string) => {
 export const generateTweetForAsset = (asset: GenieAsset): string => {
   return `https://twitter.com/intent/tweet?text=Check%20out%20${
     asset.name ? encodeURIComponent(asset.name) : `${asset.collectionName}%20%23${asset.tokenId}`
-  }%20(${asset.collectionName})%20https://app.uniswap.org/%23/nfts/asset/${asset.address}/${
+  }%20(${asset.collectionName})%20https://app.hydrogendefi.xyz/%23/nfts/asset/${asset.address}/${
     asset.tokenId
   }%20via%20@uniswap`
 }
@@ -41,6 +41,6 @@ export const generateTweetForPurchase = (assets: UpdatedGenieAsset[], txHashUrl:
   const multipleCollections = assets.length > 0 && assets.some((asset) => asset.address !== assets[0].address)
   const tweetText = `I just purchased ${
     multipleCollections ? `${assets.length} NFTs` : `${assets.length} ${assets[0].collectionName ?? 'NFT'}`
-  } with Uniswap 🦄\n\nhttps://app.uniswap.org/#/nfts/collection/0x60bb1e2aa1c9acafb4d34f71585d7e959f387769\n${txHashUrl}`
+  } with Uniswap 🦄\n\nhttps://app.hydrogendefi.xyz/#/nfts/collection/0x60bb1e2aa1c9acafb4d34f71585d7e959f387769\n${txHashUrl}`
   return `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`
 }

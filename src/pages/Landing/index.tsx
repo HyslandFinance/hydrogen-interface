@@ -75,7 +75,7 @@ const Glow = styled.div`
   position: absolute;
   top: 68px;
   bottom: 0;
-  background: radial-gradient(72.04% 72.04% at 50% 3.99%, #ff37eb 0%, rgba(166, 151, 255, 0) 100%);
+  background: radial-gradient(72.04% 72.04% at 50% 3.99%, #05329A 0%, #4CD7F700 100%);
   filter: blur(72px);
   border-radius: 24px;
   max-width: 480px;
@@ -111,8 +111,8 @@ const TitleText = styled.h1<{ isDarkMode: boolean }>`
   margin: 0 0 24px;
   background: ${({ isDarkMode }) =>
     isDarkMode
-      ? 'linear-gradient(20deg, rgba(255, 244, 207, 1) 10%, rgba(255, 87, 218, 1) 100%)'
-      : 'linear-gradient(10deg, rgba(255,79,184,1) 0%, rgba(255,159,251,1) 100%)'};
+      ? 'linear-gradient(20deg, #327DB0 10%, #0B446D 100%)'
+      : 'linear-gradient(10deg, #008BCE 0%, #66B5EC 100%)'};
   background-clip: text;
   -webkit-background-clip: text;
 
@@ -152,14 +152,17 @@ const LandingButton = styled(BaseButton)`
   border-radius: 24px;
 `
 
-const ButtonCTA = styled(LandingButton)`
-  background: linear-gradient(93.06deg, #ff00c7 2.66%, #ff9ffb 98.99%);
+const ButtonCTA = styled(LandingButton)<{ isDarkMode: boolean }>`
+  background: ${({ isDarkMode }) =>
+    isDarkMode
+      ? 'linear-gradient(93.06deg, #003D68 2.66%, #006FA5 98.99%)'
+      : 'linear-gradient(93.06deg, #008BCE 2.66%, #66B5EC 98.99%)'};
   border: none;
   color: ${({ theme }) => theme.white};
   transition: ${({ theme }) => `all ${theme.transition.duration.medium} ${theme.transition.timing.ease}`};
 
   &:hover {
-    box-shadow: 0px 0px 16px 0px #ff00c7;
+    box-shadow: 0px 0px 16px 0px #003D68;
   }
 `
 
@@ -305,7 +308,7 @@ export default function Landing() {
           <Glow />
         </GlowContainer>
         <ContentContainer isDarkMode={isDarkMode}>
-          <TitleText isDarkMode={isDarkMode}>Trade crypto with confidence</TitleText>
+          <TitleText isDarkMode={isDarkMode}>Trade crypto with Hydrogen</TitleText>
           <SubTextContainer>
             <SubText>Buy, sell, and explore tokens</SubText>
           </SubTextContainer>
@@ -315,7 +318,7 @@ export default function Landing() {
               name={EventName.ELEMENT_CLICKED}
               element={ElementName.CONTINUE_BUTTON}
             >
-              <ButtonCTA as={Link} to="/trade">
+              <ButtonCTA as={Link} to="/trade" isDarkMode={isDarkMode}>
                 <ButtonCTAText>Get started</ButtonCTAText>
               </ButtonCTA>
             </TraceEvent>

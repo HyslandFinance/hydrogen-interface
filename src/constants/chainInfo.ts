@@ -230,7 +230,7 @@ const CHAIN_INFO: ChainInfoMap = {
     logoUrl: baseLogo,
     statusPage: '',
     helpCenterUrl: '',
-    nativeCurrency: { name: 'Optimism Goerli Ether', symbol: 'baseGörETH', decimals: 18 },
+    nativeCurrency: { name: 'Optimism Goerli Ether', symbol: 'bgETH', decimals: 18 },
     color: darkTheme.chain_84531,
   },
 }

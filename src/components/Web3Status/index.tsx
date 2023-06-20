@@ -324,7 +324,7 @@ export default function Web3Status() {
   return (
     <span ref={ref}>
       <Web3StatusInner />
-      <FiatOnrampAnnouncement />
+      {/*<FiatOnrampAnnouncement />*/}
       <WalletModal ENSName={ENSName ?? undefined} pendingTransactions={pending} confirmedTransactions={confirmed} />
       <MetamaskConnectionError />
       <Portal>

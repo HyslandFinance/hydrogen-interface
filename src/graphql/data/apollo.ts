@@ -10,7 +10,7 @@ export const apolloClient = new ApolloClient({
   uri: GRAPHQL_URL,
   headers: {
     'Content-Type': 'application/json',
-    Origin: 'https://app.uniswap.org',
+    Origin: 'https://app.hydrogendefi.xyz',
   },
   cache: new InMemoryCache({
     typePolicies: {

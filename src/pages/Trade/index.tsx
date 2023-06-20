@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import styled from 'styled-components/macro'
 import { PageWrapper } from '../../components/swap/styleds'
+import { useIsDarkMode } from 'state/user/hooks'
 
 const MobileView = styled.div`
   display: block;
@@ -26,28 +27,36 @@ const OrderTypeContainer = styled(Link)`
   margin: 20px;
 `
 
-const OrderTypeSelector = styled.div`
+const OrderTypeSelector = styled.div<{ isDarkMode: boolean }>`
   display: inline-block;
   padding: 20px;
   border: 1px solid gray;
   border-radius: 20px;
   &:hover {
-    background-color: #ffffff22;
+    background-color: ${({ isDarkMode }) =>
+      isDarkMode
+        ? '#ffffff22'
+        : '#03538B22'};;
     cursor: pointer;
   }
 `
 
-const OrderTypeSelectorTextContainer = styled(Center)`
+const OrderTypeSelectorTextContainer = styled(Center)<{ isDarkMode: boolean }>`
   width: 120px;
   color: white;
+  color: ${({ isDarkMode }) =>
+    isDarkMode
+      ? 'white'
+      : 'black'};
 `
 
 export default function TradePage() {
+  const isDarkMode = useIsDarkMode()
 
   const OrderSelector = ({to, text}: any) => (
     <OrderTypeContainer to={to}>
-      <OrderTypeSelector>
-        <OrderTypeSelectorTextContainer>
+      <OrderTypeSelector isDarkMode={isDarkMode}>
+        <OrderTypeSelectorTextContainer isDarkMode={isDarkMode}>
           <p>{text}</p>
         </OrderTypeSelectorTextContainer>
       </OrderTypeSelector>

@@ -18,6 +18,7 @@ import { updateSelectedWallet } from 'state/user/reducer'
 import { useConnectedWallets } from 'state/wallets/hooks'
 import styled from 'styled-components/macro'
 import { flexColumnNoWrap, flexRowNoWrap } from 'theme/styles'
+import { supportedChainId } from 'utils/supportedChainId'
 import { isMobile } from 'utils/userAgent'
 
 import { ReactComponent as Close } from '../../assets/images/x.svg'
@@ -181,9 +182,9 @@ export default function WalletModal({
   useEffect(() => {
     if (account && account !== previousAccount && walletModalOpen) {
       toggleWalletModal()
-      if (location.pathname === '/') {
-        navigate('/swap')
-      }
+      //if (location.pathname === '/') {
+        //navigate('/swap')
+      //}
     }
   }, [account, previousAccount, toggleWalletModal, walletModalOpen, location.pathname, navigate])
 
@@ -196,7 +197,8 @@ export default function WalletModal({
 
   // Keep the network connector in sync with any active user connector to prevent chain-switching on wallet disconnection.
   useEffect(() => {
-    if (chainId && connector !== networkConnection.connector) {
+    if (chainId && supportedChainId(chainId) && connector && networkConnection.connector && connector !== networkConnection.connector) {
+      //console.log(`activating chainId ${chainId}`)
       networkConnection.connector.activate(chainId)
     }
   }, [chainId, connector])

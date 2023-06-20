@@ -67,12 +67,6 @@ export const ChainSelector = ({ leftAlign }: ChainSelectorProps) => {
     return null
   }
 
-  if(chainId != 84531) {
-    //console.log("forcing network to base goerli")
-    onSelectChain(84531)
-  }
-
-
   const isSupported = !!info
 
   const dropdown = (

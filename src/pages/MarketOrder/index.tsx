@@ -255,7 +255,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   // reset if they close warning without tokens in params
   const handleDismissTokenWarning = useCallback(() => {
     setDismissTokenWarning(true)
-    navigate('/swap/')
+    navigate('/market_order/')
   }, [navigate])
 
   // modal and loading
