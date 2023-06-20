@@ -86,10 +86,7 @@ const Navbar = () => {
                 data-testid="uniswap-logo"
                 className={styles.logo}
                 onClick={() => {
-                  navigate({
-                    pathname: '/',
-                    search: '?intro=true',
-                  })
+                  navigate({ pathname: '/', })
                 }}
               />
             </Box>

@@ -12,6 +12,7 @@ export const DEFAULT_TXN_DISMISS_MS = 25000
 export const L2_TXN_DISMISS_MS = 5000
 
 export const BIG_INT_ZERO = JSBI.BigInt(0)
+export const BIG_INT_ONE = JSBI.BigInt(1)
 
 // one basis JSBI.BigInt
 const BIPS_BASE = JSBI.BigInt(10000)

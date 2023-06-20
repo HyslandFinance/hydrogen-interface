@@ -1,6 +1,5 @@
 import { Protocol } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount } from '@uniswap/sdk-core'
-import { routeAmountsToString, SwapRoute } from '@uniswap/smart-order-router'
 import { Pool } from '@uniswap/v3-sdk'
 import { GetQuoteResult, V2PoolInRoute, V3PoolInRoute } from 'state/routing/types'
 
@@ -11,14 +10,16 @@ export function transformSwapRouteToGetQuoteResult(
   {
     quote,
     quoteGasAdjusted,
-    route,
+    routeSummary,
+    routeDetailed,
+    routetxdatas,
     estimatedGasUsed,
     estimatedGasUsedQuoteToken,
     estimatedGasUsedUSD,
     gasPriceWei,
     methodParameters,
     blockNumber,
-  }: SwapRoute
+  }: any
 ): GetQuoteResult {
   const routeResponse: Array<(V3PoolInRoute | V2PoolInRoute)[]> = []
 
@@ -123,8 +124,9 @@ export function transformSwapRouteToGetQuoteResult(
     gasUseEstimate: estimatedGasUsed.toString(),
     gasUseEstimateUSD: estimatedGasUsedUSD.toExact(),
     gasPriceWei: gasPriceWei.toString(),
-    route: routeResponse,
-    routeString: routeAmountsToString(route),
+    protocol: 'unknown',
+    swapType: 'unknown',
+    paths: [],
   }
 
   return result

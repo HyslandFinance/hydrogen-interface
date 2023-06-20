@@ -1,7 +1,4 @@
-import { MixedRoute, partitionMixedRouteByProtocol, Protocol, Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
-import { Pair } from '@uniswap/v2-sdk'
-import { Pool } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { SUPPORTED_GAS_ESTIMATE_CHAIN_IDS } from 'constants/chains'
 import { L2_CHAIN_IDS } from 'constants/chains'
@@ -28,13 +25,13 @@ const MULTI_HOP_GAS_PER_HOP_ESTIMATE = 90_000
  */
 //function guesstimateGas(trade: Trade<Currency, Currency, TradeType> | undefined): number | undefined {
 function guesstimateGas(trade: any | undefined): number | undefined {
-  if(!trade) return undefined
-  const paths = trade.route.hydrogenRoute
+  if (!trade) return undefined
+  const paths = trade.route.hydrogenRoute.paths
   // single hop: 140k
-  if(paths.length == 1 && paths[0].hops.length == 1) return SINGLE_HOP_GAS_ESTIMATE
+  if (paths.length == 1 && paths[0].hops.length == 1) return SINGLE_HOP_GAS_ESTIMATE
   // multihop: 40k + num hops * 90k
   let numHops = 0
-  for(const path of paths) numHops += path.hops.length
+  for (const path of paths) numHops += path.hops.length
   return MULTI_HOP_GAS_BASE_ESTIMATE + MULTI_HOP_GAS_PER_HOP_ESTIMATE * numHops
 }
 

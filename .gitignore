@@ -43,3 +43,6 @@ cypress/videos
 cypress/screenshots
 
 .vercel
+
+*-ignore*
+*-backup*

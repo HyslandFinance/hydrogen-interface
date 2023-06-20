@@ -1,6 +1,6 @@
+import { formatUnits } from '@ethersproject/units'
 import { Trans } from '@lingui/macro'
-import { Protocol } from '@uniswap/router-sdk'
-import { Currency } from '@uniswap/sdk-core'
+import { Currency, TradeType } from '@uniswap/sdk-core'
 import { FeeAmount } from '@uniswap/v3-sdk'
 import Badge from 'components/Badge'
 import DoubleCurrencyLogo from 'components/DoubleLogo'
@@ -9,6 +9,7 @@ import Row, { AutoRow } from 'components/Row'
 import { RoutingDiagramEntry } from 'components/swap/SwapRoute'
 import { useTokenInfoFromActiveList } from 'hooks/useTokenInfoFromActiveList'
 import { Box } from 'rebass'
+import { InterfaceTrade } from 'state/routing/types'
 import styled from 'styled-components/macro'
 import { ThemedText } from 'theme'
 import { Z_INDEX } from 'theme/zIndex'
@@ -91,6 +92,7 @@ export default function RoutingDiagram({
   currencyIn: Currency
   currencyOut: Currency
   routes: RoutingDiagramEntry[]
+  trade: InterfaceTrade<Currency, Currency, TradeType>
 }) {
   const tokenIn = useTokenInfoFromActiveList(currencyIn)
   const tokenOut = useTokenInfoFromActiveList(currencyOut)
@@ -98,11 +100,25 @@ export default function RoutingDiagram({
   return (
     <Wrapper>
       {routes.map((entry, index) => (
+        /*
         <RouteContainerRow key={index}>
-          <CurrencyLogo currency={tokenIn} size="20px" />
-          <Route entry={entry} />
-          <CurrencyLogo currency={tokenOut} size="20px" />
+          <>
+            <CurrencyLogo currency={tokenIn} size="20px" />
+            <Route entry={entry} />
+            <CurrencyLogo currency={tokenOut} size="20px" />
+            <br/>
+            {Path({trade})}
+          </>
         </RouteContainerRow>
+        */
+        <div key={index}>
+          <RouteContainerRow key={index}>
+            <CurrencyLogo currency={tokenIn} size="20px" />
+            <Route entry={entry} />
+            <CurrencyLogo currency={tokenOut} size="20px" />
+          </RouteContainerRow>
+          {Path({ trade })}
+        </div>
       ))}
     </Wrapper>
   )
@@ -115,7 +131,7 @@ function Route({ entry: { percent, path, protocol } }: { entry: RoutingDiagramEn
         <DotColor />
       </DottedLine>
       <OpaqueBadge>
-        {protocol === Protocol.MIXED ? (
+        {/*protocol === Protocol.MIXED ? (
           <MixedProtocolBadge>
             <BadgeText fontSize={12}>V3 + V2</BadgeText>
           </MixedProtocolBadge>
@@ -123,7 +139,10 @@ function Route({ entry: { percent, path, protocol } }: { entry: RoutingDiagramEn
           <ProtocolBadge>
             <BadgeText fontSize={12}>{protocol.toUpperCase()}</BadgeText>
           </ProtocolBadge>
-        )}
+        )*/}
+        <ProtocolBadge>
+          <BadgeText fontSize={12}>TokenFlow</BadgeText>
+        </ProtocolBadge>
         <BadgeText fontSize={14} style={{ minWidth: 'auto' }}>
           {percent.toSignificant(2)}%
         </BadgeText>

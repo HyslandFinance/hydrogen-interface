@@ -3,10 +3,8 @@ import { useMemo } from 'react'
 import { RouterPreference } from 'state/routing/slice'
 import { InterfaceTrade, TradeState } from 'state/routing/types'
 import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
-import { useClientSideRouter } from 'state/user/hooks'
 
 import useAutoRouterSupported from './useAutoRouterSupported'
-import { useClientSideV3Trade } from './useClientSideV3Trade'
 import useDebounce from './useDebounce'
 import useIsWindowVisible from './useIsWindowVisible'
 
@@ -54,9 +52,9 @@ export function useBestTrade(
   // only return gas estimate from api if routing api trade is used
   return useMemo(
     () => ({
-      ...(/*useFallback ? bestV3Trade :*/ routingAPITrade),
+      .../*useFallback ? bestV3Trade :*/ routingAPITrade,
       ...(isLoading ? { state: TradeState.LOADING } : {}),
     }),
-    [/*bestV3Trade,*/ isLoading, routingAPITrade/*, useFallback*/]
+    [/*bestV3Trade,*/ isLoading, routingAPITrade /*, useFallback*/]
   )
 }

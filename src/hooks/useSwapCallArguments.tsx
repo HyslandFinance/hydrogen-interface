@@ -1,18 +1,17 @@
+import { Interface } from '@ethersproject/abi'
 import { BigNumber } from '@ethersproject/bignumber'
-import { SwapRouter, Trade } from '@uniswap/router-sdk'
-import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
+import { AddressZero } from '@ethersproject/constants'
+import { Percent } from '@uniswap/sdk-core'
 import { FeeOptions } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
-import { useMemo } from 'react'
 import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
+import HydrogenNucleusHelper from 'lib/utils/HydrogenNucleusHelper'
+import { useMemo } from 'react'
 
 import { useArgentWalletContract } from './useArgentWalletContract'
 import useENS from './useENS'
 import { SignatureData } from './useERC20Permit'
-import { ethers } from 'ethers'
-import HydrogenNucleusHelper from 'lib/utils/HydrogenNucleusHelper'
-const { AddressZero } = ethers.constants
 
 interface SwapCall {
   address: string
@@ -42,7 +41,7 @@ export function useSwapCallArguments(
   const argentWalletContract = useArgentWalletContract()
 
   const nucleusAddress = chainId ? HYDROGEN_NUCLEUS_ADDRESSES[chainId] : undefined
-  const nucleusInterface = useMemo(() => new ethers.utils.Interface(nucleusAbi), [nucleusAbi])
+  const nucleusInterface = useMemo(() => new Interface(nucleusAbi), [nucleusAbi])
 
   return useMemo(() => {
     if (!trade || !recipient || !provider || !account || !chainId || !deadline || !nucleusAddress) return []
@@ -53,24 +52,26 @@ export function useSwapCallArguments(
     const hydrogenRoute = route.hydrogenRoute
     const paths = hydrogenRoute.paths
     // null case
-    if(!paths || paths.length == 0) {
+    if (!paths || paths.length == 0) {
       return []
     }
     // single hop case
-    else if(paths.length == 1 && paths[0].hops.length == 1) {
+    else if (paths.length == 1 && paths[0].hops.length == 1) {
       const hop = paths[0].hops[0]
-      const calldata = nucleusInterface.encodeFunctionData("executeMarketOrder", [{
-        poolID: hop.poolID,
-        tokenA: paths[0].tokenList[1],
-        tokenB: paths[0].tokenList[0],
-        amountA: hop.amountAMT,
-        amountB: hop.amountBMT,
-        locationA: userExternalLocation,
-        locationB: userExternalLocation,
-        flashSwapCallee: AddressZero,
-        callbackData: "0x"
-      }])
-      const value = "0"
+      const calldata = nucleusInterface.encodeFunctionData('executeMarketOrder', [
+        {
+          poolID: hop.poolID,
+          tokenA: paths[0].tokenList[1],
+          tokenB: paths[0].tokenList[0],
+          amountA: hop.amountAMT,
+          amountB: hop.amountBMT,
+          locationA: userExternalLocation,
+          locationB: userExternalLocation,
+          flashSwapCallee: AddressZero,
+          callbackData: '0x',
+        },
+      ])
+      const value = '0'
       return [
         {
           address: nucleusAddress,
@@ -82,36 +83,48 @@ export function useSwapCallArguments(
     // multi hop case
     else {
       const txdatas = []
-      txdatas.push(nucleusInterface.encodeFunctionData("tokenTransfer", [{
-        token: route.inputAmount.currency.tokenInfo.address,
-        amount: hydrogenRoute.swapType == "exactIn" ? hydrogenRoute.amount : hydrogenRoute.quote,
-        src: userExternalLocation,
-        dst: userInternalLocation
-      }]))
-      for(const path of paths) {
-        for(let hopIndex = 0; hopIndex < path.hops.length; hopIndex++) {
+      txdatas.push(
+        nucleusInterface.encodeFunctionData('tokenTransfer', [
+          {
+            token: route.inputAmount.currency.tokenInfo.address,
+            amount: hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.amount : hydrogenRoute.quote,
+            src: userExternalLocation,
+            dst: userInternalLocation,
+          },
+        ])
+      )
+      for (const path of paths) {
+        for (let hopIndex = 0; hopIndex < path.hops.length; hopIndex++) {
           const hop = path.hops[hopIndex]
-          txdatas.push(nucleusInterface.encodeFunctionData("executeMarketOrder", [{
-            poolID: hop.poolID,
-            tokenA: path.tokenList[hopIndex+1],
-            tokenB: path.tokenList[hopIndex],
-            amountA: hop.amountAMT,
-            amountB: hop.amountBMT,
-            locationA: userInternalLocation,
-            locationB: userInternalLocation,
-            flashSwapCallee: AddressZero,
-            callbackData: "0x"
-          }]))
+          txdatas.push(
+            nucleusInterface.encodeFunctionData('executeMarketOrder', [
+              {
+                poolID: hop.poolID,
+                tokenA: path.tokenList[hopIndex + 1],
+                tokenB: path.tokenList[hopIndex],
+                amountA: hop.amountAMT,
+                amountB: hop.amountBMT,
+                locationA: userInternalLocation,
+                locationB: userInternalLocation,
+                flashSwapCallee: AddressZero,
+                callbackData: '0x',
+              },
+            ])
+          )
         }
       }
-      txdatas.push(nucleusInterface.encodeFunctionData("tokenTransfer", [{
-        token: route.outputAmount.currency.tokenInfo.address,
-        amount: hydrogenRoute.swapType == "exactIn" ? hydrogenRoute.quote : hydrogenRoute.amount,
-        src: userInternalLocation,
-        dst: userExternalLocation
-      }]))
-      const calldata = nucleusInterface.encodeFunctionData("multicall", [txdatas])
-      const value = "0"
+      txdatas.push(
+        nucleusInterface.encodeFunctionData('tokenTransfer', [
+          {
+            token: route.outputAmount.currency.tokenInfo.address,
+            amount: hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.quote : hydrogenRoute.amount,
+            src: userInternalLocation,
+            dst: userExternalLocation,
+          },
+        ])
+      )
+      const calldata = nucleusInterface.encodeFunctionData('multicall', [txdatas])
+      const value = '0'
       return [
         {
           address: nucleusAddress,

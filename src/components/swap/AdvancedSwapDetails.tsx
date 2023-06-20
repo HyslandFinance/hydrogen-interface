@@ -9,12 +9,11 @@ import { useMemo } from 'react'
 import { InterfaceTrade } from 'state/routing/types'
 import styled, { useTheme } from 'styled-components/macro'
 
-import { Separator, ThemedText } from '../../theme'
+import { ThemedText } from '../../theme'
 import { computeRealizedPriceImpact } from '../../utils/prices'
 import { AutoColumn } from '../Column'
 import { RowBetween, RowFixed } from '../Row'
 import { MouseoverTooltip } from '../Tooltip'
-import FormattedPriceImpact from './FormattedPriceImpact'
 
 const StyledCard = styled(Card)`
   padding: 0;
@@ -89,6 +88,7 @@ export function AdvancedSwapDetails({
             </ThemedText.DeprecatedBlack>
           </TextWithLoadingPlaceholder>
         </RowBetween>
+        {/*
         <RowBetween>
           <RowFixed>
             <MouseoverTooltip
@@ -96,7 +96,7 @@ export function AdvancedSwapDetails({
               disableHover={hideInfoTooltips}
             >
               <ThemedText.DeprecatedSubHeader color={theme.textPrimary}>
-                <Trans>Price Impact</Trans>
+                <Trans>Price Impact*</Trans>
               </ThemedText.DeprecatedSubHeader>
             </MouseoverTooltip>
           </RowFixed>
@@ -136,6 +136,7 @@ export function AdvancedSwapDetails({
             </ThemedText.DeprecatedBlack>
           </TextWithLoadingPlaceholder>
         </RowBetween>
+        */}
         {!trade?.gasUseEstimateUSD || !chainId || !SUPPORTED_GAS_ESTIMATE_CHAIN_IDS.includes(chainId) ? null : (
           <RowBetween>
             <MouseoverTooltip
