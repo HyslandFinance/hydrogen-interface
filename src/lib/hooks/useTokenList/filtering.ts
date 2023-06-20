@@ -27,7 +27,7 @@ export function getTokenFilter<T extends Token | TokenInfo>(query: string): (tok
       .split(/\s+/)
       .filter((s) => s.length > 0)
 
-    return queryParts.every((p) => p.length === 0 || parts.some((sp) => sp.startsWith(p) || sp.endsWith(p)))
+    return queryParts.every((p) => p.length === 0 || parts.some((sp) => sp.includes(p)))
   }
 
   return ({ name, symbol }: T | NativeCurrency): boolean => Boolean((symbol && match(symbol)) || (name && match(name)))

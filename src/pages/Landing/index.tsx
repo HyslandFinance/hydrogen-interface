@@ -279,7 +279,6 @@ export default function Landing() {
 
   const cardsRef = useRef<HTMLDivElement>(null)
 
-  const [showContent, setShowContent] = useState(false)
   const selectedWallet = useAppSelector((state) => state.user.selectedWallet)
   const navigate = useNavigate()
   const location = useLocation()
@@ -287,83 +286,72 @@ export default function Landing() {
     ignoreQueryPrefix: true,
   })
 
-  // This can be simplified significantly once the flag is removed! For now being explicit is clearer.
-  useEffect(() => {
-    if (queryParams.intro || !selectedWallet) {
-      setShowContent(true)
-    } else {
-      navigate('/swap')
-    }
-  }, [navigate, selectedWallet, queryParams.intro])
-
   return (
     <Trace page={PageName.LANDING_PAGE} shouldLogImpression={false}>
-      {showContent && (
-        <PageContainer isDarkMode={isDarkMode} data-testid="landing-page">
-          <LandingSwapContainer>
+      <PageContainer isDarkMode={isDarkMode} data-testid="landing-page">
+        <LandingSwapContainer>
+          <TraceEvent
+            events={[BrowserEvent.onClick]}
+            name={EventName.ELEMENT_CLICKED}
+            element={ElementName.LANDING_PAGE_SWAP_ELEMENT}
+          >
+            <Link to="/trade">
+              <LandingSwap />
+            </Link>
+          </TraceEvent>
+        </LandingSwapContainer>
+        <Gradient isDarkMode={isDarkMode} />
+        <GlowContainer>
+          <Glow />
+        </GlowContainer>
+        <ContentContainer isDarkMode={isDarkMode}>
+          <TitleText isDarkMode={isDarkMode}>Trade crypto with confidence</TitleText>
+          <SubTextContainer>
+            <SubText>Buy, sell, and explore tokens</SubText>
+          </SubTextContainer>
+          <ActionsContainer>
             <TraceEvent
               events={[BrowserEvent.onClick]}
               name={EventName.ELEMENT_CLICKED}
-              element={ElementName.LANDING_PAGE_SWAP_ELEMENT}
+              element={ElementName.CONTINUE_BUTTON}
             >
-              <Link to="/swap">
-                <LandingSwap />
-              </Link>
+              <ButtonCTA as={Link} to="/trade">
+                <ButtonCTAText>Get started</ButtonCTAText>
+              </ButtonCTA>
             </TraceEvent>
-          </LandingSwapContainer>
-          <Gradient isDarkMode={isDarkMode} />
-          <GlowContainer>
-            <Glow />
-          </GlowContainer>
-          <ContentContainer isDarkMode={isDarkMode}>
-            <TitleText isDarkMode={isDarkMode}>Trade crypto with confidence</TitleText>
-            <SubTextContainer>
-              <SubText>Buy, sell, and explore tokens</SubText>
-            </SubTextContainer>
-            <ActionsContainer>
-              <TraceEvent
-                events={[BrowserEvent.onClick]}
-                name={EventName.ELEMENT_CLICKED}
-                element={ElementName.CONTINUE_BUTTON}
-              >
-                <ButtonCTA as={Link} to="/swap">
-                  <ButtonCTAText>Get started</ButtonCTAText>
-                </ButtonCTA>
-              </TraceEvent>
-            </ActionsContainer>
-            <LearnMoreContainer
-              onClick={() => {
-                cardsRef?.current?.scrollIntoView({ behavior: 'smooth' })
-              }}
-            >
-              <Trans>Learn more</Trans>
-              <LearnMoreArrow />
-            </LearnMoreContainer>
-          </ContentContainer>
-          <AboutContentContainer isDarkMode={isDarkMode}>
-            <CardGrid cols={2} ref={cardsRef}>
-              {MAIN_CARDS.map(({ darkBackgroundImgSrc, lightBackgroundImgSrc, ...card }) => (
-                <Card
-                  {...card}
-                  backgroundImgSrc={isDarkMode ? darkBackgroundImgSrc : lightBackgroundImgSrc}
-                  key={card.title}
-                />
-              ))}
-            </CardGrid>
-            {/*
-            <CardGrid cols={3}>
-              {MORE_CARDS.map(({ darkIcon, lightIcon, ...card }) => (
-                <Card {...card} icon={isDarkMode ? darkIcon : lightIcon} key={card.title} type={CardType.Secondary} />
-              ))}
-            </CardGrid>
-            */}
-            {/*
-            <ProtocolBanner />
-            <AboutFooter />
-            */}
-          </AboutContentContainer>
-        </PageContainer>
-      )}
+          </ActionsContainer>
+          <LearnMoreContainer
+            onClick={() => {
+              cardsRef?.current?.scrollIntoView({ behavior: 'smooth' })
+            }}
+          >
+            <Trans>Learn more</Trans>
+            <LearnMoreArrow />
+          </LearnMoreContainer>
+        </ContentContainer>
+        <AboutContentContainer isDarkMode={isDarkMode}>
+          <CardGrid cols={2} ref={cardsRef}>
+            {MAIN_CARDS.map(({ darkBackgroundImgSrc, lightBackgroundImgSrc, ...card }) => (
+              <Card
+                {...card}
+                backgroundImgSrc={isDarkMode ? darkBackgroundImgSrc : lightBackgroundImgSrc}
+                key={card.title}
+              />
+            ))}
+          </CardGrid>
+          {/*
+          <CardGrid cols={3}>
+            {MORE_CARDS.map(({ darkIcon, lightIcon, ...card }) => (
+              <Card {...card} icon={isDarkMode ? darkIcon : lightIcon} key={card.title} type={CardType.Secondary} />
+            ))}
+          </CardGrid>
+          */}
+          {/*
+          <ProtocolBanner />
+          <AboutFooter />
+          */}
+        </AboutContentContainer>
+      </PageContainer>
     </Trace>
   )
 }

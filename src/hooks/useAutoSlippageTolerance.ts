@@ -18,53 +18,24 @@ const ONE_TENTHS_PERCENT = new Percent(10, 10_000) // .10%
 const DEFAULT_AUTO_SLIPPAGE = ONE_TENTHS_PERCENT
 const GAS_ESTIMATE_BUFFER = new Percent(10, 100) // 10%
 
-// Base costs regardless of how many hops in the route
-const V3_SWAP_BASE_GAS_ESTIMATE = 100_000
-const V2_SWAP_BASE_GAS_ESTIMATE = 135_000
-
-// Extra cost per hop in the route
-const V3_SWAP_HOP_GAS_ESTIMATE = 70_000
-const V2_SWAP_HOP_GAS_ESTIMATE = 50_000
+const SINGLE_HOP_GAS_ESTIMATE = 140_000
+const MULTI_HOP_GAS_BASE_ESTIMATE = 40_000
+const MULTI_HOP_GAS_PER_HOP_ESTIMATE = 90_000
 
 /**
  * Return a guess of the gas cost used in computing slippage tolerance for a given trade
  * @param trade the trade for which to _guess_ the amount of gas it would cost to execute
- *
- * V3 logic is inspired by:
- * https://github.com/Uniswap/smart-order-router/blob/main/src/routers/alpha-router/gas-models/v3/v3-heuristic-gas-model.ts
- * V2 logic is inspired by:
- * https://github.com/Uniswap/smart-order-router/blob/main/src/routers/alpha-router/gas-models/v2/v2-heuristic-gas-model.ts
  */
-function guesstimateGas(trade: Trade<Currency, Currency, TradeType> | undefined): number | undefined {
-  if (trade) {
-    let gas = 0
-    for (const { route } of trade.swaps) {
-      if (route.protocol === Protocol.V2) {
-        gas += V2_SWAP_BASE_GAS_ESTIMATE + route.pools.length * V2_SWAP_HOP_GAS_ESTIMATE
-      } else if (route.protocol === Protocol.V3) {
-        // V3 gas costs scale on initialized ticks being crossed, but we don't have that data here.
-        // We bake in some tick crossings into the base 100k cost.
-        gas += V3_SWAP_BASE_GAS_ESTIMATE + route.pools.length * V3_SWAP_HOP_GAS_ESTIMATE
-      } else if (route.protocol === Protocol.MIXED) {
-        const sections = partitionMixedRouteByProtocol(route as MixedRoute<Currency, Currency>)
-        gas += sections.reduce((gas, section) => {
-          if (section.every((pool) => pool instanceof Pool)) {
-            return gas + V3_SWAP_BASE_GAS_ESTIMATE + section.length * V3_SWAP_HOP_GAS_ESTIMATE
-          } else if (section.every((pool) => pool instanceof Pair)) {
-            return gas + V2_SWAP_BASE_GAS_ESTIMATE + (section.length - 1) * V2_SWAP_HOP_GAS_ESTIMATE
-          } else {
-            console.warn('Invalid section')
-            return gas
-          }
-        }, 0)
-      } else {
-        // fallback general gas estimation
-        gas += V3_SWAP_BASE_GAS_ESTIMATE + route.pools.length * V3_SWAP_HOP_GAS_ESTIMATE
-      }
-    }
-    return gas
-  }
-  return undefined
+//function guesstimateGas(trade: Trade<Currency, Currency, TradeType> | undefined): number | undefined {
+function guesstimateGas(trade: any | undefined): number | undefined {
+  if(!trade) return undefined
+  const paths = trade.route.hydrogenRoute
+  // single hop: 140k
+  if(paths.length == 1 && paths[0].hops.length == 1) return SINGLE_HOP_GAS_ESTIMATE
+  // multihop: 40k + num hops * 90k
+  let numHops = 0
+  for(const path of paths) numHops += path.hops.length
+  return MULTI_HOP_GAS_BASE_ESTIMATE + MULTI_HOP_GAS_PER_HOP_ESTIMATE * numHops
 }
 
 const MIN_AUTO_SLIPPAGE_TOLERANCE = new Percent(5, 1000) // 0.5%

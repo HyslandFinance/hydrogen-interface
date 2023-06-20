@@ -1,7 +1,7 @@
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, Token, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
-import { SWAP_ROUTER_ADDRESSES } from 'constants/addresses'
+import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
 import { useMemo } from 'react'
 
 import { useApproval } from '../useApproval'
@@ -19,7 +19,7 @@ export default function useSwapApproval(
     () => amount || (trade && trade.inputAmount.currency.isToken ? trade.maximumAmountIn(allowedSlippage) : undefined),
     [amount, trade, allowedSlippage]
   )
-  const spender = chainId ? SWAP_ROUTER_ADDRESSES[chainId] : undefined
+  const spender = chainId ? HYDROGEN_NUCLEUS_ADDRESSES[chainId] : undefined
 
   return useApproval(amountToApprove, spender, useIsPendingApproval)
 }

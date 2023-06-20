@@ -23,7 +23,8 @@ export function useRoutingAPITrade<TTradeType extends TradeType>(
   tradeType: TTradeType,
   amountSpecified: CurrencyAmount<Currency> | undefined,
   otherCurrency: Currency | undefined,
-  routerPreference: RouterPreference
+  routerPreference: RouterPreference,
+  estimateGas: boolean = true
 ): {
   state: TradeState
   trade: InterfaceTrade<Currency, Currency, TTradeType> | undefined
@@ -57,7 +58,10 @@ export function useRoutingAPITrade<TTradeType extends TradeType>(
   )
 
   // get USD gas cost of trade in active chains stablecoin amount
-  const gasUseEstimateUSD = useStablecoinAmountFromFiatValue(quoteResult?.gasUseEstimateUSD) ?? null
+  const gasUseEstimateUSD = (estimateGas
+    ? (useStablecoinAmountFromFiatValue(quoteResult?.gasUseEstimateUSD) ?? null)
+    : undefined
+  )
 
   const isSyncing = currentData !== data
 
@@ -116,18 +120,5 @@ export function useRoutingAPITrade<TTradeType extends TradeType>(
     queryArgs,
     gasUseEstimateUSD,
     isSyncing,
-  ])
+  ]) as any
 }
-
-// only want to enable this when app hook called
-class GAMetric extends IMetric {
-  putDimensions() {
-    return
-  }
-
-  putMetric(key: string, value: number, unit?: MetricLoggerUnit) {
-    sendTiming('Routing API', `${key} | ${unit}`, value, 'client')
-  }
-}
-
-setGlobalMetric(new GAMetric())

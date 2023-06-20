@@ -30,7 +30,8 @@ export default function useStablecoinPrice(currency?: Currency): Price<Currency,
   const amountOut = chainId ? STABLECOIN_AMOUNT_OUT[chainId] : undefined
   const stablecoin = amountOut?.currency
 
-  const { trade } = useRoutingAPITrade(TradeType.EXACT_OUTPUT, amountOut, currency, RouterPreference.PRICE)
+  const { trade } = useRoutingAPITrade(TradeType.EXACT_OUTPUT, amountOut, currency, RouterPreference.API, false)// RouterPreference.PRICE)
+
   const price = useMemo(() => {
     if (!currency || !stablecoin) {
       return undefined
@@ -42,7 +43,9 @@ export default function useStablecoinPrice(currency?: Currency): Price<Currency,
     }
 
     if (trade) {
-      const { numerator, denominator } = trade.routes[0].midPrice
+      const frac = trade.outputAmount.divide(trade.inputAmount)
+      const numerator = frac.numerator
+      const denominator = frac.denominator
       return new Price(currency, stablecoin, denominator, numerator)
     }
 

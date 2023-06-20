@@ -30,9 +30,8 @@ function getRouter(chainId: ChainId): AlphaRouter {
   throw new Error(`Router does not support this chain (chainId: ${chainId}).`)
 }
 
-// routing API quote params: https://github.com/Uniswap/routing-api/blob/main/lib/handlers/quote/schema/quote-schema.ts
 const API_QUERY_PARAMS = {
-  protocols: 'v2,v3,mixed',
+  protocols: 'hydrogen',
 }
 const CLIENT_PARAMS = {
   protocols: [Protocol.V2, Protocol.V3, Protocol.MIXED],
@@ -67,7 +66,7 @@ const PRICE_PARAMS = {
 export const routingApi = createApi({
   reducerPath: 'routingApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'https://api.uniswap.org/v1/',
+    baseUrl: 'https://router.hydrogendefi.xyz/route/',
   }),
   endpoints: (build) => ({
     getQuote: build.query<
@@ -89,21 +88,18 @@ export const routingApi = createApi({
       async queryFn(args, _api, _extraOptions, fetch) {
         const { tokenInAddress, tokenInChainId, tokenOutAddress, tokenOutChainId, amount, routerPreference, type } =
           args
-
         let result
-
         try {
           if (routerPreference === RouterPreference.API) {
             const query = qs.stringify({
               ...API_QUERY_PARAMS,
+              chainID: tokenInChainId,
               tokenInAddress,
-              tokenInChainId,
               tokenOutAddress,
-              tokenOutChainId,
               amount,
-              type,
+              swapType: type,
             })
-            result = await fetch(`quote?${query}`)
+            result = await fetch(`?${query}`)
           } else {
             const router = getRouter(args.tokenInChainId)
             result = await getClientSideQuote(

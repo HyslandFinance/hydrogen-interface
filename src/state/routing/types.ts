@@ -64,8 +64,9 @@ export interface GetQuoteResult {
   quoteDecimals: string
   quoteGasAdjusted: string
   quoteGasAdjustedDecimals: string
-  route: Array<(V3PoolInRoute | V2PoolInRoute)[]>
-  routeString: string
+  protocol: string
+  swapType: string
+  paths: any[]
 }
 
 export class InterfaceTrade<
@@ -99,6 +100,7 @@ export class InterfaceTrade<
       inputAmount: CurrencyAmount<TInput>
       outputAmount: CurrencyAmount<TOutput>
     }[]
+    tokenFlowRoute?: any
   }) {
     super(routes)
     this.blockNumber = blockNumber
