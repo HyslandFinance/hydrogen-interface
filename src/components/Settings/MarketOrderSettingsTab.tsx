@@ -120,7 +120,7 @@ const ModalContentWrapper = styled.div`
   border-radius: 20px;
 `
 
-export default function SettingsTab({ placeholderSlippage }: { placeholderSlippage: Percent }) {
+export default function MarketOrderSettingsTab({ placeholderSlippage }: { placeholderSlippage: Percent }) {
   const { chainId } = useWeb3React()
 
   const node = useRef<HTMLDivElement | null>(null)

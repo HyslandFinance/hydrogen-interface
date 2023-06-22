@@ -46,8 +46,9 @@ export function useMarketOrderCallArguments(
 
   return useMemo(() => {
     if (!trade || !recipient || !provider || !account || !chainId || !deadline || !nucleusAddress) return []
-    const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(recipient)
-    const userInternalLocation = HydrogenNucleusHelper.internalAddressToLocation(recipient)
+    const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(account)
+    const userInternalLocation = HydrogenNucleusHelper.internalAddressToLocation(account)
+    const recipientLocation = HydrogenNucleusHelper.externalAddressToLocation(recipient)
 
     const route = trade.route
     const hydrogenRoute = route.hydrogenRoute
@@ -67,7 +68,7 @@ export function useMarketOrderCallArguments(
           amountA: hop.amountAMT,
           amountB: hop.amountBMT,
           locationA: userExternalLocation,
-          locationB: userExternalLocation,
+          locationB: recipientLocation,
           flashSwapCallee: AddressZero,
           callbackData: '0x',
         },
@@ -120,7 +121,7 @@ export function useMarketOrderCallArguments(
             token: route.outputAmount.currency.tokenInfo.address,
             amount: hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.quote : hydrogenRoute.amount,
             src: userInternalLocation,
-            dst: userExternalLocation,
+            dst: recipientLocation,
           },
         ])
       )

@@ -14,7 +14,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { isSupportedChain } from 'constants/chains'
 import { usePermit2Enabled } from 'featureFlags/flags/permit2'
 import usePermit, { PermitState } from 'hooks/usePermit2'
-import { useMarketOrderCallback } from 'hooks/useMarketOrderCallback'
+import { useLimitOrderCallback } from 'hooks/useLimitOrderCallback'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -40,7 +40,7 @@ import { AutoRow } from '../../components/Row'
 import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
 import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
 import { ArrowWrapper, PageWrapper, SwapCallbackError, SwapWrapper } from '../../components/swap/styleds'
-import MarketOrderHeader from '../../components/swap/MarketOrderHeader'
+import LimitOrderHeader from '../../components/swap/LimitOrderHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
 import { useAllTokens, useCurrency } from '../../hooks/Tokens'
@@ -51,13 +51,13 @@ import useIsArgentWallet from '../../hooks/useIsArgentWallet'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import { useStablecoinValue } from '../../hooks/useStablecoinPrice'
 import useWrapCallback, { WrapErrorText, WrapType } from '../../hooks/useWrapCallback'
-import { Field } from '../../state/marketOrder/actions'
+import { Field } from '../../state/limitOrder/actions'
 import {
   useDefaultsFromURLSearch,
-  useDerivedMarketOrderInfo,
-  useMarketOrderActionHandlers,
-  useMarketOrderState,
-} from '../../state/marketOrder/hooks'
+  useDerivedLimitOrderInfo,
+  useLimitOrderActionHandlers,
+  useLimitOrderState,
+} from '../../state/limitOrder/hooks'
 import { useExpertModeManager } from '../../state/user/hooks'
 import { LinkStyledButton, ThemedText } from '../../theme'
 import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceImpact'
@@ -122,12 +122,12 @@ const DetailsSwapSection = styled(SwapSection)`
   border-top-right-radius: 0;
 `
 
-export function getIsValidMarketOrderQuote(
+export function getIsValidLimitOrderQuote(
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined,
   tradeState: TradeState,
-  marketOrderInputError?: ReactNode
+  limitOrderInputError?: ReactNode
 ): boolean {
-  return !!marketOrderInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
+  return !!limitOrderInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
 }
 
 function largerPercentValue(a?: Percent, b?: Percent) {
@@ -141,7 +141,7 @@ function largerPercentValue(a?: Percent, b?: Percent) {
   return undefined
 }
 
-export default function MarketOrderPage({ className }: { className?: string }) {
+export default function LimitOrderPage({ className }: { className?: string }) {
   const navigate = useNavigate()
   const { account, chainId } = useWeb3React()
   const loadedUrlParams = useDefaultsFromURLSearch()
@@ -191,21 +191,22 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   // for expert mode
   const [isExpertMode] = useExpertModeManager()
   // swap state
-  const { independentField, typedValue, recipient } = useMarketOrderState()
+  const { typedValueInput, typedValueOutput, recipient } = useLimitOrderState()
   const {
     trade: { state: tradeState, trade },
     allowedSlippage,
-    currencyBalances,
-    parsedAmount,
     currencies,
-    inputError: marketOrderInputError,
-  } = useDerivedMarketOrderInfo()
+    currencyBalances,
+    parsedAmountInput,
+    parsedAmountOutput,
+    inputError: limitOrderInputError,
+  } = useDerivedLimitOrderInfo()
 
   const {
     wrapType,
     execute: onWrap,
     inputError: wrapInputError,
-  } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue)
+  } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValueInput)
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE
   const { address: recipientAddress } = useENSAddress(recipient)
 
@@ -213,31 +214,25 @@ export default function MarketOrderPage({ className }: { className?: string }) {
     () =>
       showWrap
         ? {
-            [Field.INPUT]: parsedAmount,
-            [Field.OUTPUT]: parsedAmount,
+            [Field.INPUT]: parsedAmountInput,
+            [Field.OUTPUT]: parsedAmountInput,
           }
         : {
-            [Field.INPUT]: independentField === Field.INPUT ? parsedAmount : trade?.inputAmount,
-            [Field.OUTPUT]: independentField === Field.OUTPUT ? parsedAmount : trade?.outputAmount,
+            [Field.INPUT]: parsedAmountInput,
+            [Field.OUTPUT]: parsedAmountOutput,
           },
-    [independentField, parsedAmount, showWrap, trade]
-  )
-
-  const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(
-    () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
-    [trade, tradeState]
+    [parsedAmountInput, parsedAmountOutput, showWrap]
   )
 
   const fiatValueInput = useStablecoinValue(parsedAmounts[Field.INPUT])
   const fiatValueOutput = useStablecoinValue(parsedAmounts[Field.OUTPUT])
   const stablecoinPriceImpact = useMemo(
-    () => (routeIsSyncing ? undefined : computeFiatValuePriceImpact(fiatValueInput, fiatValueOutput)),
-    [fiatValueInput, fiatValueOutput, routeIsSyncing]
+    () => (computeFiatValuePriceImpact(fiatValueInput, fiatValueOutput)),
+    [fiatValueInput, fiatValueOutput]
   )
 
-  const { onSwitchTokens, onCurrencySelection, onUserInput, onChangeRecipient } = useMarketOrderActionHandlers()
-  const isValid = !marketOrderInputError
-  const dependentField: Field = independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT
+  const { onSwitchTokens, onCurrencySelection, onUserInput, onChangeRecipient } = useLimitOrderActionHandlers()
+  const isValid = !limitOrderInputError
 
   const handleTypeInput = useCallback(
     (value: string) => {
@@ -255,7 +250,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   // reset if they close warning without tokens in params
   const handleDismissTokenWarning = useCallback(() => {
     setDismissTokenWarning(true)
-    navigate('/market_order/')
+    navigate('/limit_order/')
   }, [navigate])
 
   // modal and loading
@@ -275,16 +270,14 @@ export default function MarketOrderPage({ className }: { className?: string }) {
 
   const formattedAmounts = useMemo(
     () => ({
-      [independentField]: typedValue,
-      [dependentField]: showWrap
-        ? parsedAmounts[independentField]?.toExact() ?? ''
-        : formatTransactionAmount(currencyAmountToPreciseFloat(parsedAmounts[dependentField])),
+      [Field.INPUT]: typedValueInput,
+      [Field.OUTPUT]: typedValueOutput,
     }),
-    [dependentField, independentField, parsedAmounts, showWrap, typedValue]
+    [parsedAmounts]
   )
 
   const userHasSpecifiedInputOutput = Boolean(
-    currencies[Field.INPUT] && currencies[Field.OUTPUT] && parsedAmounts[independentField]?.greaterThan(JSBI.BigInt(0))
+    currencies[Field.INPUT] && currencies[Field.OUTPUT] && parsedAmounts[Field.INPUT]?.greaterThan(JSBI.BigInt(0)) && parsedAmounts[Field.OUTPUT]?.greaterThan(JSBI.BigInt(0))
   )
 
   const permit2Enabled = usePermit2Enabled()
@@ -367,7 +360,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
 
   // the callback to execute the swap
-  const { callback: swapCallback, error: swapCallbackError } = useMarketOrderCallback(
+  const { callback: swapCallback, error: swapCallbackError } = useLimitOrderCallback(
     trade,
     allowedSlippage,
     recipient,
@@ -413,8 +406,8 @@ export default function MarketOrderPage({ className }: { className?: string }) {
 
   // warnings on the greater of fiat value price impact and execution price impact
   const { priceImpactSeverity, largerPriceImpact } = useMemo(() => {
-    const marketPriceImpact = trade?.priceImpact ? computeRealizedPriceImpact(trade) : undefined
-    const largerPriceImpact = largerPercentValue(marketPriceImpact, stablecoinPriceImpact)
+    const limitPriceImpact = trade?.priceImpact ? computeRealizedPriceImpact(trade) : undefined
+    const largerPriceImpact = largerPercentValue(limitPriceImpact, stablecoinPriceImpact)
     return { priceImpactSeverity: warningSeverity(largerPriceImpact), largerPriceImpact }
   }, [stablecoinPriceImpact, trade])
 
@@ -425,7 +418,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   const showApproveFlow =
     !permit2Enabled &&
     !isArgentWallet &&
-    !marketOrderInputError &&
+    !limitOrderInputError &&
     (approvalState === ApprovalState.NOT_APPROVED ||
       approvalState === ApprovalState.PENDING ||
       (approvalSubmitted && approvalState === ApprovalState.APPROVED)) &&
@@ -478,15 +471,8 @@ export default function MarketOrderPage({ className }: { className?: string }) {
       // New quote is not being fetched, so set start time of quote fetch to undefined.
       setFetchingSwapQuoteStartTime(undefined)
     }
-    // If another swap quote is being loaded based on changed user inputs:
-    if (routeIsLoading) {
-      setNewSwapQuoteNeedsLogging(true)
-      if (!fetchingSwapQuoteStartTime) setFetchingSwapQuoteStartTime(now)
-    }
   }, [
     newSwapQuoteNeedsLogging,
-    routeIsSyncing,
-    routeIsLoading,
     fetchingSwapQuoteStartTime,
     trade,
     setSwapQuoteReceivedDate,
@@ -496,26 +482,8 @@ export default function MarketOrderPage({ className }: { className?: string }) {
     approvalState !== ApprovalState.NOT_APPROVED || approvalSubmitted || signatureState === UseERC20PermitState.SIGNED
 
   const showDetailsDropdown = Boolean(
-    !showWrap && userHasSpecifiedInputOutput && (trade || routeIsLoading || routeIsSyncing)
+    !showWrap && userHasSpecifiedInputOutput && (trade)// || routeIsLoading || routeIsSyncing)
   )
-
-  const navigateToLimitOrder = useCallback(() => {
-    const params = []
-    if(currencies.INPUT) {
-      const currency = currencies.INPUT as any
-      const address = currency?.tokenInfo?.address || currency?._checksummedAddress
-      if(address) params.push(`inputCurrency=${address}`)
-    }
-    if(currencies.OUTPUT) {
-      const currency = currencies.OUTPUT as any
-      const address = currency?.tokenInfo?.address || currency?._checksummedAddress
-      if(address) params.push(`outputCurrency=${address}`)
-    }
-    if(formattedAmounts.INPUT) params.push(`exactAmountInput=${formattedAmounts.INPUT}`)
-    if(formattedAmounts.OUTPUT) params.push(`exactAmountOutput=${formattedAmounts.OUTPUT}`)
-    const link = `/limit_order?${params.join('&')}`
-    navigate(link)
-  }, [navigate, currencies, formattedAmounts])
 
   return (
     <Trace page={PageName.SWAP_PAGE} shouldLogImpression={false}>
@@ -530,7 +498,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
         />
         <PageWrapper>
           <SwapWrapper className={className} id="swap-page">
-            <MarketOrderHeader allowedSlippage={allowedSlippage} />
+            <LimitOrderHeader allowedSlippage={allowedSlippage}/>
             <ConfirmSwapModal
               isOpen={showConfirm}
               trade={trade}
@@ -552,13 +520,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
               <SwapSection>
                 <Trace section={SectionName.CURRENCY_INPUT_PANEL} shouldLogImpression={false}>
                   <SwapCurrencyInputPanel
-                    label={
-                      independentField === Field.OUTPUT && !showWrap ? (
-                        <Trans>From (at most)</Trans>
-                      ) : (
-                        <Trans>From</Trans>
-                      )
-                    }
+                    label={<Trans>From</Trans>}
                     value={formattedAmounts[Field.INPUT]}
                     showMaxButton={showMaxButton}
                     currency={currencies[Field.INPUT] ?? null}
@@ -569,7 +531,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                     otherCurrency={currencies[Field.OUTPUT]}
                     showCommonBases={true}
                     id={SectionName.CURRENCY_INPUT_PANEL}
-                    loading={independentField === Field.OUTPUT && routeIsSyncing}
+                    loading={false}
                   />
                 </Trace>
               </SwapSection>
@@ -603,9 +565,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                     <SwapCurrencyInputPanel
                       value={formattedAmounts[Field.OUTPUT]}
                       onUserInput={handleTypeOutput}
-                      label={
-                        independentField === Field.INPUT && !showWrap ? <Trans>To (at least)</Trans> : <Trans>To</Trans>
-                      }
+                      label={<Trans>To</Trans>}
                       showMaxButton={false}
                       hideBalance={false}
                       fiatValue={fiatValueOutput ?? undefined}
@@ -615,7 +575,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                       otherCurrency={currencies[Field.INPUT]}
                       showCommonBases={true}
                       id={SectionName.CURRENCY_OUTPUT_PANEL}
-                      loading={independentField === Field.INPUT && routeIsSyncing}
+                      loading={false}
                     />
                   </Trace>
 
@@ -637,8 +597,8 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                   <DetailsSwapSection>
                     <SwapDetailsDropdown
                       trade={trade}
-                      syncing={routeIsSyncing}
-                      loading={routeIsLoading}
+                      syncing={false}
+                      loading={false}
                       allowedSlippage={allowedSlippage}
                     />
                   </DetailsSwapSection>
@@ -656,7 +616,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                   <TraceEvent
                     events={[BrowserEvent.onClick]}
                     name={EventName.CONNECT_WALLET_BUTTON_CLICKED}
-                    properties={{ received_swap_quote: getIsValidMarketOrderQuote(trade, tradeState, marketOrderInputError) }}
+                    properties={{ received_swap_quote: getIsValidLimitOrderQuote(trade, tradeState, limitOrderInputError) }}
                     element={ElementName.CONNECT_WALLET_BUTTON}
                   >
                     <ButtonLight onClick={toggleWalletModal} fontWeight={600}>
@@ -673,18 +633,6 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                       <Trans>Unwrap</Trans>
                     ) : null}
                   </ButtonPrimary>
-                ) : routeNotFound && userHasSpecifiedInputOutput && !routeIsLoading && !routeIsSyncing ? (
-                  <>
-                    <GrayCard style={{ textAlign: 'center' }}>
-                      <ThemedText.DeprecatedMain mb="4px">
-                        <Trans>Insufficient liquidity for this market order.</Trans>
-                      </ThemedText.DeprecatedMain>
-                    </GrayCard>
-                    <div style={{height:"12px"}}/>
-                    <ButtonPrimary onClick={navigateToLimitOrder} fontWeight={600}>
-                      <Trans>Create a limit order instead</Trans>
-                    </ButtonPrimary>
-                  </>
                 ) : showApproveFlow ? (
                   <AutoRow style={{ flexWrap: 'nowrap', width: '100%' }}>
                     <AutoColumn style={{ width: '100%' }} gap="12px">
@@ -747,8 +695,6 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                         id="swap-button"
                         disabled={
                           !isValid ||
-                          routeIsSyncing ||
-                          routeIsLoading ||
                           (approvalState !== ApprovalState.APPROVED && signatureState !== UseERC20PermitState.SIGNED) ||
                           priceImpactTooHigh
                         }
@@ -833,22 +779,14 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                     id="swap-button"
                     disabled={
                       !isValid ||
-                      routeIsSyncing ||
-                      routeIsLoading ||
                       priceImpactTooHigh ||
                       (permit2Enabled ? permit.state === PermitState.LOADING : Boolean(swapCallbackError))
                     }
                     error={isValid && priceImpactSeverity > 2 && (permit2Enabled || !swapCallbackError)}
                   >
                     <Text fontSize={20} fontWeight={600}>
-                      {marketOrderInputError ? (
-                        marketOrderInputError
-                      ) : routeIsSyncing || routeIsLoading ? (
-                        <Trans>Swap</Trans>
-                      ) : priceImpactTooHigh ? (
-                        <Trans>Price Impact Too High</Trans>
-                      ) : priceImpactSeverity > 2 ? (
-                        <Trans>Swap Anyway</Trans>
+                      {limitOrderInputError ? (
+                        limitOrderInputError
                       ) : (
                         <Trans>Swap</Trans>
                       )}

@@ -12,7 +12,7 @@ import { ThemedText } from 'theme'
 import { flexRowNoWrap } from 'theme/styles'
 
 import Row, { RowBetween } from '../Row'
-import SettingsTab from '../Settings'
+import MarketOrderSettingsTab from '../Settings/MarketOrderSettingsTab'
 
 const Tabs = styled.div`
   ${flexRowNoWrap};
@@ -80,7 +80,7 @@ export function AddRemoveTabs({
     : '/pool' + (positionID ? `/${positionID.toString()}` : '')
   */
   const poolLink = '/pool'
-  
+
   return (
     <Tabs>
       <RowBetween style={{ padding: '1rem 1rem 0 1rem' }}>
@@ -111,7 +111,7 @@ export function AddRemoveTabs({
           )}
         </ThemedText.DeprecatedMediumHeader>
         <Box style={{ marginRight: '.5rem' }}>{children}</Box>
-        <SettingsTab placeholderSlippage={defaultSlippage} />
+        <MarketOrderSettingsTab placeholderSlippage={defaultSlippage} />
       </RowBetween>
     </Tabs>
   )

@@ -1,9 +1,9 @@
-import { Currency, CurrencyAmount, Fraction, Percent, Price, Token, TradeType } from '@uniswap/sdk-core'
+import { Currency, CurrencyAmount, Fraction, NativeCurrency, Percent, Price, Token, TradeType } from '@uniswap/sdk-core'
 import { BIG_INT_ZERO, BIG_INT_ONE } from './../../constants/misc'
 
 import invariant from 'tiny-invariant'
 
-export class HydrogenMarketOrder<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType> {
+export class HydrogenLimitOrder<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType> {
   public readonly route: any
   public readonly tradeType: TTradeType
   public readonly orderType: string
@@ -20,25 +20,16 @@ export class HydrogenMarketOrder<TInput extends Currency, TOutput extends Curren
     outputAmount: CurrencyAmount<TOutput>
   }[]
 
-  public constructor({
-    paths,
-    tradeType,
-    gasUseEstimateUSD,
-    blockNumber,
-  }: {
-    paths: any[]
-    tradeType: TTradeType
-    gasUseEstimateUSD?: CurrencyAmount<Token> | undefined | null
-    blockNumber?: string | null | undefined
-  }) {
-    this.orderType = "MarketOrder"
+  public constructor(
+    amountInput: CurrencyAmount<NativeCurrency | Token> | undefined,//CurrencyAmount<Currency>,
+    amountOutput: CurrencyAmount<NativeCurrency | Token> | undefined
+  ) {
+    this.orderType = "LimitOrder"
     this.swaps = []
-    this.route = paths[0]
-    this.tradeType = tradeType
-    this._inputAmount = this.route.inputAmount
-    this._outputAmount = this.route.outputAmount
-
-    // TODO: checks
+    this.route = []
+    this.tradeType = TradeType.EXACT_INPUT as TTradeType
+    this._inputAmount = amountInput as CurrencyAmount<TInput>
+    this._outputAmount = amountOutput as CurrencyAmount<TOutput>
   }
 
   public get inputAmount(): CurrencyAmount<TInput> {

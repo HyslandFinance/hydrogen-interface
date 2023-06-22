@@ -4,28 +4,28 @@ import styled from 'styled-components/macro'
 
 import { ThemedText } from '../../theme'
 import { RowBetween, RowFixed } from '../Row'
-import SettingsTab from '../Settings'
+import LimitOrderSettingsTab from '../Settings/LimitOrderSettingsTab'
 
-const StyledSwapHeader = styled.div`
+const StyledLimitOrderHeader = styled.div`
   padding: 8px 12px;
   margin-bottom: 8px;
   width: 100%;
   color: ${({ theme }) => theme.textSecondary};
 `
 
-export default function SwapHeader({ allowedSlippage }: { allowedSlippage: Percent }) {
+export default function LimitOrderHeader({ allowedSlippage }: { allowedSlippage: Percent }) {
   return (
-    <StyledSwapHeader>
+    <StyledLimitOrderHeader>
       <RowBetween>
         <RowFixed>
           <ThemedText.DeprecatedBlack fontWeight={500} fontSize={16} style={{ marginRight: '8px' }}>
-            <Trans>Swap</Trans>
+            <Trans>Limit Order</Trans>
           </ThemedText.DeprecatedBlack>
         </RowFixed>
         <RowFixed>
-          <SettingsTab placeholderSlippage={allowedSlippage} />
+          <LimitOrderSettingsTab placeholderSlippage={allowedSlippage} />
         </RowFixed>
       </RowBetween>
-    </StyledSwapHeader>
+    </StyledLimitOrderHeader>
   )
 }

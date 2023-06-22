@@ -4,7 +4,7 @@ import styled from 'styled-components/macro'
 
 import { ThemedText } from '../../theme'
 import { RowBetween, RowFixed } from '../Row'
-import SettingsTab from '../Settings'
+import MarketOrderSettingsTab from '../Settings/MarketOrderSettingsTab'
 
 const StyledMarketOrderHeader = styled.div`
   padding: 8px 12px;
@@ -23,7 +23,7 @@ export default function MarketOrderHeader({ allowedSlippage }: { allowedSlippage
           </ThemedText.DeprecatedBlack>
         </RowFixed>
         <RowFixed>
-          <SettingsTab placeholderSlippage={allowedSlippage} />
+          <MarketOrderSettingsTab placeholderSlippage={allowedSlippage} />
         </RowFixed>
       </RowBetween>
     </StyledMarketOrderHeader>

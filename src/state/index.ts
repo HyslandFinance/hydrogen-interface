@@ -15,6 +15,7 @@ import mint from './mint/reducer'
 import mintV3 from './mint/v3/reducer'
 import { routingApi } from './routing/slice'
 import marketOrder from './marketOrder/reducer'
+import limitOrder from './limitOrder/reducer'
 import transactions from './transactions/reducer'
 import user from './user/reducer'
 import wallets from './wallets/reducer'
@@ -29,6 +30,7 @@ const store = configureStore({
     transactions,
     wallets,
     marketOrder,
+    limitOrder,
     mint,
     mintV3,
     burn,
