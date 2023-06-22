@@ -1,7 +1,7 @@
 import { Currency, CurrencyAmount, Token, TradeType } from '@uniswap/sdk-core'
 
 import { GetQuoteResult, InterfaceTrade, V2PoolInRoute, V3PoolInRoute } from './types'
-import { HydrogenTrade } from './HydrogenTrade'
+import { HydrogenMarketOrder } from './HydrogenMarketOrder'
 
 /**
  * Transforms a Routing API quote into an array of routes that can be used to create
@@ -41,8 +41,8 @@ export function transformRoutesToTrade<TTradeType extends TradeType>(
   tradeType: TTradeType,
   blockNumber?: string | null,
   gasUseEstimateUSD?: CurrencyAmount<Token> | null
-): HydrogenTrade<Currency, Currency, TTradeType> {
-  const trade = new HydrogenTrade({
+): HydrogenMarketOrder<Currency, Currency, TTradeType> {
+  const trade = new HydrogenMarketOrder({
     paths,
     tradeType,
     gasUseEstimateUSD,

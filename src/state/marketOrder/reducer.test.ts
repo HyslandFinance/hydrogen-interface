@@ -1,10 +1,10 @@
 import { createStore, Store } from 'redux'
 
 import { Field, selectCurrency } from './actions'
-import reducer, { SwapState } from './reducer'
+import reducer, { MarketOrderState } from './reducer'
 
-describe('swap reducer', () => {
-  let store: Store<SwapState>
+describe('marketOrder reducer', () => {
+  let store: Store<MarketOrderState>
 
   beforeEach(() => {
     store = createStore(reducer, {

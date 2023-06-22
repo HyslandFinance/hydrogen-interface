@@ -6,7 +6,7 @@ import Card, { CardType } from 'components/About/Card'
 import { MAIN_CARDS, MORE_CARDS } from 'components/About/constants'
 import ProtocolBanner from 'components/About/ProtocolBanner'
 import { BaseButton } from 'components/Button'
-import Swap from 'pages/Swap'
+import MarketOrder from 'pages/MarketOrder'
 import { parse } from 'qs'
 import { useEffect, useRef, useState } from 'react'
 import { ArrowDownCircle } from 'react-feather'
@@ -252,7 +252,7 @@ const CardGrid = styled.div<{ cols: number }>`
   }
 `
 
-const LandingSwapContainer = styled.div`
+const LandingMarketOrderContainer = styled.div`
   height: ${({ theme }) => `calc(100vh - ${theme.mobileBottomBarHeight}px)`};
   width: 100%;
   display: flex;
@@ -260,7 +260,7 @@ const LandingSwapContainer = styled.div`
   align-items: center;
 `
 
-const LandingSwap = styled(Swap)`
+const LandingMarketOrder = styled(MarketOrder)`
   * {
     pointer-events: none;
   }
@@ -292,17 +292,17 @@ export default function Landing() {
   return (
     <Trace page={PageName.LANDING_PAGE} shouldLogImpression={false}>
       <PageContainer isDarkMode={isDarkMode} data-testid="landing-page">
-        <LandingSwapContainer>
+        <LandingMarketOrderContainer>
           <TraceEvent
             events={[BrowserEvent.onClick]}
             name={EventName.ELEMENT_CLICKED}
             element={ElementName.LANDING_PAGE_SWAP_ELEMENT}
           >
             <Link to="/trade">
-              <LandingSwap />
+              <LandingMarketOrder />
             </Link>
           </TraceEvent>
-        </LandingSwapContainer>
+        </LandingMarketOrderContainer>
         <Gradient isDarkMode={isDarkMode} />
         <GlowContainer>
           <Glow />

@@ -3,7 +3,7 @@ import { BIG_INT_ZERO, BIG_INT_ONE } from './../../constants/misc'
 
 import invariant from 'tiny-invariant'
 
-export class HydrogenTrade<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType> {
+export class HydrogenMarketOrder<TInput extends Currency, TOutput extends Currency, TTradeType extends TradeType> {
   public readonly route: any
   public readonly tradeType: TTradeType
   private _outputAmount: CurrencyAmount<TOutput> | undefined

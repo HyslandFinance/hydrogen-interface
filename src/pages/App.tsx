@@ -37,8 +37,6 @@ import PoolV2 from './Pool/v2'
 import PoolFinder from './PoolFinder'
 import RemoveLiquidity from './RemoveLiquidity'
 import RemoveLiquidityV3 from './RemoveLiquidity/V3'
-import Swap from './Swap'
-import { RedirectPathToSwapOnly } from './Swap/redirects'
 
 import TradePage from './Trade'
 import LimitOrderPage from './LimitOrder'

@@ -8,23 +8,23 @@ import { FeeOptions } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import useENS from 'hooks/useENS'
 import { SignatureData } from 'hooks/useERC20Permit'
-import { useSwapCallArguments } from 'hooks/useSwapCallArguments'
+import { useMarketOrderCallArguments } from 'hooks/useMarketOrderCallArguments'
 import { ReactNode, useMemo } from 'react'
 
-import useSendSwapTransaction from './useSendSwapTransaction'
+import useSendMarketOrderTransaction from './useSendMarketOrderTransaction'
 
-export enum SwapCallbackState {
+export enum MarketOrderCallbackState {
   INVALID,
   LOADING,
   VALID,
 }
 
-interface UseSwapCallbackReturns {
-  state: SwapCallbackState
+interface UseMarketOrderCallbackReturns {
+  state: MarketOrderCallbackState
   callback?: () => Promise<TransactionResponse>
   error?: ReactNode
 }
-interface UseSwapCallbackArgs {
+interface UseMarketOrderCallbackArgs {
   trade: Trade<Currency, Currency, TradeType> | undefined // trade to execute, required
   allowedSlippage: Percent // in bips
   recipientAddressOrName: string | null | undefined // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
@@ -35,17 +35,17 @@ interface UseSwapCallbackArgs {
 
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
-export function useSwapCallback({
+export function useMarketOrderCallback({
   trade,
   allowedSlippage,
   recipientAddressOrName,
   signatureData,
   deadline,
   feeOptions,
-}: UseSwapCallbackArgs): UseSwapCallbackReturns {
+}: UseMarketOrderCallbackArgs): UseMarketOrderCallbackReturns {
   const { account, chainId, provider } = useWeb3React()
 
-  const swapCalls = useSwapCallArguments(
+  const swapCalls = useMarketOrderCallArguments(
     trade,
     allowedSlippage,
     recipientAddressOrName,
@@ -53,25 +53,25 @@ export function useSwapCallback({
     deadline,
     feeOptions
   )
-  const { callback } = useSendSwapTransaction(account, chainId, provider, trade, swapCalls)
+  const { callback } = useSendMarketOrderTransaction(account, chainId, provider, trade, swapCalls)
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)
   const recipient = recipientAddressOrName === null ? account : recipientAddress
 
   return useMemo(() => {
     if (!trade || !provider || !account || !chainId || !callback) {
-      return { state: SwapCallbackState.INVALID, error: <Trans>Missing dependencies</Trans> }
+      return { state: MarketOrderCallbackState.INVALID, error: <Trans>Missing dependencies</Trans> }
     }
     if (!recipient) {
       if (recipientAddressOrName !== null) {
-        return { state: SwapCallbackState.INVALID, error: <Trans>Invalid recipient</Trans> }
+        return { state: MarketOrderCallbackState.INVALID, error: <Trans>Invalid recipient</Trans> }
       } else {
-        return { state: SwapCallbackState.LOADING }
+        return { state: MarketOrderCallbackState.LOADING }
       }
     }
 
     return {
-      state: SwapCallbackState.VALID,
+      state: MarketOrderCallbackState.VALID,
       callback: async () => callback(),
     }
   }, [trade, provider, account, chainId, callback, recipient, recipientAddressOrName])

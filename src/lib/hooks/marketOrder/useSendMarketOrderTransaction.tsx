@@ -6,49 +6,49 @@ import { sendAnalyticsEvent } from '@uniswap/analytics'
 import { EventName } from '@uniswap/analytics-events'
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, TradeType } from '@uniswap/sdk-core'
-import { formatSwapSignedAnalyticsEventProperties } from 'lib/utils/analytics'
+//import { formatSwapSignedAnalyticsEventProperties } from 'lib/utils/analytics'
 import { useMemo } from 'react'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import isZero from 'utils/isZero'
 import { swapErrorToUserReadableMessage } from 'utils/swapErrorToUserReadableMessage'
 
-interface SwapCall {
+interface MarketOrderCall {
   address: string
   calldata: string
   value: string
 }
 
-interface SwapCallEstimate {
-  call: SwapCall
+interface MarketOrderCallEstimate {
+  call: MarketOrderCall
 }
 
-interface SuccessfulCall extends SwapCallEstimate {
-  call: SwapCall
+interface SuccessfulCall extends MarketOrderCallEstimate {
+  call: MarketOrderCall
   gasEstimate: BigNumber
 }
 
-interface FailedCall extends SwapCallEstimate {
-  call: SwapCall
+interface FailedCall extends MarketOrderCallEstimate {
+  call: MarketOrderCall
   error: Error
 }
 
-class InvalidSwapError extends Error {}
+class InvalidMarketOrderError extends Error {}
 
 // returns a function that will execute a swap, if the parameters are all valid
-export default function useSendSwapTransaction(
+export default function useSendMarketOrderTransaction(
   account: string | null | undefined,
   chainId: number | undefined,
   provider: JsonRpcProvider | undefined,
   trade: Trade<Currency, Currency, TradeType> | undefined, // trade to execute, required
-  swapCalls: SwapCall[]
+  swapCalls: MarketOrderCall[]
 ): { callback: null | (() => Promise<TransactionResponse>) } {
   return useMemo(() => {
     if (!trade || !provider || !account || !chainId) {
       return { callback: null }
     }
     return {
-      callback: async function onSwap(): Promise<TransactionResponse> {
-        const estimatedCalls: SwapCallEstimate[] = await Promise.all(
+      callback: async function onMarketOrder(): Promise<TransactionResponse> {
+        const estimatedCalls: MarketOrderCallEstimate[] = await Promise.all(
           swapCalls.map((call) => {
             const { address, calldata, value } = call
 
@@ -88,7 +88,7 @@ export default function useSendSwapTransaction(
         )
 
         // a successful estimation is a bignumber gas estimate and the next call is also a bignumber gas estimate
-        let bestCallOption: SuccessfulCall | SwapCallEstimate | undefined = estimatedCalls.find(
+        let bestCallOption: SuccessfulCall | MarketOrderCallEstimate | undefined = estimatedCalls.find(
           (el, ix, list): el is SuccessfulCall =>
             'gasEstimate' in el && (ix === list.length - 1 || 'gasEstimate' in list[ix + 1])
         )
@@ -97,8 +97,8 @@ export default function useSendSwapTransaction(
         if (!bestCallOption) {
           const errorCalls = estimatedCalls.filter((call): call is FailedCall => 'error' in call)
           if (errorCalls.length > 0) throw errorCalls[errorCalls.length - 1].error
-          const firstNoErrorCall = estimatedCalls.find<SwapCallEstimate>(
-            (call): call is SwapCallEstimate => !('error' in call)
+          const firstNoErrorCall = estimatedCalls.find<MarketOrderCallEstimate>(
+            (call): call is MarketOrderCallEstimate => !('error' in call)
           )
           if (!firstNoErrorCall) throw new Error(t`Unexpected error. Could not estimate gas for the swap.`)
           bestCallOption = firstNoErrorCall
@@ -125,7 +125,7 @@ export default function useSendSwapTransaction(
             )*/
             if (calldata !== response.data) {
               //sendAnalyticsEvent(EventName.SWAP_MODIFIED_IN_WALLET, { txHash: response.hash })
-              throw new InvalidSwapError(
+              throw new InvalidMarketOrderError(
                 t`Your swap was modified through your wallet. If this was a mistake, please cancel immediately or risk losing your funds.`
               )
             }
@@ -137,12 +137,12 @@ export default function useSendSwapTransaction(
               throw new Error(t`Transaction rejected`)
             } else {
               // otherwise, the error was unexpected and we need to convey that
-              console.error(`Swap failed`, error, address, calldata, value)
+              console.error(`MarketOrder failed`, error, address, calldata, value)
 
-              if (error instanceof InvalidSwapError) {
+              if (error instanceof InvalidMarketOrderError) {
                 throw error
               } else {
-                throw new Error(t`Swap failed: ${swapErrorToUserReadableMessage(error)}`)
+                throw new Error(t`MarketOrder failed: ${swapErrorToUserReadableMessage(error)}`)
               }
             }
           })

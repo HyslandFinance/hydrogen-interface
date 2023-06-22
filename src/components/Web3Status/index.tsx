@@ -8,12 +8,12 @@ import WalletDropdown from 'components/WalletDropdown'
 import { getConnection, getIsMetaMask } from 'connection/utils'
 import { Portal } from 'nft/components/common/Portal'
 import { useIsNftClaimAvailable } from 'nft/hooks/useIsNftClaimAvailable'
-import { getIsValidSwapQuote } from 'pages/Swap'
+import { getIsValidMarketOrderQuote } from 'pages/MarketOrder'
 import { darken } from 'polished'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { AlertTriangle, ChevronDown, ChevronUp } from 'react-feather'
 import { useAppSelector } from 'state/hooks'
-import { useDerivedSwapInfo } from 'state/swap/hooks'
+import { useDerivedMarketOrderInfo } from 'state/marketOrder/hooks'
 import styled, { useTheme } from 'styled-components/macro'
 import { colors } from 'theme/colors'
 import { flexRowNoWrap } from 'theme/styles'
@@ -203,9 +203,9 @@ function Web3StatusInner() {
   const connectionType = getConnection(connector).type
   const {
     trade: { state: tradeState, trade },
-    inputError: swapInputError,
-  } = useDerivedSwapInfo()
-  const validSwapQuote = getIsValidSwapQuote(trade, tradeState, swapInputError)
+    inputError: marketOrderInputError,
+  } = useDerivedMarketOrderInfo()
+  const validSwapQuote = getIsValidMarketOrderQuote(trade, tradeState, marketOrderInputError)
   const theme = useTheme()
   const toggleWalletDropdown = useToggleWalletDropdown()
   const handleWalletDropdownClick = useCallback(() => {

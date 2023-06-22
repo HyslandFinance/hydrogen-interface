@@ -13,7 +13,7 @@ import { useArgentWalletContract } from './useArgentWalletContract'
 import useENS from './useENS'
 import { SignatureData } from './useERC20Permit'
 
-interface SwapCall {
+interface MarketOrderCall {
   address: string
   calldata: string
   value: string
@@ -26,14 +26,15 @@ interface SwapCall {
  * @param recipientAddressOrName the ENS name or address of the recipient of the swap output
  * @param signatureData the signature data of the permit of the input token amount, if available
  */
-export function useSwapCallArguments(
+export function useMarketOrderCallArguments(
+  //trade: Trade<Currency, Currency, TradeType> | undefined,
   trade: any,
   allowedSlippage: Percent,
   recipientAddressOrName: string | null | undefined,
   signatureData: SignatureData | null | undefined,
   deadline: BigNumber | undefined,
   feeOptions: FeeOptions | undefined
-): SwapCall[] {
+): MarketOrderCall[] {
   const { account, chainId, provider } = useWeb3React()
 
   const { address: recipientAddress } = useENS(recipientAddressOrName)

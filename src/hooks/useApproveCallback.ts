@@ -1,6 +1,6 @@
 import { Trade } from '@uniswap/router-sdk'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
-import useSwapApproval from 'lib/hooks/swap/useSwapApproval'
+import useMarketOrderApproval from 'lib/hooks/marketOrder/useMarketOrderApproval'
 import { ApprovalState, useApproval } from 'lib/hooks/useApproval'
 import { useCallback } from 'react'
 
@@ -33,6 +33,6 @@ export function useApproveCallbackFromTrade(
   trade: Trade<Currency, Currency, TradeType> | undefined,
   allowedSlippage: Percent
 ): [ApprovalState, () => Promise<void>] {
-  const [approval, getApproval] = useSwapApproval(trade, allowedSlippage, useHasPendingApproval)
+  const [approval, getApproval] = useMarketOrderApproval(trade, allowedSlippage, useHasPendingApproval)
   return [approval, useGetAndTrackApproval(getApproval)]
 }

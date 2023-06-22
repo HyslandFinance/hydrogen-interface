@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 import { useApproval } from '../useApproval'
 
 // wraps useApproveCallback in the context of a swap
-export default function useSwapApproval(
+export default function useMarketOrderApproval(
   trade: Trade<Currency, Currency, TradeType> | undefined,
   allowedSlippage: Percent,
   useIsPendingApproval: (token?: Token, spender?: string) => boolean,

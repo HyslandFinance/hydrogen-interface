@@ -14,7 +14,7 @@ import useIsWindowVisible from './useIsWindowVisible'
  * @param amountSpecified the exact amount to swap in/out
  * @param otherCurrency the desired output/payment currency
  */
-export function useBestTrade(
+export function useBestMarketOrder(
   tradeType: TradeType,
   amountSpecified?: CurrencyAmount<Currency>,
   otherCurrency?: Currency

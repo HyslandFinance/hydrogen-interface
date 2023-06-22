@@ -14,7 +14,7 @@ import { MouseoverTooltip } from 'components/Tooltip'
 import { isSupportedChain } from 'constants/chains'
 import { usePermit2Enabled } from 'featureFlags/flags/permit2'
 import usePermit, { PermitState } from 'hooks/usePermit2'
-import { useSwapCallback } from 'hooks/useSwapCallback'
+import { useMarketOrderCallback } from 'hooks/useMarketOrderCallback'
 import useTransactionDeadline from 'hooks/useTransactionDeadline'
 import JSBI from 'jsbi'
 import { formatSwapQuoteReceivedEventProperties } from 'lib/utils/analytics'
@@ -51,13 +51,13 @@ import useIsArgentWallet from '../../hooks/useIsArgentWallet'
 import { useIsSwapUnsupported } from '../../hooks/useIsSwapUnsupported'
 import { useStablecoinValue } from '../../hooks/useStablecoinPrice'
 import useWrapCallback, { WrapErrorText, WrapType } from '../../hooks/useWrapCallback'
-import { Field } from '../../state/swap/actions'
+import { Field } from '../../state/marketOrder/actions'
 import {
   useDefaultsFromURLSearch,
-  useDerivedSwapInfo,
-  useSwapActionHandlers,
-  useSwapState,
-} from '../../state/swap/hooks'
+  useDerivedMarketOrderInfo,
+  useMarketOrderActionHandlers,
+  useMarketOrderState,
+} from '../../state/marketOrder/hooks'
 import { useExpertModeManager } from '../../state/user/hooks'
 import { LinkStyledButton, ThemedText } from '../../theme'
 import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceImpact'
@@ -122,12 +122,12 @@ const DetailsSwapSection = styled(SwapSection)`
   border-top-right-radius: 0;
 `
 
-export function getIsValidSwapQuote(
+export function getIsValidMarketOrderQuote(
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined,
   tradeState: TradeState,
-  swapInputError?: ReactNode
+  marketOrderInputError?: ReactNode
 ): boolean {
-  return !!swapInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
+  return !!marketOrderInputError && !!trade && (tradeState === TradeState.VALID || tradeState === TradeState.SYNCING)
 }
 
 function largerPercentValue(a?: Percent, b?: Percent) {
@@ -191,15 +191,15 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   // for expert mode
   const [isExpertMode] = useExpertModeManager()
   // swap state
-  const { independentField, typedValue, recipient } = useSwapState()
+  const { independentField, typedValue, recipient } = useMarketOrderState()
   const {
     trade: { state: tradeState, trade },
     allowedSlippage,
     currencyBalances,
     parsedAmount,
     currencies,
-    inputError: swapInputError,
-  } = useDerivedSwapInfo()
+    inputError: marketOrderInputError,
+  } = useDerivedMarketOrderInfo()
 
   const {
     wrapType,
@@ -235,8 +235,8 @@ export default function MarketOrderPage({ className }: { className?: string }) {
     [fiatValueInput, fiatValueOutput, routeIsSyncing]
   )
 
-  const { onSwitchTokens, onCurrencySelection, onUserInput, onChangeRecipient } = useSwapActionHandlers()
-  const isValid = !swapInputError
+  const { onSwitchTokens, onCurrencySelection, onUserInput, onChangeRecipient } = useMarketOrderActionHandlers()
+  const isValid = !marketOrderInputError
   const dependentField: Field = independentField === Field.INPUT ? Field.OUTPUT : Field.INPUT
 
   const handleTypeInput = useCallback(
@@ -259,7 +259,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   }, [navigate])
 
   // modal and loading
-  const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash }, setSwapState] = useState<{
+  const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash }, swapError] = useState<{
     showConfirm: boolean
     tradeToConfirm: Trade<Currency, Currency, TradeType> | undefined
     attemptingTxn: boolean
@@ -367,7 +367,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
 
   // the callback to execute the swap
-  const { callback: swapCallback, error: swapCallbackError } = useSwapCallback(
+  const { callback: swapCallback, error: swapCallbackError } = useMarketOrderCallback(
     trade,
     allowedSlippage,
     recipient,
@@ -382,13 +382,13 @@ export default function MarketOrderPage({ className }: { className?: string }) {
     if (stablecoinPriceImpact && !confirmPriceImpactWithoutFee(stablecoinPriceImpact)) {
       return
     }
-    setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
+    swapError({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
     swapCallback()
       .then((hash) => {
-        setSwapState({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
+        swapError({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
       })
       .catch((error) => {
-        setSwapState({
+        swapError({
           attemptingTxn: false,
           tradeToConfirm,
           showConfirm,
@@ -425,14 +425,14 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   const showApproveFlow =
     !permit2Enabled &&
     !isArgentWallet &&
-    !swapInputError &&
+    !marketOrderInputError &&
     (approvalState === ApprovalState.NOT_APPROVED ||
       approvalState === ApprovalState.PENDING ||
       (approvalSubmitted && approvalState === ApprovalState.APPROVED)) &&
     !(priceImpactSeverity > 3 && !isExpertMode)
 
   const handleConfirmDismiss = useCallback(() => {
-    setSwapState({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
+    swapError({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
     // if there was a tx hash, we want to clear the input
     if (txHash) {
       onUserInput(Field.INPUT, '')
@@ -440,7 +440,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
   }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
 
   const handleAcceptChanges = useCallback(() => {
-    setSwapState({ tradeToConfirm: trade, swapErrorMessage, txHash, attemptingTxn, showConfirm })
+    swapError({ tradeToConfirm: trade, swapErrorMessage, txHash, attemptingTxn, showConfirm })
   }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
 
   const handleInputSelect = useCallback(
@@ -638,7 +638,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                   <TraceEvent
                     events={[BrowserEvent.onClick]}
                     name={EventName.CONNECT_WALLET_BUTTON_CLICKED}
-                    properties={{ received_swap_quote: getIsValidSwapQuote(trade, tradeState, swapInputError) }}
+                    properties={{ received_swap_quote: getIsValidMarketOrderQuote(trade, tradeState, marketOrderInputError) }}
                     element={ElementName.CONNECT_WALLET_BUTTON}
                   >
                     <ButtonLight onClick={toggleWalletModal} fontWeight={600}>
@@ -710,7 +710,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                           if (isExpertMode) {
                             handleSwap()
                           } else {
-                            setSwapState({
+                            swapError({
                               tradeToConfirm: trade,
                               attemptingTxn: false,
                               swapErrorMessage: undefined,
@@ -797,7 +797,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                       if (isExpertMode) {
                         handleSwap()
                       } else {
-                        setSwapState({
+                        swapError({
                           tradeToConfirm: trade,
                           attemptingTxn: false,
                           swapErrorMessage: undefined,
@@ -817,8 +817,8 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                     error={isValid && priceImpactSeverity > 2 && (permit2Enabled || !swapCallbackError)}
                   >
                     <Text fontSize={20} fontWeight={600}>
-                      {swapInputError ? (
-                        swapInputError
+                      {marketOrderInputError ? (
+                        marketOrderInputError
                       ) : routeIsSyncing || routeIsLoading ? (
                         <Trans>Swap</Trans>
                       ) : priceImpactTooHigh ? (

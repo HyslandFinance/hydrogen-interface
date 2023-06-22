@@ -2,7 +2,7 @@ import { Trade } from '@uniswap/router-sdk'
 import { Currency, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import { usePermit2Enabled } from 'featureFlags/flags/permit2'
-import { SwapCallbackState, useSwapCallback as useLibSwapCallBack } from 'lib/hooks/swap/useSwapCallback'
+import { MarketOrderCallbackState, useMarketOrderCallback as useLibMarketOrderCallBack } from 'lib/hooks/marketOrder/useMarketOrderCallback'
 import { ReactNode, useMemo } from 'react'
 
 import { useTransactionAdder } from '../state/transactions/hooks'
@@ -16,13 +16,13 @@ import { useUniversalRouterSwapCallback } from './useUniversalRouter'
 
 // returns a function that will execute a swap, if the parameters are all valid
 // and the user has approved the slippage adjusted input amount for the trade
-export function useSwapCallback(
+export function useMarketOrderCallback(
   trade: Trade<Currency, Currency, TradeType> | undefined, // trade to execute, required
   allowedSlippage: Percent, // in bips
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
   signatureData: SignatureData | undefined | null,
   permit: Permit | undefined
-): { state: SwapCallbackState; callback: null | (() => Promise<string>); error: ReactNode | null } {
+): { state: MarketOrderCallbackState; callback: null | (() => Promise<string>); error: ReactNode | null } {
   const { account } = useWeb3React()
 
   const deadline = useTransactionDeadline()
@@ -37,7 +37,7 @@ export function useSwapCallback(
     state,
     callback: libCallback,
     error,
-  } = useLibSwapCallBack({
+  } = useLibMarketOrderCallBack({
     trade: permit2Enabled ? undefined : trade,
     allowedSlippage,
     recipientAddressOrName: recipient,

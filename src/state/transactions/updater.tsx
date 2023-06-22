@@ -12,7 +12,7 @@ import { TransactionType } from 'state/transactions/types'
 import { computeRealizedPriceImpact } from 'utils/prices'
 
 import { L2_CHAIN_IDS } from '../../constants/chains'
-import { useDerivedSwapInfo } from '../../state/swap/hooks'
+import { useDerivedMarketOrderInfo } from '../../state/marketOrder/hooks'
 import { useAddPopup } from '../application/hooks'
 import { checkedTransaction, finalizeTransaction } from './reducer'
 import { SerializableTransactionReceipt } from './types'
@@ -52,7 +52,7 @@ export default function Updater() {
   const {
     trade: { trade },
     allowedSlippage,
-  } = useDerivedSwapInfo()
+  } = useDerivedMarketOrderInfo()
 
   const dispatch = useAppDispatch()
   const onCheck = useCallback(

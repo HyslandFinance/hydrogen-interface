@@ -2,7 +2,7 @@ import { Trans } from '@lingui/macro'
 import { Currency, CurrencyAmount, Percent, TradeType } from '@uniswap/sdk-core'
 import { useWeb3React } from '@web3-react/core'
 import useAutoSlippageTolerance from 'hooks/useAutoSlippageTolerance'
-import { useBestTrade } from 'hooks/useBestTrade'
+import { useBestMarketOrder } from 'hooks/useBestMarketOrder'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import { ParsedQs } from 'qs'
 import { ReactNode, useCallback, useEffect, useMemo } from 'react'
@@ -17,14 +17,14 @@ import useParsedQueryString from '../../hooks/useParsedQueryString'
 import { isAddress } from '../../utils'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../index'
-import { Field, replaceSwapState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
-import { SwapState } from './reducer'
+import { Field, replaceMarketOrderState, selectCurrency, setRecipient, switchCurrencies, typeInput } from './actions'
+import { MarketOrderState } from './reducer'
 
-export function useSwapState(): AppState['swap'] {
-  return useAppSelector((state) => state.swap)
+export function useMarketOrderState(): AppState['marketOrder'] {
+  return useAppSelector((state) => state.marketOrder)
 }
 
-export function useSwapActionHandlers(): {
+export function useMarketOrderActionHandlers(): {
   onCurrencySelection: (field: Field, currency: Currency) => void
   onSwitchTokens: () => void
   onUserInput: (field: Field, typedValue: string) => void
@@ -76,7 +76,7 @@ const BAD_RECIPIENT_ADDRESSES: { [address: string]: true } = {
 }
 
 // from the current swap inputs, compute the best trade and return it.
-export function useDerivedSwapInfo(): {
+export function useDerivedMarketOrderInfo(): {
   currencies: { [field in Field]?: Currency | null }
   currencyBalances: { [field in Field]?: CurrencyAmount<Currency> }
   parsedAmount: CurrencyAmount<Currency> | undefined
@@ -95,7 +95,7 @@ export function useDerivedSwapInfo(): {
     [Field.INPUT]: { currencyId: inputCurrencyId },
     [Field.OUTPUT]: { currencyId: outputCurrencyId },
     recipient,
-  } = useSwapState()
+  } = useMarketOrderState()
 
   const inputCurrency = useCurrency(inputCurrencyId)
   const outputCurrency = useCurrency(outputCurrencyId)
@@ -113,7 +113,7 @@ export function useDerivedSwapInfo(): {
     [inputCurrency, isExactIn, outputCurrency, typedValue]
   )
 
-  const trade = useBestTrade(
+  const trade = useBestMarketOrder(
     isExactIn ? TradeType.EXACT_INPUT : TradeType.EXACT_OUTPUT,
     parsedAmount,
     (isExactIn ? outputCurrency : inputCurrency) ?? undefined
@@ -216,7 +216,7 @@ function validatedRecipient(recipient: any): string | null {
   return null
 }
 
-export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
+export function queryParametersToMarketOrderState(parsedQs: ParsedQs): MarketOrderState {
   let inputCurrency = parseCurrencyFromURLParameter(parsedQs.inputCurrency)
   let outputCurrency = parseCurrencyFromURLParameter(parsedQs.outputCurrency)
   const typedValue = parseTokenAmountURLParameter(parsedQs.exactAmount)
@@ -224,7 +224,8 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 
   if (inputCurrency === '' && outputCurrency === '' && typedValue === '' && independentField === Field.INPUT) {
     // Defaults to having the native currency selected
-    inputCurrency = 'ETH'
+    inputCurrency = ''
+    // inputCurrency = 'ETH' // todo: revert
   } else if (inputCurrency === outputCurrency) {
     // clear output if identical
     outputCurrency = ''
@@ -246,32 +247,32 @@ export function queryParametersToSwapState(parsedQs: ParsedQs): SwapState {
 }
 
 // updates the swap state to use the defaults for a given network
-export function useDefaultsFromURLSearch(): SwapState {
+export function useDefaultsFromURLSearch(): MarketOrderState {
   const { chainId } = useWeb3React()
   const dispatch = useAppDispatch()
   const parsedQs = useParsedQueryString()
 
-  const parsedSwapState = useMemo(() => {
-    return queryParametersToSwapState(parsedQs)
+  const parsedMarketOrderState = useMemo(() => {
+    return queryParametersToMarketOrderState(parsedQs)
   }, [parsedQs])
 
   useEffect(() => {
     if (!chainId) return
-    const inputCurrencyId = parsedSwapState[Field.INPUT].currencyId ?? undefined
-    const outputCurrencyId = parsedSwapState[Field.OUTPUT].currencyId ?? undefined
+    const inputCurrencyId = parsedMarketOrderState[Field.INPUT].currencyId ?? undefined
+    const outputCurrencyId = parsedMarketOrderState[Field.OUTPUT].currencyId ?? undefined
 
     dispatch(
-      replaceSwapState({
-        typedValue: parsedSwapState.typedValue,
-        field: parsedSwapState.independentField,
+      replaceMarketOrderState({
+        typedValue: parsedMarketOrderState.typedValue,
+        field: parsedMarketOrderState.independentField,
         inputCurrencyId,
         outputCurrencyId,
-        recipient: parsedSwapState.recipient,
+        recipient: parsedMarketOrderState.recipient,
       })
     )
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dispatch, chainId])
 
-  return parsedSwapState
+  return parsedMarketOrderState
 }
