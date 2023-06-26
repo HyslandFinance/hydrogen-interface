@@ -17,16 +17,16 @@ const CenteringDiv = styled.div`
 const AllTokensContainer = styled.div`
   margin-top: 20px;
   width: 100%;
-  @media (min-width: 580px) {
-    width: 580px;
+  @media (min-width: 600px) {
+    width: 600px;
   }
 `
 
 const TokenOuterContainer = styled(CenteringDiv)`
   padding: 10px 20px 0px 20px;
-  max-width: 580px;
-  @media (min-width: 580px) {
-    width: 580px;
+  max-width: 600px;
+  @media (min-width: 600px) {
+    width: 600px;
   }
 `
 
@@ -36,14 +36,14 @@ const TokenInnerContainer = styled.div`
 
 const TokenMetadataMobileView = styled.div`
   display: none;
-  @media (max-width: 580px) {
+  @media (max-width: 600px) {
     display: block;
   }
 `
 
 const TokenMetadataDesktopView = styled.div`
   display: block;
-  @media (max-width: 580px) {
+  @media (max-width: 600px) {
     display: none;
   }
 `
@@ -59,11 +59,11 @@ const TokenIcon = styled.img`
 
 const TokenTextContainer = styled.div`
   display: inline-block;
-  width: 470px;
+  width: 490px;
 `
 
 const TokenTextBreaker = styled.br`
-  @media (min-width: 580px) {
+  @media (min-width: 600px) {
     display: none;
   }
 `
@@ -195,7 +195,7 @@ export default function FaucetPage({ className }: { className?: string }) {
 
   const sortedTokens = useMemo(() => {
     if(!defaultTokens) return []
-    const symbols = ['DAI', 'USDC', 'USDT', 'WETH', 'WBTC', 'DOGE', 'FRAX']
+    const symbols = ['DAI', 'USDC', 'USDT', 'WETH', 'WBTC', 'DOGE', 'FRAX', 'WMATIC']
     const tokens:any[] = []
     const addresses = Object.keys(defaultTokens)
     for(let symbol of symbols) {
@@ -209,16 +209,27 @@ export default function FaucetPage({ className }: { className?: string }) {
     return tokens
   }, [defaultTokens])
 
+  const gasTokenNotes = useMemo(() => {
+    if(!chainId) return undefined
+    if(chainId == 84531) return <><CenteringDiv><p style={{marginBottom:0}}>Base Goerli uses ETH as the gas token.</p></CenteringDiv><CenteringDiv><p style={{marginTop:0}}>You can get some using the Coinbase Wallet.</p></CenteringDiv></>
+    if(chainId == 80001) return <><CenteringDiv><p style={{marginBottom:0}}>Polygon Mumbai uses MATIC as the gas token.</p></CenteringDiv><CenteringDiv><p style={{marginTop:0}}>You can get some using the Coinbase Wallet or by signing up for Alchemy.</p></CenteringDiv></>
+    return undefined
+  }, [chainId]) as any
+
   const tokenNotes = useMemo(() => {
     if(!chainId) return {}
     if(chainId == 84531) return {'WETH': 'Note: this mock WETH is not redeemable for ETH'}
+    if(chainId == 80001) return {
+      'WETH': 'Note: this mock WETH is not redeemable for ETH',
+      'WMATIC': 'Note: this mock WETH is not redeemable for MATIC',
+    }
     return {}
   }, [chainId]) as any
 
   return (
     <>
       <h1>Get testnet tokens and try out Hydrogen</h1>
-      <p>Base Goerli uses ETH as the gas token. You can get some using the Coinbase Wallet.</p>
+      {gasTokenNotes}
       <p>You can drip any of the tokens below from the Hydrogen faucet.</p>
       <AllTokensContainer>
         {sortedTokens.map(token => (

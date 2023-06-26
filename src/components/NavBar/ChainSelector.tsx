@@ -21,8 +21,9 @@ import { NavDropdown } from './NavDropdown'
 
 const NETWORK_SELECTOR_CHAINS = [
   //SupportedChainId.MAINNET,
-  SupportedChainId.GOERLI,
+  //SupportedChainId.GOERLI,
   SupportedChainId.BASE_GOERLI,
+  SupportedChainId.POLYGON_MUMBAI,
   /*
   SupportedChainId.POLYGON,
   SupportedChainId.OPTIMISM,

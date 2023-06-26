@@ -6,7 +6,7 @@ import { RouterPreference } from 'state/routing/slice'
 import { useRoutingAPITrade } from 'state/routing/useRoutingAPITrade'
 
 import { SupportedChainId } from '../constants/chains'
-import { CUSD_CELO, DAI_OPTIMISM, USDC_ARBITRUM, USDC_MAINNET, USDC_POLYGON, USDC_GOERLI, USDC_BASE_GOERLI } from '../constants/tokens'
+import { CUSD_CELO, DAI_OPTIMISM, USDC_ARBITRUM, USDC_MAINNET, USDC_POLYGON, USDC_GOERLI, USDC_BASE_GOERLI, USDC_POLYGON_MUMBAI } from '../constants/tokens'
 
 // Stablecoin amounts used when calculating spot price for a given currency.
 // The amount is large enough to filter low liquidity pairs.
@@ -18,6 +18,7 @@ const STABLECOIN_AMOUNT_OUT: { [chainId: number]: CurrencyAmount<Token> } = {
   [SupportedChainId.CELO]: CurrencyAmount.fromRawAmount(CUSD_CELO, 10_000e18),
   [SupportedChainId.GOERLI]: CurrencyAmount.fromRawAmount(USDC_GOERLI, 1_000e6),
   [SupportedChainId.BASE_GOERLI]: CurrencyAmount.fromRawAmount(USDC_BASE_GOERLI, 1_000e6), // todo: increase
+  [SupportedChainId.POLYGON_MUMBAI]: CurrencyAmount.fromRawAmount(USDC_POLYGON_MUMBAI, 1_000e6),
 }
 
 /**

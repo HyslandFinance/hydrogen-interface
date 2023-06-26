@@ -154,7 +154,8 @@ export function NetworkAlert() {
 
   const { label, logoUrl, bridge } = getChainInfo(chainId)
   const textColor = TEXT_COLORS[chainId]
-
+  return null
+  /*
   return bridge ? (
     <RootWrapper>
       <ContentWrapper chainId={chainId} darkMode={darkMode} logoUrl={logoUrl}>
@@ -175,4 +176,5 @@ export function NetworkAlert() {
       </ContentWrapper>
     </RootWrapper>
   ) : null
+  */
 }

@@ -75,9 +75,9 @@ export const USDC_POLYGON = new Token(
   'USDC',
   'USD//C'
 )
-const USDC_POLYGON_MUMBAI = new Token(
+export const USDC_POLYGON_MUMBAI = new Token(
   SupportedChainId.POLYGON_MUMBAI,
-  '0xe11a86849d99f524cac3e7a0ec1241828e332c62',
+  '0xA9DC572c76Ead4197154d36bA3f4D0839353abbb',
   6,
   'USDC',
   'USD//C'
