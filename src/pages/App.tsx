@@ -42,6 +42,7 @@ import TradePage from './Trade'
 import LimitOrderPage from './LimitOrder'
 import MarketOrderPage from './MarketOrder'
 import GridOrderPage from './GridOrder'
+import FaucetPage from './Faucet'
 
 import Tokens from './Tokens'
 
@@ -228,6 +229,8 @@ export default function App() {
                 <Route path="limit_order" element={<LimitOrderPage />} />
                 <Route path="market_order" element={<MarketOrderPage />} />
                 <Route path="grid_order" element={<GridOrderPage />} />
+
+                <Route path="faucet" element={<FaucetPage />} />
 
                 {/*}
                 <Route path="pool/v2/find" element={<PoolFinder />} />

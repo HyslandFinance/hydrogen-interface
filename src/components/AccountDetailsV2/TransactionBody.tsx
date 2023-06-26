@@ -12,6 +12,8 @@ import {
   TransactionInfo,
   TransactionType,
   WrapTransactionInfo,
+  LimitOrderTransactionInfo,
+  FaucetDripTransactionInfo,
 } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 
@@ -54,6 +56,20 @@ const formatAmount = (amountRaw: string, decimals: number, sigFigs: number): str
 const FailedText = ({ transactionState }: { transactionState: TransactionState }) =>
   transactionState === TransactionState.Failed ? <Trans>failed</Trans> : <span />
 
+const FormattedCurrency = ({
+  currencyId,
+}: {
+  currencyId: string
+}) => {
+  const currency = useCurrency(currencyId)
+
+  return currency ? (
+    <HighlightText>
+      {currency.symbol}
+    </HighlightText>
+  ) : null
+}
+
 const FormattedCurrencyAmount = ({
   rawAmount,
   currencyId,
@@ -88,9 +104,9 @@ const SwapSummary = ({
 }) => {
   const actionProps = {
     transactionState,
-    pending: <Trans>Swapping</Trans>,
-    success: <Trans>Swapped</Trans>,
-    failed: <Trans>Swap</Trans>,
+    pending: <Trans>Placing market order</Trans>,
+    success: <Trans>Placed market order</Trans>,
+    failed: <Trans>Place market order</Trans>,
   }
   const { rawAmountFrom, rawAmountTo } = getRawAmounts(info)
 
@@ -312,6 +328,55 @@ const WrapSummary = ({
   )
 }
 
+const LimitOrderSummary = ({
+  info,
+  transactionState,
+}: {
+  info: LimitOrderTransactionInfo
+  transactionState: TransactionState
+}) => {
+  const actionProps = {
+    transactionState,
+    pending: <Trans>Placing limit order</Trans>,
+    success: <Trans>Placed limit order</Trans>,
+    failed: <Trans>Place limit order</Trans>,
+  }
+
+  return (
+    <BodyWrap>
+      <Action {...actionProps} />{' '}
+      <FormattedCurrencyAmount rawAmount={info.inputCurrencyAmountRaw} currencyId={info.inputCurrencyId} sigFigs={2} />{' '}
+      <Trans>for </Trans>{' '}
+      <FormattedCurrencyAmount rawAmount={info.outputCurrencyAmountRaw} currencyId={info.outputCurrencyId} sigFigs={2} />{' '}
+      <FailedText transactionState={transactionState} />
+    </BodyWrap>
+  )
+}
+
+const FaucetDripSummary = ({
+  info,
+  transactionState,
+}: {
+  info: FaucetDripTransactionInfo
+  transactionState: TransactionState
+}) => {
+  const actionProps = {
+    transactionState,
+    pending: <Trans>Dripping</Trans>,
+    success: <Trans>Dripped</Trans>,
+    failed: <Trans>Drip</Trans>,
+  }
+
+  return (
+    <BodyWrap>
+      <Action {...actionProps} />{' '}
+      <FormattedCurrency currencyId={info.tokenAddress} />{' '}
+      <Trans>from testnet faucet</Trans>
+      <FailedText transactionState={transactionState} />
+    </BodyWrap>
+  )
+}
+
 const TransactionBody = ({ info, transactionState }: { info: TransactionInfo; transactionState: TransactionState }) => {
   switch (info.type) {
     case TransactionType.SWAP:
@@ -328,6 +393,10 @@ const TransactionBody = ({ info, transactionState }: { info: TransactionInfo; tr
       return <ApprovalSummary info={info} transactionState={transactionState} />
     case TransactionType.CLAIM:
       return <ClaimSummary info={info} transactionState={transactionState} />
+    case TransactionType.LIMIT_ORDER:
+      return <LimitOrderSummary info={info} transactionState={transactionState} />
+    case TransactionType.FAUCET_DRIP:
+      return <FaucetDripSummary info={info} transactionState={transactionState} />
     default:
       return <span />
   }

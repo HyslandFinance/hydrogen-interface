@@ -1,5 +1,5 @@
 import store from '../state'
-import { HYDROGEN_BASE_GOERLI_LIST } from './lists'
+import { HYDROGEN_DEFAULT_TOKEN_LIST } from './lists'
 import { NATIVE_CHAIN_ID } from './tokens'
 
 export enum TOKEN_LIST_TYPES {
@@ -41,7 +41,7 @@ class TokenSafetyLookupTable {
       })
     */
 
-    store.getState().lists.byUrl[HYDROGEN_BASE_GOERLI_LIST].current?.tokens.forEach((token) => {
+    store.getState().lists.byUrl[HYDROGEN_DEFAULT_TOKEN_LIST].current?.tokens.forEach((token) => {
       dict[token.address.toLowerCase()] = TOKEN_LIST_TYPES.HYDROGEN_DEFAULT
     })
     return dict

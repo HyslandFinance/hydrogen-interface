@@ -24,6 +24,8 @@ import {
   TransactionType,
   VoteTransactionInfo,
   WrapTransactionInfo,
+  FaucetDripTransactionInfo,
+  LimitOrderTransactionInfo,
 } from '../../state/transactions/types'
 
 function formatAmount(amountRaw: string, decimals: number, sigFigs: number): string {
@@ -304,7 +306,43 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
   }
 }
 
+function LimitOrderSummary({ info }: { info: LimitOrderTransactionInfo }) {
+  return (
+    <Trans>
+      {'Limit order '}
+      <FormattedCurrencyAmountManaged
+        rawAmount={info.inputCurrencyAmountRaw}
+        currencyId={info.inputCurrencyId}
+        sigFigs={6}
+      />{' '}
+      for{' '}
+      <FormattedCurrencyAmountManaged
+        rawAmount={info.outputCurrencyAmountRaw}
+        currencyId={info.outputCurrencyId}
+        sigFigs={6}
+      />
+    </Trans>
+  )
+}
+
+function FaucetDripSummary({ info }: { info: FaucetDripTransactionInfo }) {
+  return (
+    <Trans>
+      {`Dripped ${info.tokenAddress} from faucet`}
+    </Trans>
+  )
+}
+
+function UnknownTransactionSummary({ info }: { info: any }) {
+  return (
+    <Trans>
+      Unknown transaction
+    </Trans>
+  )
+}
+
 export function TransactionSummary({ info }: { info: TransactionInfo }) {
+
   switch (info.type) {
     case TransactionType.ADD_LIQUIDITY_V3_POOL:
       return <AddLiquidityV3PoolSummary info={info} />
@@ -356,5 +394,14 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
 
     case TransactionType.SUBMIT_PROPOSAL:
       return <SubmitProposalTransactionSummary />
+
+    case TransactionType.LIMIT_ORDER:
+      return <LimitOrderSummary info={info} />
+
+    case TransactionType.FAUCET_DRIP:
+      return <FaucetDripSummary info={info} />
+
+    default:
+      return <UnknownTransactionSummary info={info}/>
   }
 }

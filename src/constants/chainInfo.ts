@@ -10,7 +10,7 @@ import ms from 'ms.macro'
 import { darkTheme } from 'theme/colors'
 
 import { SupportedChainId, SupportedL1ChainId, SupportedL2ChainId, DEFAULT_CHAIN_ID } from './chains'
-import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST, HYDROGEN_BASE_GOERLI_LIST } from './lists'
+import { ARBITRUM_LIST, CELO_LIST, OPTIMISM_LIST, HYDROGEN_DEFAULT_TOKEN_LIST } from './lists'
 
 export const AVERAGE_L1_BLOCK_TIME = ms`12s`
 
@@ -222,7 +222,7 @@ const CHAIN_INFO: ChainInfoMap = {
     networkType: NetworkType.L2,
     blockWaitMsBeforeWarning: ms`25m`,
     bridge: 'https://bridge.base.org/',
-    defaultListUrl: HYDROGEN_BASE_GOERLI_LIST,
+    defaultListUrl: HYDROGEN_DEFAULT_TOKEN_LIST,
     docs: 'https://base.org/',
     explorer: 'https://goerli.basescan.org/',
     infoLink: 'https://analytics.hydrogendefi.xyz/#/base_goerli/',

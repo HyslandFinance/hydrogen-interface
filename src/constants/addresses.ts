@@ -26,6 +26,10 @@ export const HYDROGEN_NUCLEUS_ADDRESSES: AddressMap = {
   [SupportedChainId.BASE_GOERLI]: "0xfE4d3341B87e106fD718f71B71c5430082f01836"
 }
 
+export const FAUCET_ADDRESSES: AddressMap = {
+  [SupportedChainId.BASE_GOERLI]: '0xfeBD5a3196a4c05726aFcd95892031b06c66FAea',
+}
+
 /* V3 Contract Addresses */
 export const V3_CORE_FACTORY_ADDRESSES: AddressMap = {
   ...constructSameAddressMap(V3_FACTORY_ADDRESS, [

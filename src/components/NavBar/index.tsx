@@ -59,13 +59,21 @@ export const PageTabs = () => {
     pathname.startsWith('/increase') ||
     pathname.startsWith('/find')
 
+  const isFaucetActive =
+    pathname.startsWith('/faucet')
+
   return (
     <>
-      <MenuItem href="/trade" isActive={isTradeActive}>
+      <MenuItem href="/trade" id="trade-nav-link" isActive={isTradeActive}>
         <Trans>Trade</Trans>
       </MenuItem>
+      {/*
       <MenuItem href="/pool" id="pool-nav-link" isActive={isPoolActive}>
         <Trans>Pool</Trans>
+      </MenuItem>
+      */}
+      <MenuItem href="/faucet" id="faucet-nav-link" isActive={isFaucetActive}>
+        <Trans>Faucet</Trans>
       </MenuItem>
     </>
   )

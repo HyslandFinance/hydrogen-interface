@@ -43,6 +43,7 @@ const getCurrency = ({ info, chainId }: { info: TransactionInfo; chainId: number
       const { baseCurrencyId, quoteCurrencyId } = info
       return { currencyId0: baseCurrencyId, currencyId1: quoteCurrencyId }
     }
+    case TransactionType.LIMIT_ORDER:
     case TransactionType.SWAP: {
       const { inputCurrencyId, outputCurrencyId } = info
       return { currencyId0: inputCurrencyId, currencyId1: outputCurrencyId }
@@ -64,6 +65,9 @@ const getCurrency = ({ info, chainId }: { info: TransactionInfo; chainId: number
     case TransactionType.CLAIM: {
       const uniAddress = chainId ? UNI_ADDRESS[chainId] : undefined
       return { currencyId0: uniAddress, currencyId1: undefined }
+    }
+    case TransactionType.FAUCET_DRIP: {
+      return { currencyId0: info.tokenAddress, currencyId1: undefined }
     }
     default:
       return { currencyId0: undefined, currencyId1: undefined }

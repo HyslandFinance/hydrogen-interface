@@ -35,6 +35,8 @@ export enum TransactionType {
   SUBMIT_PROPOSAL,
   QUEUE,
   EXECUTE,
+  LIMIT_ORDER,
+  FAUCET_DRIP,
 }
 
 interface BaseTransactionInfo {
@@ -168,6 +170,20 @@ interface SubmitProposalTransactionInfo {
   type: TransactionType.SUBMIT_PROPOSAL
 }
 
+export interface LimitOrderTransactionInfo {
+  type: TransactionType.LIMIT_ORDER
+  inputCurrencyId: string
+  inputCurrencyAmountRaw: string
+  outputCurrencyId: string
+  outputCurrencyAmountRaw: string
+}
+
+export interface FaucetDripTransactionInfo {
+  type: TransactionType.FAUCET_DRIP
+  tokenAddress: string
+  recipientAddress: string
+}
+
 export type TransactionInfo =
   | ApproveTransactionInfo
   | ExactOutputSwapTransactionInfo
@@ -187,6 +203,8 @@ export type TransactionInfo =
   | CollectFeesTransactionInfo
   | RemoveLiquidityV3TransactionInfo
   | SubmitProposalTransactionInfo
+  | LimitOrderTransactionInfo
+  | FaucetDripTransactionInfo
 
 export interface TransactionDetails {
   hash: string
