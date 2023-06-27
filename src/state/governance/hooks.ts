@@ -240,10 +240,10 @@ export function useAllProposalData(): { data: ProposalData[]; loading: boolean }
   const proposalCount2 = useProposalCount(gov2)
 
   const gov0ProposalIndexes = useMemo(() => {
-    return chainId === SupportedChainId.MAINNET ? V0_PROPOSAL_IDS : countToIndices(proposalCount0)
+    return chainId === SupportedChainId.ETHEREUM ? V0_PROPOSAL_IDS : countToIndices(proposalCount0)
   }, [chainId, proposalCount0])
   const gov1ProposalIndexes = useMemo(() => {
-    return chainId === SupportedChainId.MAINNET ? V1_PROPOSAL_IDS : countToIndices(proposalCount1)
+    return chainId === SupportedChainId.ETHEREUM ? V1_PROPOSAL_IDS : countToIndices(proposalCount1)
   }, [chainId, proposalCount1])
   const gov2ProposalIndexes = useMemo(() => {
     return countToIndices(proposalCount2, 8)
@@ -344,7 +344,7 @@ export function useQuorum(governorIndex: number): CurrencyAmount<Token> | undefi
   if (
     !latestGovernanceContract ||
     !quorumVotes ||
-    chainId !== SupportedChainId.MAINNET ||
+    chainId !== SupportedChainId.ETHEREUM ||
     !uni ||
     governorIndex !== LATEST_GOVERNOR_INDEX
   )

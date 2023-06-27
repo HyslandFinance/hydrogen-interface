@@ -2,7 +2,7 @@
  * List of all the networks supported by the Hydrogen Interface
  */
 export enum SupportedChainId {
-  MAINNET = 1,
+  ETHEREUM = 1,
   ROPSTEN = 3,
   RINKEBY = 4,
   GOERLI = 5,
@@ -26,7 +26,7 @@ export enum SupportedChainId {
 export const DEFAULT_CHAIN_ID = SupportedChainId.BASE_GOERLI
 
 export const CHAIN_IDS_TO_NAMES = {
-  [SupportedChainId.MAINNET]: 'mainnet',
+  [SupportedChainId.ETHEREUM]: 'ethereum',
   [SupportedChainId.ROPSTEN]: 'ropsten',
   [SupportedChainId.RINKEBY]: 'rinkeby',
   [SupportedChainId.GOERLI]: 'goerli',
@@ -54,7 +54,7 @@ export function isSupportedChain(chainId: number | null | undefined): chainId is
 }
 
 export const SUPPORTED_GAS_ESTIMATE_CHAIN_IDS = [
-  SupportedChainId.MAINNET,
+  SupportedChainId.ETHEREUM,
   SupportedChainId.POLYGON,
   SupportedChainId.CELO,
   SupportedChainId.OPTIMISM,
@@ -87,7 +87,7 @@ export type SupportedTestnetChainId = typeof TESTNET_CHAIN_IDS[number]
  * All the chain IDs that are running the Ethereum protocol.
  */
 export const L1_CHAIN_IDS = [
-  SupportedChainId.MAINNET,
+  SupportedChainId.ETHEREUM,
   SupportedChainId.ROPSTEN,
   SupportedChainId.RINKEBY,
   SupportedChainId.GOERLI,

@@ -20,7 +20,7 @@ import ChainSelectorRow from './ChainSelectorRow'
 import { NavDropdown } from './NavDropdown'
 
 const NETWORK_SELECTOR_CHAINS = [
-  //SupportedChainId.MAINNET,
+  //SupportedChainId.ETHEREUM,
   //SupportedChainId.GOERLI,
   SupportedChainId.BASE_GOERLI,
   SupportedChainId.POLYGON_MUMBAI,

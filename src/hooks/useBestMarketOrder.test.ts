@@ -1,6 +1,6 @@
 import { renderHook } from '@testing-library/react'
 import { CurrencyAmount, TradeType } from '@uniswap/sdk-core'
-import { DAI, USDC_MAINNET } from 'constants/tokens'
+import { DAI, USDC_ETHEREUM } from 'constants/tokens'
 import { RouterPreference } from 'state/routing/slice'
 import { TradeState } from 'state/routing/types'
 import { useClientSideRouter } from 'state/user/hooks'
@@ -12,7 +12,7 @@ import { useClientSideV3Trade } from './useClientSideV3Trade'
 import useDebounce from './useDebounce'
 import useIsWindowVisible from './useIsWindowVisible'
 
-const USDCAmount = CurrencyAmount.fromRawAmount(USDC_MAINNET, '10000')
+const USDCAmount = CurrencyAmount.fromRawAmount(USDC_ETHEREUM, '10000')
 const DAIAmount = CurrencyAmount.fromRawAmount(DAI, '10000')
 
 jest.mock('./useAutoRouterSupported')
@@ -130,15 +130,15 @@ describe('#useBestV3Trade ExactOut', () => {
     expectRouterMock(TradeState.INVALID)
     expectClientSideMock(TradeState.VALID)
 
-    const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET))
+    const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM))
 
     expect(mockUseRoutingAPITrade).toHaveBeenCalledWith(
       TradeType.EXACT_OUTPUT,
       undefined,
-      USDC_MAINNET,
+      USDC_ETHEREUM,
       RouterPreference.CLIENT
     )
-    expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET)
+    expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM)
     expect(result.current).toEqual({ state: TradeState.VALID, trade: undefined })
   })
 
@@ -147,22 +147,22 @@ describe('#useBestV3Trade ExactOut', () => {
     expectRouterMock(TradeState.NO_ROUTE_FOUND)
     expectClientSideMock(TradeState.VALID)
 
-    const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET))
+    const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM))
 
     expect(mockUseRoutingAPITrade).toHaveBeenCalledWith(
       TradeType.EXACT_OUTPUT,
       undefined,
-      USDC_MAINNET,
+      USDC_ETHEREUM,
       RouterPreference.CLIENT
     )
-    expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET)
+    expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM)
     expect(result.current).toEqual({ state: TradeState.VALID, trade: undefined })
   })
   describe('when routing api is in non-error state', () => {
     it('does not compute client side v3 trade if routing api is LOADING', () => {
       expectRouterMock(TradeState.LOADING)
 
-      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET))
+      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM))
 
       expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, undefined, undefined)
       expect(result.current).toEqual({ state: TradeState.LOADING, trade: undefined })
@@ -171,7 +171,7 @@ describe('#useBestV3Trade ExactOut', () => {
     it('does not compute client side v3 trade if routing api is VALID', () => {
       expectRouterMock(TradeState.VALID)
 
-      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET))
+      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM))
 
       expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, undefined, undefined)
       expect(result.current).toEqual({ state: TradeState.VALID, trade: undefined })
@@ -180,7 +180,7 @@ describe('#useBestV3Trade ExactOut', () => {
     it('does not compute client side v3 trade if routing api is SYNCING', () => {
       expectRouterMock(TradeState.SYNCING)
 
-      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET))
+      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM))
 
       expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, undefined, undefined)
       expect(result.current).toEqual({ state: TradeState.SYNCING, trade: undefined })
@@ -192,7 +192,7 @@ describe('#useBestV3Trade ExactOut', () => {
       expectRouterMock(TradeState.INVALID)
       expectClientSideMock(TradeState.VALID)
 
-      renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET))
+      renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM))
 
       expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, undefined, undefined)
     })
@@ -201,9 +201,9 @@ describe('#useBestV3Trade ExactOut', () => {
       expectRouterMock(TradeState.NO_ROUTE_FOUND)
       expectClientSideMock(TradeState.VALID)
 
-      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET))
+      const { result } = renderHook(() => useBestMarketOrder(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM))
 
-      expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, DAIAmount, USDC_MAINNET)
+      expect(mockUseClientSideV3Trade).toHaveBeenCalledWith(TradeType.EXACT_OUTPUT, DAIAmount, USDC_ETHEREUM)
       expect(result.current).toEqual({ state: TradeState.VALID, trade: undefined })
     })
   })

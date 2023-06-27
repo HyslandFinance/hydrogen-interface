@@ -1,7 +1,7 @@
 import { SupportedChainId } from '../constants/chains'
 
 const DEFAULT_NETWORKS = [
-  SupportedChainId.MAINNET,
+  SupportedChainId.ETHEREUM,
   SupportedChainId.ROPSTEN,
   SupportedChainId.RINKEBY,
   SupportedChainId.GOERLI,

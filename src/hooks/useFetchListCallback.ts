@@ -23,7 +23,7 @@ export function useFetchListCallback(): (
       sendDispatch && dispatch(fetchTokenList.pending({ requestId, url: listUrl }))
       return getTokenList(
         listUrl,
-        (ensName: string) => resolveENSContentHash(ensName, RPC_PROVIDERS[SupportedChainId.MAINNET]),
+        (ensName: string) => resolveENSContentHash(ensName, RPC_PROVIDERS[SupportedChainId.ETHEREUM]),
         skipValidation
       )
         .then((tokenList) => {

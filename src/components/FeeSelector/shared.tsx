@@ -11,7 +11,7 @@ export const FEE_AMOUNT_DETAIL: Record<
     label: '0.01',
     description: <Trans>Best for very stable pairs.</Trans>,
     supportedChains: [
-      SupportedChainId.MAINNET,
+      SupportedChainId.ETHEREUM,
       SupportedChainId.POLYGON,
       SupportedChainId.POLYGON_MUMBAI,
       SupportedChainId.CELO,

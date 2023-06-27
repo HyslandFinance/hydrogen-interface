@@ -191,7 +191,7 @@ const AuthenticatedHeader = () => {
   const {
     nativeCurrency: { symbol: nativeCurrencySymbol },
     explorer,
-  } = getChainInfoOrDefault(chainId ? chainId : SupportedChainId.MAINNET)
+  } = getChainInfoOrDefault(chainId ? chainId : SupportedChainId.ETHEREUM)
   const navigate = useNavigate()
   const closeModal = useCloseModal()
   const setSellPageState = useProfilePageState((state) => state.setProfilePageState)

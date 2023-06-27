@@ -1,5 +1,5 @@
 import { CurrencyAmount, Price } from '@uniswap/sdk-core'
-import { renBTC, USDC_MAINNET } from 'constants/tokens'
+import { renBTC, USDC_ETHEREUM } from 'constants/tokens'
 
 import {
   currencyAmountToPreciseFloat,
@@ -10,38 +10,38 @@ import {
 
 describe('currencyAmountToPreciseFloat', () => {
   it('small number', () => {
-    const currencyAmount = CurrencyAmount.fromFractionalAmount(USDC_MAINNET, '20000', '7')
+    const currencyAmount = CurrencyAmount.fromFractionalAmount(USDC_ETHEREUM, '20000', '7')
     expect(currencyAmountToPreciseFloat(currencyAmount)).toEqual(0.00285714)
   })
   it('tiny number', () => {
-    const currencyAmount = CurrencyAmount.fromFractionalAmount(USDC_MAINNET, '2', '7')
+    const currencyAmount = CurrencyAmount.fromFractionalAmount(USDC_ETHEREUM, '2', '7')
     expect(currencyAmountToPreciseFloat(currencyAmount)).toEqual(0.000000285714)
   })
   it('lots of decimals', () => {
-    const currencyAmount = CurrencyAmount.fromFractionalAmount(USDC_MAINNET, '200000000', '7')
+    const currencyAmount = CurrencyAmount.fromFractionalAmount(USDC_ETHEREUM, '200000000', '7')
     expect(currencyAmountToPreciseFloat(currencyAmount)).toEqual(28.571428)
   })
   it('integer', () => {
-    const currencyAmount = CurrencyAmount.fromRawAmount(USDC_MAINNET, '20000000')
+    const currencyAmount = CurrencyAmount.fromRawAmount(USDC_ETHEREUM, '20000000')
     expect(currencyAmountToPreciseFloat(currencyAmount)).toEqual(20.0)
   })
 })
 
 describe('priceToPreciseFloat', () => {
   it('small number', () => {
-    const price = new Price(renBTC, USDC_MAINNET, 1234, 1)
+    const price = new Price(renBTC, USDC_ETHEREUM, 1234, 1)
     expect(priceToPreciseFloat(price)).toEqual(0.0810373)
   })
   it('tiny number', () => {
-    const price = new Price(renBTC, USDC_MAINNET, 12345600, 1)
+    const price = new Price(renBTC, USDC_ETHEREUM, 12345600, 1)
     expect(priceToPreciseFloat(price)).toEqual(0.00000810005)
   })
   it('lots of decimals', () => {
-    const price = new Price(renBTC, USDC_MAINNET, 123, 7)
+    const price = new Price(renBTC, USDC_ETHEREUM, 123, 7)
     expect(priceToPreciseFloat(price)).toEqual(5.691056911)
   })
   it('integer', () => {
-    const price = new Price(renBTC, USDC_MAINNET, 1, 7)
+    const price = new Price(renBTC, USDC_ETHEREUM, 1, 7)
     expect(priceToPreciseFloat(price)).toEqual(700)
   })
 })

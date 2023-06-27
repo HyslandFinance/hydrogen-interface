@@ -26,7 +26,7 @@ export function useV3SwapPools(
   const allCurrencyCombinationsWithAllFees: [Token, Token, FeeAmount][] = useMemo(
     () =>
       allCurrencyCombinations.reduce<[Token, Token, FeeAmount][]>((list, [tokenA, tokenB]) => {
-        return chainId === SupportedChainId.MAINNET
+        return chainId === SupportedChainId.ETHEREUM
           ? list.concat([
               [tokenA, tokenB, FeeAmount.LOW],
               [tokenA, tokenB, FeeAmount.MEDIUM],
