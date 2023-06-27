@@ -11,8 +11,10 @@ import {
   CUSD_CELO_ALFAJORES,
   DAI,
   DAI_ARBITRUM_ONE,
+  DAI_BASE_GOERLI,
   DAI_OPTIMISM,
   DAI_POLYGON,
+  DAI_POLYGON_MUMBAI,
   ETH2X_FLI,
   FEI,
   FRAX,
@@ -25,20 +27,28 @@ import {
   sETH2,
   SWISE,
   TRIBE,
-  USDC_ARBITRUM,
+  USDC_ARBITRUM_ONE,
+  USDC_BASE_GOERLI,
   USDC_ETHEREUM,
   USDC_OPTIMISM,
   USDC_POLYGON,
+  USDC_POLYGON_MUMBAI,
   USDT,
   USDT_ARBITRUM_ONE,
+  USDT_BASE_GOERLI,
   USDT_OPTIMISM,
   USDT_POLYGON,
+  USDT_POLYGON_MUMBAI,
   WBTC,
   WBTC_ARBITRUM_ONE,
+  WBTC_BASE_GOERLI,
   WBTC_OPTIMISM,
   WBTC_POLYGON,
+  WBTC_POLYGON_MUMBAI,
+  WETH_BASE_GOERLI,
   WETH_POLYGON,
   WETH_POLYGON_MUMBAI,
+  WMATIC_POLYGON_MUMBAI,
   WRAPPED_NATIVE_CURRENCY,
 } from './tokens'
 
@@ -141,7 +151,7 @@ export const COMMON_BASES: ChainCurrencyList = {
   [SupportedChainId.ARBITRUM_ONE]: [
     nativeOnChain(SupportedChainId.ARBITRUM_ONE),
     DAI_ARBITRUM_ONE,
-    USDC_ARBITRUM,
+    USDC_ARBITRUM_ONE,
     USDT_ARBITRUM_ONE,
     WBTC_ARBITRUM_ONE,
     WRAPPED_NATIVE_CURRENCY[SupportedChainId.ARBITRUM_ONE] as Token,
@@ -167,9 +177,14 @@ export const COMMON_BASES: ChainCurrencyList = {
     WBTC_POLYGON,
   ],
   [SupportedChainId.POLYGON_MUMBAI]: [
-    nativeOnChain(SupportedChainId.POLYGON_MUMBAI),
-    WRAPPED_NATIVE_CURRENCY[SupportedChainId.POLYGON_MUMBAI] as Token,
+    //nativeOnChain(SupportedChainId.POLYGON_MUMBAI), // TODO: re add
     WETH_POLYGON_MUMBAI,
+    USDC_POLYGON_MUMBAI,
+    DAI_POLYGON_MUMBAI,
+    USDT_POLYGON_MUMBAI,
+    WBTC_POLYGON_MUMBAI,
+    WMATIC_POLYGON_MUMBAI, // todo: remove
+    //WRAPPED_NATIVE_CURRENCY[SupportedChainId.POLYGON_MUMBAI] as Token,
   ],
 
   [SupportedChainId.CELO]: [
@@ -184,6 +199,15 @@ export const COMMON_BASES: ChainCurrencyList = {
     nativeOnChain(SupportedChainId.CELO_ALFAJORES),
     CUSD_CELO_ALFAJORES,
     CEUR_CELO_ALFAJORES,
+  ],
+  [SupportedChainId.BASE_GOERLI]: [
+    //nativeOnChain(SupportedChainId.BASE_GOERLI), // todo: re add
+    DAI_BASE_GOERLI,
+    USDC_BASE_GOERLI,
+    USDT_BASE_GOERLI,
+    WBTC_BASE_GOERLI,
+    WETH_BASE_GOERLI, // todo: remove
+    //WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE_GOERLI] as Token,
   ],
 }
 
