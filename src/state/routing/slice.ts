@@ -66,7 +66,8 @@ const PRICE_PARAMS = {
 export const routingApi = createApi({
   reducerPath: 'routingApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'https://router.hydrogendefi.xyz/route/',
+    //baseUrl: 'https://router.hydrogendefi.xyz/route/',
+    baseUrl: 'https://stats.hydrogendefi.xyz/route/',
   }),
   endpoints: (build) => ({
     getQuote: build.query<

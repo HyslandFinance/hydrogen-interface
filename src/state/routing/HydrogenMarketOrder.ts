@@ -7,6 +7,7 @@ export class HydrogenMarketOrder<TInput extends Currency, TOutput extends Curren
   public readonly route: any
   public readonly tradeType: TTradeType
   public readonly orderType: string
+  public readonly paths: any[]
   private _outputAmount: CurrencyAmount<TOutput> | undefined
   private _inputAmount: CurrencyAmount<TInput> | undefined
 
@@ -33,10 +34,11 @@ export class HydrogenMarketOrder<TInput extends Currency, TOutput extends Curren
   }) {
     this.orderType = "MarketOrder"
     this.swaps = []
+    this.paths = paths
     this.route = paths[0]
     this.tradeType = tradeType
-    this._inputAmount = this.route.inputAmount
-    this._outputAmount = this.route.outputAmount
+    this._inputAmount = this.route.inputAmount || new Fraction(this.route.amountIn)
+    this._outputAmount = this.route.outputAmount || new Fraction(this.route.amountOut)
 
     // TODO: checks
   }

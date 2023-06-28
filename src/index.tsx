@@ -26,6 +26,7 @@ import ListsUpdater from './state/lists/updater'
 import LogsUpdater from './state/logs/updater'
 import TransactionUpdater from './state/transactions/updater'
 import UserUpdater from './state/user/updater'
+import StatsApiUpdater from './state/statsApi/updater'
 import ThemeProvider, { ThemedGlobalStyle } from './theme'
 import RadialGradientByChainUpdater from './theme/components/RadialGradientByChainUpdater'
 
@@ -50,6 +51,7 @@ function Updaters() {
       <TransactionUpdater />
       <MulticallUpdater />
       <LogsUpdater />
+      <StatsApiUpdater />
     </>
   )
 }

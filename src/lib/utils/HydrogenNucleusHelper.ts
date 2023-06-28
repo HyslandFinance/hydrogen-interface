@@ -134,10 +134,12 @@ export default class HydrogenNucleusHelper {
 
   static getSwapFeeForPair(nucleusState: any, tokenA: string, tokenB: string) {
     let feePPM = Zero
+    let receiverLocation = HydrogenNucleusHelper.toBytes32(0);
     const swapFees = nucleusState.swapFees
     if (feePPM.eq(Zero)) {
       try {
         feePPM = BN.from(swapFees[tokenA][tokenB].feePPM)
+        receiverLocation = swapFees[tokenA][tokenB].receiverLocation;
       } catch (e) {
         1 + 1
       }
@@ -145,12 +147,16 @@ export default class HydrogenNucleusHelper {
     if (feePPM.eq(Zero)) {
       try {
         feePPM = BN.from(swapFees[AddressZero][AddressZero].feePPM)
+        receiverLocation = swapFees[AddressZero][AddressZero].receiverLocation;
       } catch (e) {
         1 + 1
       }
     }
-    if (feePPM.gte(MAX_PPM)) feePPM = Zero
-    return feePPM
+    if (feePPM.gte(MAX_PPM)) {
+      feePPM = Zero
+      receiverLocation = HydrogenNucleusHelper.toBytes32(0);
+    }
+    return { feePPM, receiverLocation }
   }
 
   // general helper functions
@@ -164,7 +170,7 @@ export default class HydrogenNucleusHelper {
   }
 
   // returns a number in its full 32 byte hex representation
-  static toBytes32(bn: BigNumber) {
+  static toBytes32(bn: BigNumber | number | string) {
     return hexlify(zeroPad(BN.from(bn).toHexString(), 32))
   }
 }
