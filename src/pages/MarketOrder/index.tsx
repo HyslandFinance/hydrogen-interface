@@ -38,7 +38,7 @@ import SwapCurrencyInputPanel from '../../components/CurrencyInputPanel/SwapCurr
 import Loader from '../../components/Loader'
 import { AutoRow } from '../../components/Row'
 import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
-import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
+import ConfirmMarketOrderModal from '../../components/swap/ConfirmMarketOrderModal'
 import { ArrowWrapper, PageWrapper, SwapCallbackError, SwapWrapper } from '../../components/swap/styleds'
 import MarketOrderHeader from '../../components/swap/MarketOrderHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -433,8 +433,9 @@ export default function MarketOrderPage({ className }: { className?: string }) {
 
   const handleConfirmDismiss = useCallback(() => {
     swapError({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
-    // if there was a tx hash, we want to clear the input
+    // if there was a tx hash, we want to clear the inputs
     if (txHash) {
+      onUserInput(Field.OUTPUT, '')
       onUserInput(Field.INPUT, '')
     }
   }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
@@ -531,7 +532,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
         <PageWrapper>
           <SwapWrapper className={className} id="swap-page">
             <MarketOrderHeader allowedSlippage={allowedSlippage} />
-            <ConfirmSwapModal
+            <ConfirmMarketOrderModal
               isOpen={showConfirm}
               trade={trade}
               originalTrade={tradeToConfirm}
@@ -758,9 +759,9 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                           {priceImpactTooHigh ? (
                             <Trans>High Price Impact</Trans>
                           ) : trade && priceImpactSeverity > 2 ? (
-                            <Trans>Swap Anyway</Trans>
+                            <Trans>Place Market Order Anyway</Trans>
                           ) : (
-                            <Trans>Swap</Trans>
+                            <Trans>Place Market Order</Trans>
                           )}
                         </Text>
                       </ButtonError>
@@ -844,13 +845,13 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                       {marketOrderInputError ? (
                         marketOrderInputError
                       ) : routeIsSyncing || routeIsLoading ? (
-                        <Trans>Swap</Trans>
+                        <Trans>Place Market Order</Trans>
                       ) : priceImpactTooHigh ? (
                         <Trans>Price Impact Too High</Trans>
                       ) : priceImpactSeverity > 2 ? (
-                        <Trans>Swap Anyway</Trans>
+                        <Trans>Place Market Order Anyway</Trans>
                       ) : (
-                        <Trans>Swap</Trans>
+                        <Trans>Place Market Order</Trans>
                       )}
                     </Text>
                   </ButtonError>

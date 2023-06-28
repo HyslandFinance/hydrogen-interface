@@ -38,7 +38,7 @@ import SwapCurrencyInputPanel from '../../components/CurrencyInputPanel/SwapCurr
 import Loader from '../../components/Loader'
 import { AutoRow } from '../../components/Row'
 import confirmPriceImpactWithoutFee from '../../components/swap/confirmPriceImpactWithoutFee'
-import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
+import ConfirmLimitOrderModal from '../../components/swap/ConfirmLimitOrderModal'
 import { ArrowWrapper, PageWrapper, SwapCallbackError, SwapWrapper } from '../../components/swap/styleds'
 import LimitOrderHeader from '../../components/swap/LimitOrderHeader'
 import { SwitchLocaleLink } from '../../components/SwitchLocaleLink'
@@ -426,8 +426,9 @@ export default function LimitOrderPage({ className }: { className?: string }) {
 
   const handleConfirmDismiss = useCallback(() => {
     swapError({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
-    // if there was a tx hash, we want to clear the input
+    // if there was a tx hash, we want to clear the inputs
     if (txHash) {
+      onUserInput(Field.OUTPUT, '')
       onUserInput(Field.INPUT, '')
     }
   }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
@@ -499,7 +500,7 @@ export default function LimitOrderPage({ className }: { className?: string }) {
         <PageWrapper>
           <SwapWrapper className={className} id="swap-page">
             <LimitOrderHeader allowedSlippage={allowedSlippage}/>
-            <ConfirmSwapModal
+            <ConfirmLimitOrderModal
               isOpen={showConfirm}
               trade={trade}
               originalTrade={tradeToConfirm}
@@ -704,9 +705,9 @@ export default function LimitOrderPage({ className }: { className?: string }) {
                           {priceImpactTooHigh ? (
                             <Trans>High Price Impact</Trans>
                           ) : trade && priceImpactSeverity > 2 ? (
-                            <Trans>Swap Anyway</Trans>
+                            <Trans>Place Limit Order Anyway</Trans>
                           ) : (
-                            <Trans>Swap</Trans>
+                            <Trans>Place Limit Order</Trans>
                           )}
                         </Text>
                       </ButtonError>
@@ -788,7 +789,7 @@ export default function LimitOrderPage({ className }: { className?: string }) {
                       {limitOrderInputError ? (
                         limitOrderInputError
                       ) : (
-                        <Trans>Swap</Trans>
+                        <Trans>Place Limit Order</Trans>
                       )}
                     </Text>
                   </ButtonError>
