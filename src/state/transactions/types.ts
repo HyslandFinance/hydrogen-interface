@@ -37,6 +37,7 @@ export enum TransactionType {
   EXECUTE,
   LIMIT_ORDER,
   FAUCET_DRIP,
+  GRID_ORDER,
 }
 
 interface BaseTransactionInfo {
@@ -184,6 +185,11 @@ export interface FaucetDripTransactionInfo {
   recipientAddress: string
 }
 
+export interface GridOrderTransactionInfo {
+  type: TransactionType.GRID_ORDER
+  currencyIds: string[]
+}
+
 export type TransactionInfo =
   | ApproveTransactionInfo
   | ExactOutputSwapTransactionInfo
@@ -205,6 +211,7 @@ export type TransactionInfo =
   | SubmitProposalTransactionInfo
   | LimitOrderTransactionInfo
   | FaucetDripTransactionInfo
+  | GridOrderTransactionInfo
 
 export interface TransactionDetails {
   hash: string

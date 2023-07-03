@@ -14,6 +14,7 @@ import {
   WrapTransactionInfo,
   LimitOrderTransactionInfo,
   FaucetDripTransactionInfo,
+  GridOrderTransactionInfo,
 } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 
@@ -377,6 +378,54 @@ const FaucetDripSummary = ({
   )
 }
 
+const GridOrderSummary = ({
+  info,
+  transactionState,
+}: {
+  info: GridOrderTransactionInfo
+  transactionState: TransactionState
+}) => {
+  const actionProps = {
+    transactionState,
+    pending: <Trans>Placing grid order with</Trans>,
+    success: <Trans>Placed grid order with</Trans>,
+    failed: <Trans>Place grid order with</Trans>,
+  }
+
+  const formattedCurrencies = info.currencyIds.map(currencyId => (
+    <FormattedCurrency currencyId={currencyId} />
+  ))
+
+  const len = info.currencyIds.length
+  const items = len == 0 ? [] : len == 1 ? ([
+    formattedCurrencies[0],
+    ' '
+  ]) : len == 2 ? ([
+    formattedCurrencies[0],
+    ' ',
+    <Trans>and </Trans>,
+    ' ',
+    formattedCurrencies[1],
+    ' ',
+  ]) : ([
+    formattedCurrencies.map((cur,i) => {
+      return [
+        cur, ' ',
+        <Trans>{(i == formattedCurrencies.length - 2) ? ', and ' : (i < formattedCurrencies.length - 1) ? ', ' : undefined}</Trans>,
+        , ' '
+      ]
+    }).flat().filter(x=>!!x)
+  ])
+
+  return (
+    <BodyWrap>
+      <Action {...actionProps} />{' '}
+      {items}
+      <FailedText transactionState={transactionState} />
+    </BodyWrap>
+  )
+}
+
 const TransactionBody = ({ info, transactionState }: { info: TransactionInfo; transactionState: TransactionState }) => {
   switch (info.type) {
     case TransactionType.SWAP:
@@ -397,6 +446,8 @@ const TransactionBody = ({ info, transactionState }: { info: TransactionInfo; tr
       return <LimitOrderSummary info={info} transactionState={transactionState} />
     case TransactionType.FAUCET_DRIP:
       return <FaucetDripSummary info={info} transactionState={transactionState} />
+    case TransactionType.GRID_ORDER:
+      return <GridOrderSummary info={info} transactionState={transactionState} />
     default:
       return <span />
   }

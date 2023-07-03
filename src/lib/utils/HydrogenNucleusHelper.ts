@@ -8,6 +8,11 @@ const MaxUint128 = BN.from(2).pow(128).sub(1)
 const MAX_PPM = BN.from(1_000_000) // parts per million
 
 export default class HydrogenNucleusHelper {
+
+  // location flags
+
+  static LOCATION_THIS_POOL = "0x0000000000000000000000000000000000000000000000000000000000000001"
+
   // location functions
 
   // encode an external address as a location

@@ -69,6 +69,11 @@ const getCurrency = ({ info, chainId }: { info: TransactionInfo; chainId: number
     case TransactionType.FAUCET_DRIP: {
       return { currencyId0: info.tokenAddress, currencyId1: undefined }
     }
+    case TransactionType.GRID_ORDER:
+      const currencies = { currencyId0: undefined, currencyId1: undefined } as any
+      if(info.currencyIds.length > 0) currencies.currencyId0 = info.currencyIds[0]
+      if(info.currencyIds.length > 1) currencies.currencyId1 = info.currencyIds[1]
+      return currencies
     default:
       return { currencyId0: undefined, currencyId1: undefined }
   }

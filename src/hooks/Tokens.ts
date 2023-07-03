@@ -3,7 +3,7 @@ import { useWeb3React } from '@web3-react/core'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import { DEFAULT_INACTIVE_LIST_URLS } from 'constants/lists'
-import { useCurrencyFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
+import { useCurrencyFromMap, useCurrenciesFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
 import { isL2ChainId } from 'utils/chains'
@@ -169,4 +169,9 @@ export function useToken(tokenAddress?: string | null): Token | null | undefined
 export function useCurrency(currencyId?: string | null): Currency | null | undefined {
   const tokens = useAllTokens()
   return useCurrencyFromMap(tokens, currencyId)
+}
+
+export function useCurrencies(currencyIds?: string[] | null): (Currency | undefined)[] {
+  const tokens = useAllTokens()
+  return useCurrenciesFromMap(tokens, currencyIds)
 }
