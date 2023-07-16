@@ -9,9 +9,8 @@ export default function Updater(): null {
   const updateStatsApiState = useUpdateStatsApiState()
   const httpClient = new HttpClient()
 
-  function updateFunction() {
+  function refreshNucleusState() {
     if(!chainId) return
-    //console.log("in updateFunction()", new Date())
     const stateUrl = `https://stats.hydrogendefi.xyz/state/?chainID=${chainId}`
     httpClient.get(stateUrl, false).then((nucleusState:any) => {
       nucleusState.chainId = chainId
@@ -21,8 +20,8 @@ export default function Updater(): null {
   }
 
   useEffect(() => {
-    updateFunction()
-    const interval = setInterval(updateFunction, 30000)
+    refreshNucleusState()
+    const interval = setInterval(refreshNucleusState, 30000)
     return () => clearInterval(interval)
   }, [chainId])
 

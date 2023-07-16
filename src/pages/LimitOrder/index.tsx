@@ -64,6 +64,9 @@ import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceIm
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from '../../utils/prices'
 import { supportedChainId } from '../../utils/supportedChainId'
+import { BigNumber } from 'ethers/lib/ethers'
+import CenteringDiv from 'components/centeringDiv'
+import { usePollStatsApiForPoolID } from 'state/statsApi/hooks'
 
 const ArrowContainer = styled.div`
   display: inline-block;
@@ -273,7 +276,7 @@ export default function LimitOrderPage({ className }: { className?: string }) {
       [Field.INPUT]: typedValueInput,
       [Field.OUTPUT]: typedValueOutput,
     }),
-    [parsedAmounts]
+    [typedValueInput, typedValueOutput]
   )
 
   const userHasSpecifiedInputOutput = Boolean(
@@ -368,6 +371,9 @@ export default function LimitOrderPage({ className }: { className?: string }) {
     permit
   )
 
+  const [createdPoolID, setCreatedPoolID] = useState<number | undefined>(undefined)
+  const pollStatsApiForPoolID = usePollStatsApiForPoolID()
+
   const handleSwap = useCallback(() => {
     if (!swapCallback) {
       return
@@ -375,10 +381,17 @@ export default function LimitOrderPage({ className }: { className?: string }) {
     if (stablecoinPriceImpact && !confirmPriceImpactWithoutFee(stablecoinPriceImpact)) {
       return
     }
+    if(!!createdPoolID) setCreatedPoolID(undefined)
     swapError({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
     swapCallback()
-      .then((hash) => {
+      .then((response) => {
+        const hash = response.hash
         swapError({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
+        response.wait(1).then((receipt:any)=> {
+          const poolID = BigNumber.from(receipt.logs[0].topics[1]).toNumber()
+          setCreatedPoolID(poolID)
+          pollStatsApiForPoolID(`${poolID}`)
+        })
       })
       .catch((error) => {
         swapError({
@@ -431,6 +444,7 @@ export default function LimitOrderPage({ className }: { className?: string }) {
       onUserInput(Field.OUTPUT, '')
       onUserInput(Field.INPUT, '')
     }
+    if(!!createdPoolID) setCreatedPoolID(undefined)
   }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
 
   const handleAcceptChanges = useCallback(() => {
@@ -515,6 +529,7 @@ export default function LimitOrderPage({ className }: { className?: string }) {
               swapQuoteReceivedDate={swapQuoteReceivedDate}
               fiatValueInput={fiatValueInput}
               fiatValueOutput={fiatValueOutput}
+              createdPoolID={createdPoolID}
             />
 
             <div style={{ display: 'relative' }}>

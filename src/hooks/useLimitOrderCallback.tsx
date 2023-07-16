@@ -65,7 +65,6 @@ export function useLimitOrderCallback(
             outputCurrencyAmountRaw: trade.outputAmount.quotient.toString(),
           }
         )
-        return response.hash
         return response
       })
   }, [addTransaction, allowedSlippage, swapCallback, trade])

@@ -7,6 +7,7 @@ import { SupportedL2ChainId } from 'constants/chains'
 import useCurrencyLogoURIs from 'lib/hooks/useCurrencyLogoURIs'
 import { ReactNode, useCallback, useState } from 'react'
 import { AlertCircle, AlertTriangle, ArrowUpCircle, CheckCircle } from 'react-feather'
+import { Link } from 'react-router-dom'
 import { Text } from 'rebass'
 import { useIsTransactionConfirmed, useTransaction } from 'state/transactions/hooks'
 import styled, { useTheme } from 'styled-components/macro'
@@ -94,12 +95,14 @@ function TransactionSubmittedContent({
   hash,
   currencyToAdd,
   inline,
+  createdPoolID,
 }: {
   onDismiss: () => void
   hash: string | undefined
   chainId: number
   currencyToAdd?: Currency | undefined
   inline?: boolean // not in modal
+  createdPoolID?: number | undefined
 }) {
   const theme = useTheme()
 
@@ -229,6 +232,7 @@ function L2Content({
   hash,
   pendingText,
   inline,
+  createdPoolID,
 }: {
   onDismiss: () => void
   hash: string | undefined
@@ -236,6 +240,7 @@ function L2Content({
   currencyToAdd?: Currency | undefined
   pendingText: ReactNode
   inline?: boolean // not in modal
+  createdPoolID?: number | undefined
 }) {
   const theme = useTheme()
 
@@ -291,10 +296,17 @@ function L2Content({
           <Text fontWeight={400} fontSize={16} textAlign="center">
             {transaction ? <TransactionSummary info={transaction.info} /> : pendingText}
           </Text>
+          {chainId && hash && createdPoolID && (
+            <Link to={`/pool/?poolID=${createdPoolID}`} style={{textDecoration:"none"}}>
+              <Text fontWeight={500} fontSize={16} color={theme.accentAction}>
+                <Trans>View your new pool</Trans>
+              </Text>
+            </Link>
+          )}
           {chainId && hash ? (
             <ExternalLink href={getExplorerLink(chainId, hash, ExplorerDataType.TRANSACTION)}>
               <Text fontWeight={500} fontSize={14} color={theme.accentAction}>
-                <Trans>View on Explorer</Trans>
+                <Trans>View transaction on Explorer</Trans>
               </Text>
             </ExternalLink>
           ) : (
@@ -331,6 +343,7 @@ interface ConfirmationModalProps {
   attemptingTxn: boolean
   pendingText: ReactNode
   currencyToAdd?: Currency | undefined
+  createdPoolID?: number | undefined
 }
 
 export default function TransactionConfirmationModal({
@@ -341,6 +354,7 @@ export default function TransactionConfirmationModal({
   pendingText,
   content,
   currencyToAdd,
+  createdPoolID,
 }: ConfirmationModalProps) {
   const { chainId } = useWeb3React()
 
@@ -350,7 +364,7 @@ export default function TransactionConfirmationModal({
   return (
     <Modal isOpen={isOpen} $scrollOverlay={true} onDismiss={onDismiss} maxHeight={90}>
       {/*isL2ChainId(chainId) && */(hash || attemptingTxn) ? (
-        <L2Content chainId={chainId} hash={hash} onDismiss={onDismiss} pendingText={pendingText} />
+        <L2Content chainId={chainId} hash={hash} onDismiss={onDismiss} pendingText={pendingText} createdPoolID={createdPoolID} />
       ) : attemptingTxn ? (
         <ConfirmationPendingContent onDismiss={onDismiss} pendingText={pendingText} />
       ) : hash ? (
@@ -359,6 +373,7 @@ export default function TransactionConfirmationModal({
           hash={hash}
           onDismiss={onDismiss}
           currencyToAdd={currencyToAdd}
+          createdPoolID={createdPoolID}
         />
       ) : (
         content()
