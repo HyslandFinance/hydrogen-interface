@@ -120,6 +120,7 @@ const PriceSelector = ({
       }, 0)
     }
   }, [localValue, useLocalValue, value])
+  const ratioText = `${tokenQuote} per ${tokenBase}`
 
   return (
     <FocusedOutlineCard pulsing={pulsing} active={active} onFocus={handleOnFocus} onBlur={handleOnBlur} width={width}>
@@ -153,9 +154,7 @@ const PriceSelector = ({
         </InputRow>
 
         <InputTitle fontSize={12} textAlign="center">
-          <Trans>
-            {tokenQuote} per {tokenBase}
-          </Trans>
+          {ratioText}
         </InputTitle>
       </AutoColumn>
     </FocusedOutlineCard>

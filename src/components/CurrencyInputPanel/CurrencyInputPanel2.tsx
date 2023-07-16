@@ -185,6 +185,7 @@ interface CurrencyInputPanelProps {
   pair?: Pair | null
   hideInput?: boolean
   otherCurrency?: Currency | null
+  fiatValue?: CurrencyAmount<Token> | null
   isOptional?: boolean
   priceImpact?: Percent
   id: string
@@ -210,6 +211,7 @@ export default function CurrencyInputPanel2({
   showCurrencyAmount,
   disableNonToken,
   renderBalance,
+  fiatValue,
   isOptional = false,
   priceImpact,
   hideBalance = false,
@@ -244,7 +246,7 @@ export default function CurrencyInputPanel2({
       return undefined
     }
   }, [currency, value])
-  const fiatValue = useStablecoinValue(currencyAmount)
+  //const fiatValue = useStablecoinValue(currencyAmount)
 
   return (
     <InputPanel id={id} hideInput={hideInput} {...rest}>

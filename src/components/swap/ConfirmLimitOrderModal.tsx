@@ -29,6 +29,7 @@ export default function ConfirmLimitOrderModal({
   swapQuoteReceivedDate,
   fiatValueInput,
   fiatValueOutput,
+  createdPoolID,
 }: {
   isOpen: boolean
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined
@@ -44,6 +45,7 @@ export default function ConfirmLimitOrderModal({
   swapQuoteReceivedDate: Date | undefined
   fiatValueInput?: CurrencyAmount<Token> | null
   fiatValueOutput?: CurrencyAmount<Token> | null
+  createdPoolID?: number | undefined
 }) {
   // shouldLogModalCloseEvent lets the child LimitOrderModalHeader component know when modal has been closed
   // and an event triggered by modal closing should be logged.
@@ -99,12 +101,7 @@ export default function ConfirmLimitOrderModal({
   ])
 
   // text to show while loading
-  const pendingText = (
-    <Trans>
-      Swapping {trade?.inputAmount?.toSignificant(6)} {trade?.inputAmount?.currency?.symbol} for{' '}
-      {trade?.outputAmount?.toSignificant(6)} {trade?.outputAmount?.currency?.symbol}
-    </Trans>
-  )
+  const pendingText = `Placing limit order ${trade?.inputAmount?.toSignificant(6)} ${trade?.inputAmount?.currency?.symbol} for ${trade?.outputAmount?.toSignificant(6)} ${trade?.outputAmount?.currency?.symbol}`
 
   const confirmationContent = useCallback(
     () =>
@@ -131,6 +128,7 @@ export default function ConfirmLimitOrderModal({
         content={confirmationContent}
         pendingText={pendingText}
         currencyToAdd={trade?.outputAmount.currency}
+        createdPoolID={createdPoolID}
       />
     </Trace>
   )

@@ -99,12 +99,7 @@ export default function ConfirmMarketOrderModal({
   ])
 
   // text to show while loading
-  const pendingText = (
-    <Trans>
-      Swapping {trade?.inputAmount?.toSignificant(6)} {trade?.inputAmount?.currency?.symbol} for{' '}
-      {trade?.outputAmount?.toSignificant(6)} {trade?.outputAmount?.currency?.symbol}
-    </Trans>
-  )
+  const pendingText = `Placing market order ${trade?.inputAmount?.toSignificant(6)} ${trade?.inputAmount?.currency?.symbol} for ${trade?.outputAmount?.toSignificant(6)} ${trade?.outputAmount?.currency?.symbol}`
 
   const confirmationContent = useCallback(
     () =>

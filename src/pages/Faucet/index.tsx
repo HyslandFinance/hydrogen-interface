@@ -70,6 +70,10 @@ const TokenTextBreaker = styled.br`
 
 const TokenWarningContainer = styled.div`
   margin-left: 70px;
+
+  @media (max-width: 600px) {
+    margin-left: 0px;
+  }
 `
 
 const TokenText = styled.p`
@@ -218,10 +222,10 @@ export default function FaucetPage({ className }: { className?: string }) {
 
   const tokenNotes = useMemo(() => {
     if(!chainId) return {}
-    if(chainId == 84531) return {'WETH': 'Note: this mock WETH is not redeemable for ETH'}
+    if(chainId == 84531) return {'WETH': <p style={{marginBottom:"0"}}>Note: this mock WETH is <TokenTextBreaker/>not redeemable for ETH</p>}
     if(chainId == 80001) return {
-      'WETH': 'Note: this mock WETH is not redeemable for ETH',
-      'WMATIC': 'Note: this mock WETH is not redeemable for MATIC',
+      'WETH': <p style={{marginBottom:"0"}}>Note: this mock WETH is <TokenTextBreaker/>not redeemable for ETH</p>,
+      'WMATIC': <p style={{marginBottom:"0"}}>Note: this mock WETH is <TokenTextBreaker/>not redeemable for MATIC</p>,
     }
     return {}
   }, [chainId]) as any
@@ -236,22 +240,26 @@ export default function FaucetPage({ className }: { className?: string }) {
           <TokenOuterContainer key={token.tokenInfo.address}>
             <TokenInnerContainer>
               <TokenMetadataMobileView>
-                <TokenIcon src={`https://assets.hydrogendefi.xyz/tokens/${token.tokenInfo.symbol}`} alt={`${token.tokenInfo.symbol} icon`}/>
-                <TokenTextContainer>
-                  <TokenText>
-                    {token.tokenInfo.symbol}{" "}<TokenTextBreaker/>{token.tokenInfo.address.substring(0,21)}<TokenTextBreaker/>{token.tokenInfo.address.substring(21)}
-                  </TokenText>
-                </TokenTextContainer>
+                <CenteringDiv>
+                  <div>
+                    <TokenIcon src={`https://assets.hydrogendefi.xyz/tokens/${token.tokenInfo.symbol}`} alt={`${token.tokenInfo.symbol} icon`}/>
+                    <TokenText>
+                      {token.tokenInfo.symbol}
+                    </TokenText>
+                  </div>
+                </CenteringDiv>
+                <CenteringDiv>
+                  <p style={{marginTop:"32px", marginBottom:"0"}}>
+                    {token.tokenInfo.address.substring(0,21)}<TokenTextBreaker/>{token.tokenInfo.address.substring(21)}
+                  </p>
+                </CenteringDiv>
                 {
                   tokenNotes[token.tokenInfo.symbol] ? (
-                    <>
-                    <TokenTextBreaker/>
-                    <TokenWarningContainer>
-                      <TokenText>
+                    <CenteringDiv>
+                      <TokenWarningContainer>
                         {tokenNotes[token.tokenInfo.symbol]}
-                      </TokenText>
-                    </TokenWarningContainer>
-                    </>
+                      </TokenWarningContainer>
+                    </CenteringDiv>
                   ) : null
                 }
               </TokenMetadataMobileView>
@@ -267,9 +275,7 @@ export default function FaucetPage({ className }: { className?: string }) {
                     <>
                     <TokenTextBreaker/>
                     <TokenWarningContainer>
-                      <TokenText>
-                        {tokenNotes[token.tokenInfo.symbol]}
-                      </TokenText>
+                      {tokenNotes[token.tokenInfo.symbol]}
                     </TokenWarningContainer>
                     </>
                   ) : null

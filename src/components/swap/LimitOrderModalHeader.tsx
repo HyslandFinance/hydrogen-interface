@@ -19,7 +19,7 @@ import { FiatValue } from '../CurrencyInputPanel/FiatValue'
 import CurrencyLogo from '../Logo/CurrencyLogo'
 import { RowBetween, RowFixed } from '../Row'
 import TradePrice from '../swap/TradePrice'
-import { AdvancedSwapDetails } from './AdvancedSwapDetails'
+import { AdvancedLimitOrderDetails } from './AdvancedLimitOrderDetails'
 import { SwapShowAcceptChanges, TruncatedText } from './styleds'
 
 const ArrowWrapper = styled.div`
@@ -154,7 +154,7 @@ export default function LimitOrderModalHeader({
         <TradePrice price={trade.executionPrice} />
       </RowBetween>
       <LightCard style={{ padding: '.75rem', marginTop: '0.5rem' }}>
-        <AdvancedSwapDetails trade={trade} allowedSlippage={allowedSlippage} />
+        <AdvancedLimitOrderDetails trade={trade} allowedSlippage={allowedSlippage} />
       </LightCard>
       {showAcceptChanges ? (
         <SwapShowAcceptChanges justify="flex-start" gap="0px">
@@ -184,14 +184,12 @@ export default function LimitOrderModalHeader({
         {trade.tradeType === TradeType.EXACT_INPUT ? (
           <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
             <Trans>
-              Output is estimated.<br/>
               You may not receive the output immediately. You are creating a trade request and will receive the output when a market taker trades against it.
             </Trans>
           </ThemedText.DeprecatedItalic>
         ) : (
           <ThemedText.DeprecatedItalic fontWeight={400} textAlign="left" style={{ width: '100%' }}>
             <Trans>
-              Input is estimated.<br/>
               You may not receive the output immediately. You are creating a trade request and will receive the output when a market taker trades against it.
             </Trans>
           </ThemedText.DeprecatedItalic>

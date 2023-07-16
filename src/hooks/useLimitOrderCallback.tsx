@@ -22,7 +22,7 @@ export function useLimitOrderCallback(
   recipientAddressOrName: string | null, // the ENS name or address of the recipient of the trade, or null if swap should be returned to sender
   signatureData: SignatureData | undefined | null,
   permit: Permit | undefined
-): { state: LimitOrderCallbackState; callback: null | (() => Promise<string>); error: ReactNode | null } {
+): { state: LimitOrderCallbackState; callback: null | (() => Promise<any>); error: ReactNode | null } {
   const { account } = useWeb3React()
 
   const deadline = useTransactionDeadline()
@@ -66,6 +66,7 @@ export function useLimitOrderCallback(
           }
         )
         return response.hash
+        return response
       })
   }, [addTransaction, allowedSlippage, swapCallback, trade])
 

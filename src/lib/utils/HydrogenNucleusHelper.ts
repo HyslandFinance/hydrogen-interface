@@ -57,6 +57,26 @@ export default class HydrogenNucleusHelper {
     } else return `invalid location ${loc}`
   }
 
+  // poolID functions
+
+  // returns true if the given string parses to a valid poolID
+  // does not determine if the pool exists or not
+  static poolIDisValid(poolID: string) {
+    try {
+      if(!poolID || poolID.length <= 3) return false
+      const c = poolID[0]
+      if(c == '-' || c == '0') return false
+      const poolType = poolID.substring(poolID.length-3)
+      if(poolType != '001' && poolType != '002') return false
+      const num = BN.from(poolID)
+      const str = num.toString()
+      if(poolID != str) return false
+      return true
+    } catch(e) {
+      return false
+    }
+  }
+
   // exchange rate functions
 
   // encodes an exchange rate
