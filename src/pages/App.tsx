@@ -24,19 +24,10 @@ import Polling from '../components/Polling'
 import Popups from '../components/Popups'
 import { useIsExpertMode } from '../state/user/hooks'
 import DarkModeQueryParamReader from '../theme/components/DarkModeQueryParamReader'
-import AddLiquidity from './AddLiquidity'
-import { RedirectDuplicateTokenIds } from './AddLiquidity/redirects'
-import { RedirectDuplicateTokenIdsV2 } from './AddLiquidityV2/redirects'
 import Landing from './Landing'
-import MigrateV2 from './MigrateV2'
-import MigrateV2Pair from './MigrateV2/MigrateV2Pair'
 import NotFound from './NotFound'
-import Pool from './Pool'
-import { PositionPage } from './Pool/PositionPage'
-import PoolV2 from './Pool/v2'
-import PoolFinder from './PoolFinder'
-import RemoveLiquidity from './RemoveLiquidity'
-import RemoveLiquidityV3 from './RemoveLiquidity/V3'
+import PoolPage from './Pool/PoolPage'
+import PoolsPage from './Pool/PoolsPage'
 
 import TradePage from './Trade'
 import LimitOrderPage from './LimitOrder'
@@ -204,116 +195,16 @@ export default function App() {
               <Routes>
                 <Route path="/" element={<Landing />} />
 
-                {/*
-                <Route path="tokens" element={<Tokens />}>
-                  <Route path=":chainName" />
-                </Route>
-                <Route path="tokens/:chainName/:tokenAddress" element={<TokenDetails />} />
-                */}
-                {/*
-                <Route
-                  path="vote/*"
-                  element={
-                    <Suspense fallback={<LazyLoadSpinner />}>
-                      <Vote />
-                    </Suspense>
-                  }
-                />
-                <Route path="create-proposal" element={<Navigate to="/vote/create-proposal" replace />} />
-                */}
-                {/*
-                <Route path="send" element={<RedirectPathToSwapOnly />} />
-                <Route path="swap" element={<Swap />} />
-                */}
                 <Route path="trade" element={<TradePage />} />
                 <Route path="limit_order" element={<LimitOrderPage />} />
                 <Route path="market_order" element={<MarketOrderPage />} />
                 <Route path="grid_order" element={<GridOrderPage />} />
 
+                <Route path="pool" element={<PoolPage />} />
+                <Route path="pools" element={<PoolsPage />} />
+
                 <Route path="faucet" element={<FaucetPage />} />
 
-                {/*}
-                <Route path="pool/v2/find" element={<PoolFinder />} />
-                <Route path="pool/v2" element={<PoolV2 />} />
-                <Route path="pool" element={<Pool />} />
-                <Route path="pool/:tokenId" element={<PositionPage />} />
-                */}
-                <Route path="pool/find" element={<PoolFinder />} />
-                <Route path="pool" element={<PoolV2 />} />
-
-                {/*
-                <Route path="add/v2" element={<RedirectDuplicateTokenIdsV2 />}>
-                  <Route path=":currencyIdA" />
-                  <Route path=":currencyIdA/:currencyIdB" />
-                </Route>
-                <Route path="add" element={<RedirectDuplicateTokenIds />}>
-                  { this is workaround since react-router-dom v6 doesn't support optional parameters any more }
-                  <Route path=":currencyIdA" />
-                  <Route path=":currencyIdA/:currencyIdB" />
-                  <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
-                </Route>
-
-                <Route path="increase" element={<AddLiquidity />}>
-                  <Route path=":currencyIdA" />
-                  <Route path=":currencyIdA/:currencyIdB" />
-                  <Route path=":currencyIdA/:currencyIdB/:feeAmount" />
-                  <Route path=":currencyIdA/:currencyIdB/:feeAmount/:tokenId" />
-                </Route>
-                */}
-                <Route path="add" element={<RedirectDuplicateTokenIdsV2 />}>
-                  <Route path=":currencyIdA" />
-                  <Route path=":currencyIdA/:currencyIdB" />
-                </Route>
-
-                <Route path="remove/v2/:currencyIdA/:currencyIdB" element={<RemoveLiquidity />} />
-                {/*<Route path="remove/:tokenId" element={<RemoveLiquidityV3 />} />*/}
-
-                {/*
-                <Route path="migrate/v2" element={<MigrateV2 />} />
-                <Route path="migrate/v2/:address" element={<MigrateV2Pair />} />
-                */}
-                {/*
-                <Route
-                  path="/nfts"
-                  element={
-                    <Suspense fallback={null}>
-                      <NftExplore />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/nfts/asset/:contractAddress/:tokenId"
-                  element={
-                    <Suspense fallback={null}>
-                      <Asset />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/nfts/profile"
-                  element={
-                    <Suspense fallback={null}>
-                      <Profile />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/nfts/collection/:contractAddress"
-                  element={
-                    <Suspense fallback={null}>
-                      <Collection />
-                    </Suspense>
-                  }
-                />
-                <Route
-                  path="/nfts/collection/:contractAddress/activity"
-                  element={
-                    <Suspense fallback={null}>
-                      <Collection />
-                    </Suspense>
-                  }
-                />
-                */}
                 <Route path="*" element={<Navigate to="/not-found" replace />} />
                 <Route path="/not-found" element={<NotFound />} />
               </Routes>

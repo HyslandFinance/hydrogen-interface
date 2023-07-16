@@ -53,11 +53,7 @@ export const PageTabs = () => {
     pathname.startsWith('/grid_order')
 
   const isPoolActive =
-    pathname.startsWith('/pool') ||
-    pathname.startsWith('/add') ||
-    pathname.startsWith('/remove') ||
-    pathname.startsWith('/increase') ||
-    pathname.startsWith('/find')
+    pathname.startsWith('/pool') // or pools
 
   const isFaucetActive =
     pathname.startsWith('/faucet')
@@ -67,11 +63,9 @@ export const PageTabs = () => {
       <MenuItem href="/trade" id="trade-nav-link" isActive={isTradeActive}>
         <Trans>Trade</Trans>
       </MenuItem>
-      {/*
-      <MenuItem href="/pool" id="pool-nav-link" isActive={isPoolActive}>
-        <Trans>Pool</Trans>
+      <MenuItem href="/pools" id="pool-nav-link" isActive={isPoolActive}>
+        <Trans>Pools</Trans>
       </MenuItem>
-      */}
       <MenuItem href="/faucet" id="faucet-nav-link" isActive={isFaucetActive}>
         <Trans>Faucet</Trans>
       </MenuItem>
