@@ -84,6 +84,7 @@ import { TransactionType } from 'state/transactions/types'
 import { stringValueIsPositiveFloat } from 'utils/stringValueIsPositiveFloat'
 import { usePollStatsApiForPoolID } from 'state/statsApi/hooks'
 import ConfirmGridOrderModal from 'components/swap/ConfirmGridOrderModal'
+import { colors } from 'theme/colors'
 
 const ArrowContainer = styled.div`
   display: inline-block;
@@ -152,10 +153,15 @@ const SwapWrapperInner = styled.div`
 
 const MarketPriceText = styled.p`
   color: ${({ theme }) => theme.textSecondary};
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   margin-top: 12px;
   margin-bottom: 0;
+`
+
+const PairCardMessageText = styled.p`
+  margin: 0.5rem 0 0 0;
+  font-size: 13px;
 `
 
 export function getIsValidGridOrderQuote(
@@ -598,6 +604,39 @@ const handleConfirmDismiss = useCallback(() => {
       : undefined
     )
 
+    function tryParseFloat(s: string | undefined) {
+      try {
+        if(!s) return undefined
+        return parseFloat(s)
+      } catch(e) {
+        return undefined
+      }
+    }
+
+    const buyPrice2 = tryParseFloat(pair.typedValueBuyPrice)
+    const sellPrice2 = tryParseFloat(pair.typedValueSellPrice)
+    const marketPrice2 = tryParseFloat(priceString)
+
+    function formatPercent(n: number) {
+      let s = `${n * 100}`
+      const index = s.indexOf('.')
+      if(index >= 0) {
+        s = s.substring(0, index)
+      }
+      return `${s}%`
+    }
+
+    const messages = []
+    if(buyPrice2 && sellPrice2) {
+      if(buyPrice2 > sellPrice2) messages.push({color: colors.red400, text: 'Buy price is greater than sell price'})
+      else if(marketPrice2) {
+        if(buyPrice2 < marketPrice2 * 0.5) messages.push({color: colors.yellow100, text: `Buy price is ${formatPercent(1-(buyPrice2/marketPrice2))} lower than market price. Are you sure?`})
+        else if(buyPrice2 > marketPrice2 * 1.05) messages.push({color: colors.yellow100, text: `Buy price is ${formatPercent((buyPrice2/marketPrice2)-1)} greater than market price. Are you sure?`})
+        if(sellPrice2 < marketPrice2 * 0.95) messages.push({color: colors.yellow100, text: `Sell price is ${formatPercent(1-(sellPrice2/marketPrice2))} lower than market price. Are you sure?`})
+        else if(sellPrice2 > marketPrice2 * 1.5) messages.push({color: colors.yellow100, text: `Sell price is ${formatPercent((sellPrice2/marketPrice2)-1)} greater than market price. Are you sure?`})
+      }
+    }
+
     return (
       <SwapWrapperWrapper key={pairIndex}>
         <SwapWrapper className={className} id={`grid-order-pair-card-${pairIndex}`} >
@@ -658,6 +697,18 @@ const handleConfirmDismiss = useCallback(() => {
                       Current market price: {priceString} {currencyQuote?.symbol} per {currencyBase?.symbol}
                     </MarketPriceText>
                   </CenteringDiv>
+                )}
+                {messages.length > 0 && (
+                  <div>
+                    <div style={{marginTop:"0.5rem"}}/>
+                    {messages.map((message:any,messageIndex:number) => (
+                      <CenteringDiv key={messageIndex}>
+                        <PairCardMessageText style={{color:message.color}}>
+                          {message.text}
+                        </PairCardMessageText>
+                      </CenteringDiv>
+                    ))}
+                  </div>
                 )}
               </>
             ) : undefined}
