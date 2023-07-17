@@ -8,6 +8,7 @@ import { formatDollar, formatTransactionAmount, priceToPreciseFloat } from 'util
 
 interface TradePriceProps {
   price: Price<Currency, Currency>
+  showDollarAmount?: boolean
 }
 
 const StyledPriceContainer = styled.button`
@@ -27,7 +28,10 @@ const StyledPriceContainer = styled.button`
   user-select: text;
 `
 
-export default function TradePrice({ price }: TradePriceProps) {
+export default function TradePrice({
+  price,
+  showDollarAmount = true,
+}: TradePriceProps) {
   const [showInverted, setShowInverted] = useState<boolean>(false)
 
   const usdcPrice = useStablecoinPrice(showInverted ? price.baseCurrency : price.quoteCurrency)
@@ -56,10 +60,15 @@ export default function TradePrice({ price }: TradePriceProps) {
       title={text}
     >
       <ThemedText.BodySmall>{text}</ThemedText.BodySmall>{' '}
-      {usdcPrice && (
-        <ThemedText.DeprecatedDarkGray>
-          <Trans>({formatDollar({ num: priceToPreciseFloat(usdcPrice), isPrice: true })})</Trans>
-        </ThemedText.DeprecatedDarkGray>
+      {showDollarAmount && (
+        <>
+          {' '}
+          {usdcPrice && (
+            <ThemedText.DeprecatedDarkGray>
+              <Trans>({formatDollar({ num: priceToPreciseFloat(usdcPrice), isPrice: true })})</Trans>
+            </ThemedText.DeprecatedDarkGray>
+          )}
+        </>
       )}
     </StyledPriceContainer>
   )

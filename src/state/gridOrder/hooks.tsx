@@ -19,7 +19,7 @@ import useParsedQueryString from '../../hooks/useParsedQueryString'
 import { isAddress } from '../../utils'
 import { useCurrencyBalances } from '../connection/hooks'
 import { AppState } from '../index'
-import { Field, PriceField, PairState, GridOrderState, replaceGridOrderState, selectCurrencies, typeInput, depositAmountInput } from './actions'
+import { Field, PriceField, PairState, GridOrderState, replaceGridOrderState, clearGridOrderState, selectCurrencies, typeInput, depositAmountInput } from './actions'
 
 export function useGridOrderState(): AppState['gridOrder'] {
   return useAppSelector((state) => state.gridOrder)
@@ -31,6 +31,7 @@ export function useGridOrderState(): AppState['gridOrder'] {
 //onAddNewPair: () => void
 export function useGridOrderActionHandlers(): {
   onReplaceGridOrderState: (newState: GridOrderState) => void
+  onClearGridOrderState: () => void
   onCurrencySelection: (pairIndex: number, currencyIdBase: string|undefined, currencyIdQuote: string|undefined) => void
   onPriceInput: (pairIndex: number, field: PriceField, typedValue: string) => void
   onDepositAmountInput: (depositIndex: number, amount: string) => void
@@ -41,6 +42,24 @@ export function useGridOrderActionHandlers(): {
   const onReplaceGridOrderState = useCallback(
     (newState: GridOrderState) => {
       dispatch(replaceGridOrderState({ newState }))
+    },
+    [dispatch]
+  )
+
+  const initialGridOrderState: GridOrderState = {
+      pairs: [{
+        typedValueBuyPrice: '',
+        typedValueSellPrice: '',
+        [Field.BASE_TOKEN]: { currencyId: undefined },
+        [Field.QUOTE_TOKEN]: { currencyId: undefined },
+      }],
+      deposits: [],
+      recipient: null,
+  }
+
+  const onClearGridOrderState = useCallback(
+    () => {
+      dispatch(replaceGridOrderState({newState: initialGridOrderState}))
     },
     [dispatch]
   )
@@ -73,6 +92,7 @@ export function useGridOrderActionHandlers(): {
 
   return {
     onReplaceGridOrderState,
+    onClearGridOrderState,
     onCurrencySelection,
     onPriceInput,
     onDepositAmountInput,

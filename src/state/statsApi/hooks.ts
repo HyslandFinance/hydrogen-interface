@@ -57,7 +57,7 @@ export function usePollStatsApiForPoolID() {
     })
   }
 
-  async function poll(poolID: string) {
+  async function poll(poolID: number) {
     async function nextIter() {
       const nucleusState = await refreshNucleusState()
       const cond = pollTerminateCondition(nucleusState, poolID)
@@ -67,7 +67,7 @@ export function usePollStatsApiForPoolID() {
     nextIter()
   }
 
-  function pollTerminateCondition(nucleusState: any, poolID: string) {
+  function pollTerminateCondition(nucleusState: any, poolID: number) {
     if(!nucleusState || !!nucleusState.loading) return false
     if(nucleusState.pools.hasOwnProperty(poolID)) return true
     if(!!nucleusState.pools[poolID]) return true

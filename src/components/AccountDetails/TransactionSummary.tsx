@@ -26,6 +26,7 @@ import {
   WrapTransactionInfo,
   FaucetDripTransactionInfo,
   LimitOrderTransactionInfo,
+  GridOrderTransactionInfo,
 } from '../../state/transactions/types'
 
 function formatAmount(amountRaw: string, decimals: number, sigFigs: number): string {
@@ -309,7 +310,7 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
 function LimitOrderSummary({ info }: { info: LimitOrderTransactionInfo }) {
   return (
     <Trans>
-      {'Limit order '}
+      {'Place limit order '}
       <FormattedCurrencyAmountManaged
         rawAmount={info.inputCurrencyAmountRaw}
         currencyId={info.inputCurrencyId}
@@ -321,6 +322,14 @@ function LimitOrderSummary({ info }: { info: LimitOrderTransactionInfo }) {
         currencyId={info.outputCurrencyId}
         sigFigs={6}
       />
+    </Trans>
+  )
+}
+
+function GridOrderSummary({ info }: { info: GridOrderTransactionInfo }) {
+  return (
+    <Trans>
+      {'Place grid order'}
     </Trans>
   )
 }
@@ -397,6 +406,9 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
 
     case TransactionType.LIMIT_ORDER:
       return <LimitOrderSummary info={info} />
+
+    case TransactionType.GRID_ORDER:
+      return <GridOrderSummary info={info} />
 
     case TransactionType.FAUCET_DRIP:
       return <FaucetDripSummary info={info} />

@@ -53,3 +53,4 @@ export const setRecipient = createAction<{ recipient: string | null }>('GridOrde
 export const replaceGridOrderState = createAction<{
   newState: GridOrderState
 }>('GridOrder/replaceGridOrderState')
+export const clearGridOrderState = createAction<{}>('GridOrder/clearGridOrderState')

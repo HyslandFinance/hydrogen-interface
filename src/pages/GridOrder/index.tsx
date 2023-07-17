@@ -53,7 +53,6 @@ import { useStablecoinValue } from '../../hooks/useStablecoinPrice'
 import useWrapCallback, { WrapErrorText, WrapType } from '../../hooks/useWrapCallback'
 import { Field, PriceField, PairState, DepositState, GridOrderState } from '../../state/gridOrder/actions'
 import {
-  //useDefaultsFromURLSearch,
   useDerivedGridOrderInfo,
   useGridOrderActionHandlers,
   useGridOrderState,
@@ -65,7 +64,7 @@ import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from '../../utils/prices'
 import { supportedChainId } from '../../utils/supportedChainId'
 import CenteringDiv from 'components/centeringDiv'
-import { CurrencyDropdown } from 'pages/AddLiquidity/styled'
+import { CurrencyDropdown } from './styled'
 import { currencyId } from 'utils/currencyId'
 import PriceSelectors from 'components/PriceSelectors'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
@@ -74,15 +73,17 @@ import CurrencyInputPanel2 from 'components/CurrencyInputPanel/CurrencyInputPane
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
 import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
 import HydrogenNucleusHelper from 'lib/utils/HydrogenNucleusHelper'
-import { Interface } from 'ethers/lib/utils'
+import { formatUnits, Interface } from 'ethers/lib/utils'
 import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
 import { parseUnits } from '@ethersproject/units'
-import { AddressZero } from '@ethersproject/constants'
+import { AddressZero, WeiPerEther } from '@ethersproject/constants'
 import { currencyAmountToString, currencyAmountToBigNumber } from 'lib/utils/currencyAmountToString'
 import { calculateGasMargin } from 'utils/calculateGasMargin'
 import { TransactionType } from 'state/transactions/types'
 import { stringValueIsPositiveFloat } from 'utils/stringValueIsPositiveFloat'
+import { usePollStatsApiForPoolID } from 'state/statsApi/hooks'
+import ConfirmGridOrderModal from 'components/swap/ConfirmGridOrderModal'
 
 const ArrowContainer = styled.div`
   display: inline-block;
@@ -149,6 +150,14 @@ const SwapWrapperInner = styled.div`
   margin: 8px 12px;
 `
 
+const MarketPriceText = styled.p`
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 12px;
+  margin-bottom: 0;
+`
+
 export function getIsValidGridOrderQuote(
   trade: InterfaceTrade<Currency, Currency, TradeType> | undefined,
   tradeState: TradeState,
@@ -212,13 +221,29 @@ export default function GridOrderPage({ className }: { className?: string }) {
     atLeastOneDepositAmountFilled,
   } = useDerivedGridOrderInfo()
 
-  const { onCurrencySelection, onPriceInput, onDepositAmountInput } = useGridOrderActionHandlers()
+  const { onCurrencySelection, onPriceInput, onDepositAmountInput, onReplaceGridOrderState, onClearGridOrderState } = useGridOrderActionHandlers()
 
   const { address: recipientAddress } = useENSAddress(recipient)
 
-  const [attemptingTxn, setAttemptingTxn] = useState<boolean>(false) // clicked confirm
   const addTransaction = useTransactionAdder()
-  const [txHash, setTxHash] = useState<string>('')
+
+  // modal and loading
+  const [{ showConfirm, errorMessage, attemptingTxn, txHash }, setModalState] = useState<{
+    showConfirm: boolean
+    attemptingTxn: boolean
+    errorMessage: string | undefined
+    txHash: string | undefined
+  }>({
+    showConfirm: false,
+    attemptingTxn: false,
+    errorMessage: undefined,
+    txHash: undefined,
+  })
+
+const handleConfirmDismiss = useCallback(() => {
+  setModalState({ showConfirm: false, attemptingTxn, errorMessage, txHash })
+  if(!!createdPoolID) setCreatedPoolID(undefined)
+}, [attemptingTxn, errorMessage, txHash])
 
   const handleCurrencySelect = useCallback(
     (pairIndex:number, field: Field, currencyNew: Currency) => {
@@ -301,6 +326,45 @@ export default function GridOrderPage({ className }: { className?: string }) {
   const maxDepositTokens = 20
   const depositIndices = []
   for(let i = 0; i < maxDepositTokens; i++) depositIndices.push(i)
+
+  const fiatValuesPerToken = depositIndices.map((depositIndex:number) => {
+    const currencyAmount = (() => {
+      try {
+        const deposit = deposits[depositIndex]
+        const currency = currenciesById[deposit.currencyId||'']
+        const c2 = currency as any
+        if(!c2 || !c2.tokenInfo.decimals) return undefined
+        const value = '1'
+        const parsedAmount = parseUnits(value, c2.tokenInfo.decimals).toString()
+        const currencyAmount = CurrencyAmount.fromRawAmount(currency, parsedAmount)
+        return currencyAmount
+      } catch(e) {
+        return undefined
+      }
+    })()
+    return useStablecoinValue(currencyAmount)
+  })
+
+  const fiatValuesForDepositAmount = depositIndices.map((depositIndex:number) => {
+    const currencyAmount = (() => {
+      try {
+        const deposit = deposits[depositIndex]
+        const currency = currenciesById[deposit.currencyId||'']
+        const value = deposit.typedAmount
+        if(!currency || !value) {
+          return undefined
+        }
+        const c2 = currency as any
+        const parsedAmount = parseUnits(value, c2.tokenInfo.decimals).toString()
+        const currencyAmount = CurrencyAmount.fromRawAmount(currency, parsedAmount)
+        return currencyAmount
+      } catch(e) {
+        return undefined
+      }
+    })()
+    return useStablecoinValue(currencyAmount)
+  })
+
   const approvals = depositIndices.map((depositIndex:number) => {
     const typedAmount = depositIndex >= deposits.length ? '' : deposits[depositIndex].typedAmount
     const currency = depositIndex >= deposits.length ? undefined : currenciesById[deposits[depositIndex].currencyId||'']
@@ -344,6 +408,9 @@ export default function GridOrderPage({ className }: { className?: string }) {
 
   const addIsUnsupported = false
   const nucleusInterface = useMemo(() => new Interface(nucleusAbi), [nucleusAbi])
+
+  const [createdPoolID, setCreatedPoolID] = useState<number | undefined>(undefined)
+  const pollStatsApiForPoolID = usePollStatsApiForPoolID()
 
   async function handlePlaceGridOrder() {
     // checks
@@ -411,7 +478,8 @@ export default function GridOrderPage({ className }: { className?: string }) {
       value: '0',
     }
 
-    setAttemptingTxn(true)
+    if(!!createdPoolID) setCreatedPoolID(undefined)
+    setModalState({ attemptingTxn: true, showConfirm, errorMessage: undefined, txHash: undefined })
 
     provider
       .getSigner()
@@ -426,22 +494,33 @@ export default function GridOrderPage({ className }: { className?: string }) {
           .getSigner()
           .sendTransaction(newTxn)
           .then((response: TransactionResponse) => {
-            setAttemptingTxn(false)
+            setModalState({ attemptingTxn: false, showConfirm, errorMessage: undefined, txHash: response.hash })
             addTransaction(response, {
               type: TransactionType.GRID_ORDER,
               currencyIds: currencyIds,
             })
-            setTxHash(response.hash)
+            response.wait(1).then((receipt:any)=> {
+              const poolID = BigNumber.from(receipt.logs[0].topics[1]).toNumber()
+              setCreatedPoolID(poolID)
+              pollStatsApiForPoolID(poolID)
+              onClearGridOrderState()
+            })
           })
       })
       .catch((error) => {
         console.error('Failed to send transaction', error)
-        setAttemptingTxn(false)
+        setModalState({
+          attemptingTxn: false,
+          showConfirm,
+          errorMessage: error.message,
+          txHash: undefined,
+        })
         // we only care if the error is something _other_ than the user rejected the tx
         if (error?.code !== 4001) {
           console.error(error)
         }
       })
+
   }
 
   const pairCard = (pair:any,pairIndex:number) => {
@@ -468,6 +547,54 @@ export default function GridOrderPage({ className }: { className?: string }) {
           baseAmount.quotient,
           parsedQuoteAmountSell.quotient
         )
+      : undefined
+    )
+
+    function currencyIdToUsdcAmount(currencyId:string|undefined) {
+      try {
+        if(!currencyId) return undefined
+        let depositIndex = -1
+        for(let i = 0; i < deposits.length; i++) {
+          if(deposits[i].currencyId == currencyId) {
+            depositIndex = i
+            break
+          }
+        }
+        if(depositIndex == -1) return undefined
+        const fiatValue = fiatValuesPerToken[depositIndex]
+        if(!fiatValue) return undefined
+        const usdcAmount = currencyAmountToBigNumber(fiatValue)
+        return usdcAmount
+      } catch(e) {
+        return undefined
+      }
+    }
+
+    const baseTokenUsdcAmount = currencyIdToUsdcAmount(pair[Field.BASE_TOKEN].currencyId)
+    const quoteTokenUsdcAmount = currencyIdToUsdcAmount(pair[Field.QUOTE_TOKEN].currencyId)
+
+    function formatAmount(amount:string) {
+      // if integer
+      if(!amount.includes('.')) return amount
+      // if x < 1
+      if(amount[0] == '0') {
+        for(let i = 2; i < amount.length; i++) {
+          if(amount[i] != '0') {
+            return amount.substring(0, i+3)
+          }
+        }
+        return amount
+      }
+      // if 1 <= x < 100
+      if(amount.indexOf('.') <= 2) {
+        return amount.substring(0, 4)
+      }
+      // if x >= 100
+      return amount.substring(0, amount.indexOf('.'))
+    }
+
+    const priceString = ((baseTokenUsdcAmount && quoteTokenUsdcAmount)
+      ? formatAmount(formatUnits(baseTokenUsdcAmount.mul(WeiPerEther).div(quoteTokenUsdcAmount)))
       : undefined
     )
 
@@ -525,6 +652,13 @@ export default function GridOrderPage({ className }: { className?: string }) {
                   currencyBase={currencyBase}
                   currencyQuote={currencyQuote}
                 />
+                {priceString && (
+                  <CenteringDiv>
+                    <MarketPriceText>
+                      Current market price: {priceString} {currencyQuote?.symbol} per {currencyBase?.symbol}
+                    </MarketPriceText>
+                  </CenteringDiv>
+                )}
               </>
             ) : undefined}
           </SwapWrapperInner>
@@ -551,6 +685,7 @@ export default function GridOrderPage({ className }: { className?: string }) {
                 onMax={()=>{handleDepositAmountInput(depositIndex, maxAmounts[depositIndex]?.toExact()??'')}}
                 showMaxButton={!atMaxAmounts[depositIndex]}
                 currency={currenciesById[deposit.currencyId||""] ?? null}
+                fiatValue={fiatValuesForDepositAmount[depositIndex]}
                 id={`deposit-amount-${deposit.currencyId}`}
                 isOptional={atLeastOneDepositAmountFilled}
                 showCommonBases
@@ -566,33 +701,38 @@ export default function GridOrderPage({ className }: { className?: string }) {
 
   const pricesUnorderedButtons = (
     <RowBetween>
-      {pairs.map((pair,pairIndex) => (
-        arePricesUnordered[pairIndex] && (
+      {pairs.map((pair,pairIndex) => {
+        if(!arePricesUnordered[pairIndex]) return undefined
+        const symbol0 = currenciesById[pair.BASE_TOKEN.currencyId||'']?.tokenInfo.symbol || "token0"
+        const symbol1 = currenciesById[pair.QUOTE_TOKEN.currencyId||'']?.tokenInfo.symbol || "token1"
+        return (
           <ButtonPrimary
             disabled={true}
             width={'100%'}
             key={pairIndex}
           >
-            <Trans>{`${currenciesById[pair.BASE_TOKEN.currencyId||'']?.tokenInfo.symbol}/${currenciesById[pair.QUOTE_TOKEN.currencyId||'']?.tokenInfo.symbol} prices unordered`}</Trans>
+            {symbol0}/{symbol1} prices unordered
           </ButtonPrimary>
         )
-      ))}
+      })}
     </RowBetween>
   )
 
   const insufficientBalanceButtons = (
     <RowBetween>
-      {deposits.map((deposit,depositIndex) => (
-        aboveBalances[depositIndex] && (
+      {deposits.map((deposit,depositIndex) => {
+        if(!aboveBalances[depositIndex]) return undefined
+        const symbol = currenciesById[deposit.currencyId||'']?.tokenInfo.symbol || "tokens"
+        return (
           <ButtonPrimary
             disabled={true}
             width={'100%'}
             key={depositIndex}
           >
-            <Trans>{`Insufficient ${currenciesById[deposit.currencyId||'']?.tokenInfo.symbol || "tokens"}`}</Trans>
+            Insufficient {symbol}
           </ButtonPrimary>
         )
-      ))}
+      })}
     </RowBetween>
   )
 
@@ -600,6 +740,7 @@ export default function GridOrderPage({ className }: { className?: string }) {
     <RowBetween>
       {deposits.map((deposit,depositIndex) => {
         const approvalState = approvals[depositIndex][0]
+        const symbol = currenciesById[deposit.currencyId||'']?.tokenInfo.symbol
         return (approvalState == ApprovalState.NOT_APPROVED || approvalState == ApprovalState.PENDING) && (
           <ButtonPrimary
             onClick={approvals[depositIndex][1]}
@@ -608,10 +749,10 @@ export default function GridOrderPage({ className }: { className?: string }) {
           >
             {approvals[depositIndex][0] === ApprovalState.PENDING ? (
               <Dots>
-                <Trans>Approving {currenciesById[deposit.currencyId||'']?.tokenInfo.symbol}</Trans>
+                <Trans>Approving {symbol}</Trans>
               </Dots>
             ) : (
-              <Trans>Approve {currenciesById[deposit.currencyId||'']?.tokenInfo.symbol}</Trans>
+              <Trans>Approve {symbol}</Trans>
             )}
           </ButtonPrimary>
         )
@@ -622,11 +763,18 @@ export default function GridOrderPage({ className }: { className?: string }) {
   const placeGridOrderButton = (
     <RowBetween>
       <ButtonError
-        onClick={() => { handlePlaceGridOrder() }}
+        onClick={() => {
+          setModalState({
+            attemptingTxn: false,
+            errorMessage: undefined,
+            showConfirm: true,
+            txHash: undefined,
+          })
+        }}
         disabled={false}
         error={false}
       >
-        <Text fontWeight={500}>{<Trans>Place Grid Order</Trans>}</Text>
+        Place Grid Order
       </ButtonError>
     </RowBetween>
   )
@@ -662,6 +810,18 @@ export default function GridOrderPage({ className }: { className?: string }) {
       <CenteringDiv>
         <h1>Grid Order</h1>
       </CenteringDiv>
+      <ConfirmGridOrderModal
+        isOpen={showConfirm}
+        trade={undefined}
+        fiatValues={fiatValuesForDepositAmount}
+        attemptingTxn={attemptingTxn}
+        txHash={txHash}
+        recipient={recipient}
+        onConfirm={handlePlaceGridOrder}
+        swapErrorMessage={errorMessage}
+        onDismiss={handleConfirmDismiss}
+        createdPoolID={createdPoolID}
+      />
       {pairs.map(pairCard)}
       {depositCard}
       {buttons}
