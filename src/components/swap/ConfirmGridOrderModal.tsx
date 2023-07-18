@@ -11,7 +11,7 @@ import { tradeMeaningfullyDiffers } from 'utils/tradeMeaningFullyDiffer'
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,
-} from '../TransactionConfirmationModalGridOrder'
+} from '../TransactionConfirmationModal'
 import GridOrderModalFooter from './GridOrderModalFooter'
 import GridOrderModalHeader from './GridOrderModalHeader'
 

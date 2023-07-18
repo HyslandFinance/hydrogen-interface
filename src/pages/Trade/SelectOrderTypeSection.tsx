@@ -36,7 +36,7 @@ const OrderTypeSelector = styled.div<{ isDarkMode: boolean }>`
       ? theme.backgroundModule
       : 'white'};
   border: 1px solid transparent;
-  box-shadow: 0px 10px 24px 0px rgba(51, 53, 72, 0.04);
+  box-shadow: 0px 10px 24px 0px rgba(0, 0, 0, 0.15);
   transition: ${({ theme }) => `${theme.transition.duration.medium} ${theme.transition.timing.ease} border`};
   &:hover {
     border: 1px solid ${({ theme, isDarkMode }) => (isDarkMode ? theme.backgroundInteractive : theme.textTertiary)};

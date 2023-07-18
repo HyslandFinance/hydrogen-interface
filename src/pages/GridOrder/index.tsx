@@ -800,10 +800,10 @@ const handleConfirmDismiss = useCallback(() => {
           >
             {approvals[depositIndex][0] === ApprovalState.PENDING ? (
               <Dots>
-                <Trans>Approving {symbol}</Trans>
+                {`Approving ${symbol}`}
               </Dots>
             ) : (
-              <Trans>Approve {symbol}</Trans>
+              `Approve ${symbol}`
             )}
           </ButtonPrimary>
         )
