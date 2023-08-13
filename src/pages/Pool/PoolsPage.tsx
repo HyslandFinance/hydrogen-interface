@@ -124,7 +124,19 @@ export default function PoolsPage() {
 
   if(!account) return (
     <CenteringDiv>
-      <h3>Connect wallet to view your pools</h3>
+      <div>
+        <h3>Connect wallet to view your pools</h3>
+        <div style={{marginTop:"20px"}}>
+          <CenteringDiv>
+            <h3>Or</h3>
+          </CenteringDiv>
+          <CenteringDiv>
+            <Link to={'/trade'} style={{textDecoration:"none"}}>
+              Place new order
+            </Link>
+          </CenteringDiv>
+        </div>
+      </div>
     </CenteringDiv>
   )
 
@@ -135,7 +147,7 @@ export default function PoolsPage() {
       </CenteringDiv>
       <CenteringDiv>
         <Link to={'/trade'} style={{textDecoration:"none"}}>
-          <p>Place a new order</p>
+          <p>Place new order</p>
         </Link>
       </CenteringDiv>
     </>
@@ -184,6 +196,13 @@ export default function PoolsPage() {
 
   function LimitOrderCard(props: any) {
     const { poolID } = props
+    let cardbody:any = <></>
+    try {
+      cardbody = <LimitOrderCardBody poolID={poolID}/>
+    } catch(e) {
+      console.error("Error in LimitOrderCardBody:")
+      console.error(e)
+    }
     return (
       <Card isDarkMode={isDarkMode}>
         <div>
@@ -193,7 +212,7 @@ export default function PoolsPage() {
         </div>
         <div>
           <CenteringDiv style={{position:"relative",top:"-10px"}}>
-            <LimitOrderCardBody poolID={poolID}/>
+            {cardbody}
           </CenteringDiv>
         </div>
       </Card>
@@ -233,7 +252,7 @@ export default function PoolsPage() {
       const [tokenL, tokenR] = determinePairOrder(tokenAAddress, tokenBAddress)
 
       return (
-        <div>
+        <div key={`${poolID}_${tokenAAddress}_${tokenBAddress}`}>
           <CenteringDiv>
             <p style={{margin:"0 0 0 0"}}>
               {/*`Sell ${symbolA} to buy ${symbolB}`*/}
@@ -258,73 +277,86 @@ export default function PoolsPage() {
         </div>
       )
     } catch(e) {
-      return undefined
+      return <></>
     }
   }
 
   function LimitOrderCardBody(props: any) {
-    const { poolID } = props
-    const pool = nucleusState.pools[poolID]
-    const tokenAAddress = Object.keys(pool.tradeRequests)[0]
-    const tokenBAddress = Object.keys(pool.tradeRequests[tokenAAddress])[0]
-    const tokenA = currenciesById[tokenAAddress]
-    const tokenB = currenciesById[tokenBAddress]
-    const symbolA = tokenA.tokenInfo.symbol
-    const symbolB = tokenB.tokenInfo.symbol
-    const decimalsA = tokenA.tokenInfo.decimals
-    const decimalsB = tokenB.tokenInfo.decimals
-    const balances = nucleusState.internalBalancesByPool[poolID]
-    const balanceA = BigNumber.from(balances[tokenAAddress])
-    const exchangeRate = pool.tradeRequests[tokenAAddress][tokenBAddress].exchangeRate
-    const balanceB = (HydrogenNucleusHelper.exchangeRateIsNonzero(exchangeRate)
-      ? HydrogenNucleusHelper.calculateAmountB(balanceA, exchangeRate)
-      : Zero)
+    try {
+      const { poolID } = props
+      const pool = nucleusState.pools[poolID]
+      const tokenAAddress = Object.keys(pool.tradeRequests)[0]
+      const tokenBAddress = Object.keys(pool.tradeRequests[tokenAAddress])[0]
+      const tokenA = currenciesById[tokenAAddress]
+      const tokenB = currenciesById[tokenBAddress]
+      if(!tokenA || !tokenA.tokenInfo) console.error("LimitOrderCardBody tokenA", tokenA)
+      if(!tokenB || !tokenB.tokenInfo) console.error("LimitOrderCardBody tokenB", tokenB)
+      const symbolA = tokenA.tokenInfo.symbol
+      const symbolB = tokenB.tokenInfo.symbol
+      const decimalsA = tokenA.tokenInfo.decimals
+      const decimalsB = tokenB.tokenInfo.decimals
+      const balances = nucleusState.internalBalancesByPool[poolID]
+      const balanceA = BigNumber.from(balances[tokenAAddress])
+      const exchangeRate = pool.tradeRequests[tokenAAddress][tokenBAddress].exchangeRate
+      const balanceB = (HydrogenNucleusHelper.exchangeRateIsNonzero(exchangeRate)
+        ? HydrogenNucleusHelper.calculateAmountB(balanceA, exchangeRate)
+        : Zero)
 
-    const exchangeRateContent = pairToExchangeRateContent(poolID, tokenAAddress, tokenBAddress)
+      const exchangeRateContent = pairToExchangeRateContent(poolID, tokenAAddress, tokenBAddress)
 
-    return (
-      <div>
-        {/* diagram */}
-        <CenteringDiv style={{paddingTop:"40px"}}>
-          <div style={{width:"160px", height:"40px", position:"relative"}}>
-            <img src={`https://assets.hydrogendefi.xyz/tokens/${tokenAAddress}`} style={{width:"40px",height:"40px",position:"absolute",left:"0px",top:"0px"}} />
-            <img src={ArrowLimitOrderWhite} style={{width:"40px",height:"20px",position:"absolute",left:"60px",top:"10px"}} />
-            <img src={`https://assets.hydrogendefi.xyz/tokens/${tokenBAddress}`} style={{width:"40px",height:"40px",position:"absolute",left:"120px",top:"0px"}} />
-          </div>
-        </CenteringDiv>
-        {/* exchange rates */}
-        <div style={{marginTop:"20px"}}>
-          {exchangeRateContent}
-        </div>
-        {/* balances */}
-        {balanceA.gt(0) ? (
-          <div style={{margin:"12px 0 0 0"}}>
-            {/*
-            <CenteringDiv>
-              <p style={{margin:"0"}}>{`${formatTransactionAmount(parseFloat(formatUnits(balanceA, decimalsA)))} ${symbolA} /`}</p>
-            </CenteringDiv>
-            <CenteringDiv>
-              <p style={{margin:"0"}}>{`${formatTransactionAmount(parseFloat(formatUnits(balanceB, decimalsB)))} ${symbolB} remaining`}</p>
-            </CenteringDiv>
-            */}
-            <CenteringDiv>
-              <p style={{margin:"0"}}>{`Remaining`}</p>
-            </CenteringDiv>
-            <CenteringDiv>
-              <p style={{margin:"0"}}>{`${formatTransactionAmount(parseFloat(formatUnits(balanceA, decimalsA)))} ${symbolA} -> ${formatTransactionAmount(parseFloat(formatUnits(balanceB, decimalsB)))} ${symbolB}`}</p>
-            </CenteringDiv>
-          </div>
-        ) : (
-          <CenteringDiv style={{margin:"12px 0 0 0"}}>
-            <p style={{margin:"0"}}>Order has been filled</p>
+      return (
+        <div>
+          {/* diagram */}
+          <CenteringDiv style={{paddingTop:"40px"}}>
+            <div style={{width:"160px", height:"40px", position:"relative"}}>
+              <img src={`https://assets.hydrogendefi.xyz/tokens/${tokenAAddress}`} style={{width:"40px",height:"40px",position:"absolute",left:"0px",top:"0px"}} />
+              <img src={ArrowLimitOrderWhite} style={{width:"40px",height:"20px",position:"absolute",left:"60px",top:"10px"}} />
+              <img src={`https://assets.hydrogendefi.xyz/tokens/${tokenBAddress}`} style={{width:"40px",height:"40px",position:"absolute",left:"120px",top:"0px"}} />
+            </div>
           </CenteringDiv>
-        )}
-      </div>
-    )
+          {/* exchange rates */}
+          <div style={{marginTop:"20px"}}>
+            {exchangeRateContent}
+          </div>
+          {/* balances */}
+          {balanceA.gt(0) ? (
+            <div style={{margin:"12px 0 0 0"}}>
+              {/*
+              <CenteringDiv>
+                <p style={{margin:"0"}}>{`${formatTransactionAmount(parseFloat(formatUnits(balanceA, decimalsA)))} ${symbolA} /`}</p>
+              </CenteringDiv>
+              <CenteringDiv>
+                <p style={{margin:"0"}}>{`${formatTransactionAmount(parseFloat(formatUnits(balanceB, decimalsB)))} ${symbolB} remaining`}</p>
+              </CenteringDiv>
+              */}
+              <CenteringDiv>
+                <p style={{margin:"0"}}>{`Remaining`}</p>
+              </CenteringDiv>
+              <CenteringDiv>
+                <p style={{margin:"0"}}>{`${formatTransactionAmount(parseFloat(formatUnits(balanceA, decimalsA)))} ${symbolA} -> ${formatTransactionAmount(parseFloat(formatUnits(balanceB, decimalsB)))} ${symbolB}`}</p>
+              </CenteringDiv>
+            </div>
+          ) : (
+            <CenteringDiv style={{margin:"12px 0 0 0"}}>
+              <p style={{margin:"0"}}>Order has been filled</p>
+            </CenteringDiv>
+          )}
+        </div>
+      )
+    } catch(e) {
+      return <></>
+    }
   }
 
   function GridOrderCard(props: any) {
     const { poolID } = props
+    let cardbody = <></>
+    try {
+      cardbody = <GridOrderCardBody poolID={poolID}/>
+    } catch(e) {
+      console.error("Error in GridOrderCardBody:")
+      console.error(e)
+    }
     return (
       <Card isDarkMode={isDarkMode}>
         <div>
@@ -334,7 +366,7 @@ export default function PoolsPage() {
         </div>
         <div>
           <CenteringDiv style={{position:"relative",top:"-10px"}}>
-            <GridOrderCardBody poolID={poolID}/>
+            {cardbody}
           </CenteringDiv>
         </div>
       </Card>
@@ -358,7 +390,7 @@ export default function PoolsPage() {
       for(let i = 0; i < pairs.length; i++) {
         exchangeRateContent.push(pairToExchangeRateContent(poolID, pairs[i].tokenAAddress, pairs[i].tokenBAddress))
         if(i < pairs.length-1) {
-          exchangeRateContent.push(<div style={{height:"8px",display:"block"}}/>)
+          exchangeRateContent.push(<div key={`spacer_${poolID}`} style={{height:"8px",display:"block"}}/>)
         }
       }
 
@@ -394,10 +426,11 @@ export default function PoolsPage() {
               {tokenAs.map((addr:string,index:number) => {
                 const balance = balanceAs[index]
                 const token = currenciesById[addr]
+                if(!token || !token.tokenInfo) console.error("GridOrderCardBody token", token)
                 const symbol = token.tokenInfo.symbol
                 const decimals = token.tokenInfo.decimals
                 return (
-                  <CenteringDiv>
+                  <CenteringDiv key={addr}>
                     <p style={{margin:"0"}}>{`${formatTransactionAmount(parseFloat(formatUnits(balance, decimals)))} ${symbol}`}</p>
                   </CenteringDiv>
                 )
@@ -417,7 +450,9 @@ export default function PoolsPage() {
 
   function TokenInline(props: any) {
     const { address } = props
-    const symbol = defaultTokens[address].tokenInfo.symbol
+    const token = defaultTokens[address]
+    if(!token || !token.tokenInfo) console.error("TokenInline token", token, defaultTokens, address)
+    const symbol = token.tokenInfo.symbol
     return (
       <span>
         <img src={`https://assets.hydrogendefi.xyz/tokens/${address}`} style={{height:"40px",width:"40px",display:"inline", margin:"10px",position:"relative",top:"20px"}}/>
@@ -429,12 +464,22 @@ export default function PoolsPage() {
   return (
     <div>
       <CenteringDiv>
-        <h1>Modify Existing Orders</h1>
+        <h1>Your Existing Orders</h1>
       </CenteringDiv>
       {/*<Hpt poolID={poolID} key={poolID}/>*/}
       {poolIDs.map((poolID:string) => (
         <PoolCard poolID={poolID} key={poolID}/>
       ))}
+      <div style={{marginTop:"20px"}}>
+        <CenteringDiv>
+          <h3>Or</h3>
+        </CenteringDiv>
+        <CenteringDiv>
+          <Link to={'/trade'} style={{textDecoration:"none"}}>
+            Place new order
+          </Link>
+        </CenteringDiv>
+      </div>
     </div>
   )
 }
