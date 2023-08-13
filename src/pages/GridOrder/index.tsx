@@ -459,12 +459,12 @@ const handleConfirmDismiss = useCallback(() => {
         tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].address,
         tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].address,
         exchangeRate: exchangeRateBuy,
-        locationB: HydrogenNucleusHelper.LOCATION_THIS_POOL,
+        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
       },{
         tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].address,
         tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].address,
         exchangeRate: exchangeRateSell,
-        locationB: HydrogenNucleusHelper.LOCATION_THIS_POOL,
+        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
       }]
       return tradeRequests
     }).flat().filter(x=>!!x)

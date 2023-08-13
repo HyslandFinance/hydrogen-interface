@@ -68,7 +68,6 @@ export const USDC_POLYGON_MUMBAI = new Token(SupportedChainId.POLYGON_MUMBAI, '0
 export const USDT_POLYGON_MUMBAI = new Token(SupportedChainId.POLYGON_MUMBAI, '0x7a49D1804434Ad537e4cC0061865727b87E71cd8', 6, 'USDT', 'Tether USD')
 export const WBTC_POLYGON_MUMBAI = new Token(SupportedChainId.POLYGON_MUMBAI, '0x1C9b3500bF4B13BB338DC4F4d4dB1dEAF0638a1c', 8, 'WBTC', 'Wrapped BTC')
 export const WETH_POLYGON_MUMBAI = new Token(SupportedChainId.POLYGON_MUMBAI, '0x09db75630A9b2e66F220531B77080282371156FE', 18, 'WETH', 'Wrapped Ether')
-export const WMATIC_POLYGON_MUMBAI = new Token(SupportedChainId.POLYGON_MUMBAI, '0xFd589496D3792169A9A03169c3A96F94aAD472bb', 18, 'WMATIC', 'Wrapped Matic')
 // celo alfajores
 export const CELO_CELO_ALFAJORES = new Token(SupportedChainId.CELO_ALFAJORES, '0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9', 18, 'CELO', 'Celo')
 export const CUSD_CELO_ALFAJORES = new Token(SupportedChainId.CELO_ALFAJORES, '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', 18, 'CUSD', 'Celo Dollar')
@@ -78,7 +77,6 @@ export const DAI_BASE_GOERLI = new Token(SupportedChainId.BASE_GOERLI, '0x7D691e
 export const USDC_BASE_GOERLI = new Token(SupportedChainId.BASE_GOERLI, '0x35CD54a3547190056A0F690357b1B2692B90Fb00', 6, 'USDC', 'USD//C')
 export const USDT_BASE_GOERLI = new Token(SupportedChainId.BASE_GOERLI, '0x70BF48BcfFcFcca6123fFeD4d4EC4Ec6eb31BA00', 6, 'USDT', 'Tether USD')
 export const WBTC_BASE_GOERLI = new Token(SupportedChainId.BASE_GOERLI, '0x2E6365CfB7de7F00478C02485Ca56a975369d2B8', 8, 'WBTC', 'Wrapped BTC')
-export const WETH_BASE_GOERLI = new Token(SupportedChainId.BASE_GOERLI, '0xEa0B5E9AFa37C1cA61779deAB8527eAE62b30367', 18, 'WETH', 'Wrapped Ether') // todo: remove
 
 export const UNI: { [chainId: number]: Token } = {
   [SupportedChainId.ETHEREUM]: new Token(SupportedChainId.ETHEREUM, UNI_ADDRESS[1], 18, 'UNI', 'Uniswap'),
@@ -98,6 +96,7 @@ export const WRAPPED_NATIVE_CURRENCY: { [chainId: number]: Token | undefined } =
   [SupportedChainId.POLYGON_MUMBAI]: new Token(SupportedChainId.POLYGON_MUMBAI, '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889', 18, 'WMATIC', 'Wrapped MATIC'),
   [SupportedChainId.CELO]: new Token(SupportedChainId.CELO, '0x471ece3750da237f93b8e339c536989b8978a438', 18, 'CELO', 'Celo native asset'),
   [SupportedChainId.CELO_ALFAJORES]: new Token(SupportedChainId.CELO_ALFAJORES, '0xf194afdf50b03e69bd7d057c1aa9e10c9954e4c9', 18, 'CELO', 'Celo native asset'),
+  [SupportedChainId.BASE]: new Token(SupportedChainId.BASE, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether'),
   [SupportedChainId.BASE_GOERLI]: new Token(SupportedChainId.BASE_GOERLI, '0x4200000000000000000000000000000000000006', 18, 'WETH', 'Wrapped Ether'),
 }
 

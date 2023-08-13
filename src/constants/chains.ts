@@ -20,6 +20,7 @@ export enum SupportedChainId {
   CELO = 42220,
   CELO_ALFAJORES = 44787,
 
+  BASE = 8453,
   BASE_GOERLI = 84531,
 }
 
@@ -39,6 +40,7 @@ export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.ARBITRUM_RINKEBY]: 'arbitrum_rinkeby',
   [SupportedChainId.OPTIMISM]: 'optimism',
   [SupportedChainId.OPTIMISM_GOERLI]: 'optimism_goerli',
+  [SupportedChainId.BASE]: 'base',
   [SupportedChainId.BASE_GOERLI]: 'base_goerli',
 }
 
@@ -109,6 +111,7 @@ export const L2_CHAIN_IDS = [
   SupportedChainId.ARBITRUM_RINKEBY,
   SupportedChainId.OPTIMISM,
   SupportedChainId.OPTIMISM_GOERLI,
+  SupportedChainId.BASE,
   SupportedChainId.BASE_GOERLI,
 ] as const
 

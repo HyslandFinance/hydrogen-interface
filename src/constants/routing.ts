@@ -45,10 +45,8 @@ import {
   WBTC_OPTIMISM,
   WBTC_POLYGON,
   WBTC_POLYGON_MUMBAI,
-  WETH_BASE_GOERLI,
   WETH_POLYGON,
   WETH_POLYGON_MUMBAI,
-  WMATIC_POLYGON_MUMBAI,
   WRAPPED_NATIVE_CURRENCY,
 } from './tokens'
 
@@ -183,8 +181,7 @@ export const COMMON_BASES: ChainCurrencyList = {
     DAI_POLYGON_MUMBAI,
     USDT_POLYGON_MUMBAI,
     WBTC_POLYGON_MUMBAI,
-    WMATIC_POLYGON_MUMBAI, // todo: remove
-    //WRAPPED_NATIVE_CURRENCY[SupportedChainId.POLYGON_MUMBAI] as Token,
+    WRAPPED_NATIVE_CURRENCY[SupportedChainId.POLYGON_MUMBAI] as Token,
   ],
 
   [SupportedChainId.CELO]: [
@@ -201,13 +198,12 @@ export const COMMON_BASES: ChainCurrencyList = {
     CEUR_CELO_ALFAJORES,
   ],
   [SupportedChainId.BASE_GOERLI]: [
-    //nativeOnChain(SupportedChainId.BASE_GOERLI), // todo: re add
+    nativeOnChain(SupportedChainId.BASE_GOERLI), // todo: re add
     DAI_BASE_GOERLI,
     USDC_BASE_GOERLI,
     USDT_BASE_GOERLI,
     WBTC_BASE_GOERLI,
-    WETH_BASE_GOERLI, // todo: remove
-    //WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE_GOERLI] as Token,
+    WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE_GOERLI] as Token,
   ],
 }
 
