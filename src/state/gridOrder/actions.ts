@@ -33,7 +33,6 @@ export interface GridOrderState {
   readonly recipient: string | null
 }
 
-//export const selectCurrency = createAction<{ pairIndex: number; field: Field; currencyId: string }>('GridOrder/selectCurrency')
 export const selectCurrencies = createAction<{ pairIndex: number; currencyIdBase: string|undefined; currencyIdQuote: string|undefined }>('GridOrder/selectCurrencies')
 export const typeInput = createAction<{ pairIndex: number; field: PriceField; typedValue: string }>('GridOrder/typeInput')
 export const depositAmountInput = createAction<{ depositIndex: number; typedAmount: string }>('GridOrder/depositAmountInput')

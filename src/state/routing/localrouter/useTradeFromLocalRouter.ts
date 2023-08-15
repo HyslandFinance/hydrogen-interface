@@ -48,6 +48,7 @@ export function useTradeFromLocalRouter(
   const gasUseEstimateUSD = useStablecoinAmountFromFiatValue(estimateGas ? quoteResult?.gasUseEstimateUSD : undefined) ?? null
 
   return useMemo(() => {
+  const tradeAndState = useMemo(() => {
     try {
       if (!currencyIn || !currencyOut) {
         return {
@@ -83,18 +84,24 @@ export function useTradeFromLocalRouter(
       }
 
       const trade = transformRoutesToTrade(route, tradeType, quoteResult?.blockNumber, gasUseEstimateUSD)
+      if(trade) {
+        return {
+          state: TradeState.VALID,
+          trade: trade,
+        }
+      } else {
+        return { state: TradeState.INVALID, trade: undefined }
+      }
 
-      return {
-         state: TradeState.VALID,
-         trade: trade,
-       }
-     } catch(e) {
-       return { state: TradeState.INVALID, trade: undefined }
-     }
+    } catch(e) {
+      return { state: TradeState.INVALID, trade: undefined }
+    }
+
   }, [
     currencyIn,
     currencyOut,
     tradeType,
     nucleusState,
   ]) as any
+  return tradeAndState
 }

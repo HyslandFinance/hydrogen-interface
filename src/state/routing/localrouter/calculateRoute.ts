@@ -15,10 +15,15 @@ export function calculateRoute(
   try {
     // input validation
     if(!amountSpecified || !otherCurrency) return undefined
+    const as1 = (amountSpecified?.currency as any)
+    const as2 = as1.wrapped || as1
+    const oc1 = (otherCurrency as any)
+    const oc2 = (oc1.tokenInfo || oc1)
+    const oc3 = oc2.wrapped || oc2
     const [currencyIn, currencyOut]: [Currency | undefined, Currency | undefined] = (
         tradeType === TradeType.EXACT_INPUT
-          ? [(amountSpecified?.currency as any), (otherCurrency as any).tokenInfo]
-          : [(otherCurrency as any).tokenInfo, (amountSpecified?.currency as any)]
+          ? [as2, oc3]
+          : [oc3, as2]
     )
     const swapType = tradeType === TradeType.EXACT_INPUT ? "exactIn" : "exactOut"
     if(!currencyIn || !currencyOut) return undefined

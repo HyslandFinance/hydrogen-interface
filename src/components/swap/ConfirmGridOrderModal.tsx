@@ -77,7 +77,16 @@ export default function ConfirmGridOrderModal({
   ])
 
   // text to show while loading
-  const symbolList = deposits.map((deposit:any) => currenciesById[deposit.currencyId].tokenInfo.symbol)
+  const symbolList = deposits.map((deposit:any) => {
+    try {
+      const c1 = currenciesById[deposit.currencyId]
+      const c2 = c1.tokenInfo || c1
+      const sym = c2.symbol
+      return sym
+    } catch(e) {
+      return 'ETH'
+    }
+  })
   const tokenList = (
     deposits.length == 0 ? 'no tokens' :
     deposits.length == 1 ? symbolList[0] :

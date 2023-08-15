@@ -13,7 +13,7 @@ import { useUserSlippageToleranceWithDefault } from 'state/user/hooks'
 import { stringValueIsPositiveFloat } from 'utils/stringValueIsPositiveFloat'
 
 import { TOKEN_SHORTHANDS } from '../../constants/tokens'
-import { useCurrencies, useCurrency } from '../../hooks/Tokens'
+import { useCurrencies, useCurrenciesAndNatives, useCurrency } from '../../hooks/Tokens'
 import useENS from '../../hooks/useENS'
 import useParsedQueryString from '../../hooks/useParsedQueryString'
 import { isAddress } from '../../utils'
@@ -131,7 +131,7 @@ export function useDerivedGridOrderInfo(): {
     .filter((x:any) => !!x)
   ), [pairs]) as string[]
 
-  const currencies = useCurrencies(currencyIds)
+  const currencies = useCurrenciesAndNatives(currencyIds)
   const currenciesById = useMemo(() => {
     const d = {} as any
     if(!currencyIds || !currencies || currencyIds.length != currencies.length) return d

@@ -258,16 +258,23 @@ const handleConfirmDismiss = useCallback(() => {
       const pair = pairs[pairIndex]
       let currencyIdBase = pair[Field.BASE_TOKEN].currencyId
       let currencyIdQuote = pair[Field.QUOTE_TOKEN].currencyId
+      // normal operation
       if(field == Field.BASE_TOKEN) {
-        if(currencyIdQuote == currencyIdNew) {
+        if(currencyIdQuote == currencyIdNew) { // flip
           currencyIdQuote = currencyIdBase
         }
-        currencyIdBase = currencyIdNew
+        currencyIdBase = currencyIdNew // set
       } else {
-        if(currencyIdBase == currencyIdNew) {
+        if(currencyIdBase == currencyIdNew) { // flip
           currencyIdBase = currencyIdQuote
         }
-        currencyIdQuote = currencyIdNew
+        currencyIdQuote = currencyIdNew // set
+      }
+      // selected both gas and wgas
+      const gasTokenIds = ['ETH', "0x4200000000000000000000000000000000000006", '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889']
+      if(gasTokenIds.includes(currencyIdBase||'') && gasTokenIds.includes(currencyIdQuote||'')) {
+        if(field == Field.BASE_TOKEN) currencyIdQuote = undefined
+        else currencyIdBase = undefined
       }
       onCurrencySelection(pairIndex, currencyIdBase, currencyIdQuote)
     },
@@ -338,17 +345,18 @@ const handleConfirmDismiss = useCallback(() => {
       try {
         const deposit = deposits[depositIndex]
         const currency = currenciesById[deposit.currencyId||'']
-        const c2 = currency as any
-        if(!c2 || !c2.tokenInfo.decimals) return undefined
+        const c2 = currency.wrapped
+        if(!c2 || !c2.decimals) return undefined
         const value = '1'
-        const parsedAmount = parseUnits(value, c2.tokenInfo.decimals).toString()
-        const currencyAmount = CurrencyAmount.fromRawAmount(currency, parsedAmount)
+        const parsedAmount = parseUnits(value, c2.decimals).toString()
+        const currencyAmount = CurrencyAmount.fromRawAmount(c2, parsedAmount)
         return currencyAmount
       } catch(e) {
         return undefined
       }
     })()
-    return useStablecoinValue(currencyAmount)
+    const stablecoinValue = useStablecoinValue(currencyAmount)
+    return stablecoinValue
   })
 
   const fiatValuesForDepositAmount = depositIndices.map((depositIndex:number) => {
@@ -360,15 +368,18 @@ const handleConfirmDismiss = useCallback(() => {
         if(!currency || !value) {
           return undefined
         }
-        const c2 = currency as any
-        const parsedAmount = parseUnits(value, c2.tokenInfo.decimals).toString()
+        const c1 = currency as any
+        const c2 = currency.wrapped || currency
+        const decimals = (c2.tokenInfo || c2).decimals
+        const parsedAmount = parseUnits(value, decimals).toString()
         const currencyAmount = CurrencyAmount.fromRawAmount(currency, parsedAmount)
         return currencyAmount
       } catch(e) {
         return undefined
       }
     })()
-    return useStablecoinValue(currencyAmount)
+    const stablecoinValue = useStablecoinValue(currencyAmount)
+    return stablecoinValue
   })
 
   const approvals = depositIndices.map((depositIndex:number) => {
@@ -425,23 +436,38 @@ const handleConfirmDismiss = useCallback(() => {
     if(areAnyDepositsAboveBalances || areAnyTokensAwaitingApproval || !allPairsInfoFilled || !atLeastOneDepositAmountFilled) return
     // encode transaction
     const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(account)
+    const userInternalLocation = HydrogenNucleusHelper.internalAddressToLocation(account)
 
     const currencyIds = deposits.map((deposit) => deposit.currencyId).filter(x=>!!x) as string[]
+
+    let gasTokenAmount = '0'
 
     const tokenSources = deposits.map((deposit,depositIndex) => {
       const parsedAmount = parsedAmounts[depositIndex] as any
       if(!parsedAmount) return undefined
-      const amount = currencyAmountToString(parsedAmount)
-      return {
-        token: currenciesById[deposit.currencyId||''].address,
-        amount: amount,
-        location: userExternalLocation,
+      const amount = currencyAmountToString(parsedAmount) || '0'
+      const currency = currenciesById[deposit.currencyId||'']
+      if(currency.isNative) {
+        const address = currency.wrapped.address
+        gasTokenAmount = amount
+        return {
+          token: address,
+          amount: amount,
+          location: userInternalLocation,
+        }
+      } else {
+        const address = currency.address
+        return {
+          token: address,
+          amount: amount,
+          location: userExternalLocation,
+        }
       }
     }).filter(x=>!!x)
 
     const tradeRequests = pairs.map((pair,pairIndex) => {
-      const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''] ?? null
-      const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''] ?? null
+      const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
+      const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
       if(!currencyBase || !currencyQuote) return []
       const tokenBase = currencyBase?.wrapped
       const tokenQuote = currencyQuote?.wrapped
@@ -456,13 +482,13 @@ const handleConfirmDismiss = useCallback(() => {
       const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
       const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
       const tradeRequests = [{
-        tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].address,
-        tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].address,
+        tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+        tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
         exchangeRate: exchangeRateBuy,
         locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
       },{
-        tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].address,
-        tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].address,
+        tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+        tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
         exchangeRate: exchangeRateSell,
         locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
       }]
@@ -476,12 +502,18 @@ const handleConfirmDismiss = useCallback(() => {
       tradeRequests,
       hptReceiver: account,
     }
-
-    const calldata = nucleusInterface.encodeFunctionData('createGridOrderPool', [params])
+    let calldata = "0x"
+    if(gasTokenAmount == "0") {
+      calldata = nucleusInterface.encodeFunctionData('createGridOrderPool', [params])
+    } else {
+      const wrapcall = nucleusInterface.encodeFunctionData('wrapGasToken', [userInternalLocation])
+      const createcall = nucleusInterface.encodeFunctionData('createGridOrderPool', [params])
+      calldata = nucleusInterface.encodeFunctionData('multicall', [[wrapcall, createcall]])
+    }
     let txn: { to: string; data: string; value: string } = {
       to: HYDROGEN_NUCLEUS_ADDRESSES[chainId],
       data: calldata,
-      value: '0',
+      value: gasTokenAmount,
     }
 
     if(!!createdPoolID) setCreatedPoolID(undefined)
@@ -506,7 +538,8 @@ const handleConfirmDismiss = useCallback(() => {
               currencyIds: currencyIds,
             })
             response.wait(1).then((receipt:any)=> {
-              const poolID = BigNumber.from(receipt.logs[0].topics[1]).toNumber()
+              const createEvent = receipt.logs.filter((log:any) => log.topics.includes('0xfa88d81eaffbf548e3ffc6c6458827ce9906ad714060746b80909cdf8d1d7ef7'))[0]
+              const poolID = BigNumber.from(createEvent.topics[1]).toNumber()
               setCreatedPoolID(poolID)
               pollStatsApiForPoolID(poolID)
               onClearGridOrderState()
@@ -773,7 +806,8 @@ const handleConfirmDismiss = useCallback(() => {
     <RowBetween>
       {deposits.map((deposit,depositIndex) => {
         if(!aboveBalances[depositIndex]) return undefined
-        const symbol = currenciesById[deposit.currencyId||'']?.tokenInfo.symbol || "tokens"
+        const currency = currenciesById[deposit.currencyId||'']
+        const symbol = (currency.tokenInfo || currency).symbol || "tokens"
         return (
           <ButtonPrimary
             disabled={true}
@@ -790,23 +824,29 @@ const handleConfirmDismiss = useCallback(() => {
   const tokenApprovalButtons = (
     <RowBetween>
       {deposits.map((deposit,depositIndex) => {
-        const approvalState = approvals[depositIndex][0]
-        const symbol = currenciesById[deposit.currencyId||'']?.tokenInfo.symbol
-        return (approvalState == ApprovalState.NOT_APPROVED || approvalState == ApprovalState.PENDING) && (
-          <ButtonPrimary
-            onClick={approvals[depositIndex][1]}
-            disabled={approvals[depositIndex][0] === ApprovalState.PENDING}
-            width={'100%'}
-          >
-            {approvals[depositIndex][0] === ApprovalState.PENDING ? (
-              <Dots>
-                {`Approving ${symbol}`}
-              </Dots>
-            ) : (
-              `Approve ${symbol}`
-            )}
-          </ButtonPrimary>
-        )
+        try {
+          const approvalState = approvals[depositIndex][0]
+          const currency = currenciesById[deposit.currencyId||'']
+          const tokenInfo = currency.tokenInfo || currency
+          const symbol = tokenInfo.symbol
+          return (approvalState == ApprovalState.NOT_APPROVED || approvalState == ApprovalState.PENDING) && (
+            <ButtonPrimary
+              onClick={approvals[depositIndex][1]}
+              disabled={approvals[depositIndex][0] === ApprovalState.PENDING}
+              width={'100%'}
+            >
+              {approvals[depositIndex][0] === ApprovalState.PENDING ? (
+                <Dots>
+                  {`Approving ${symbol}`}
+                </Dots>
+              ) : (
+                `Approve ${symbol}`
+              )}
+            </ButtonPrimary>
+          )
+        } catch(e) {
+          return undefined
+        }
       })}
     </RowBetween>
   )

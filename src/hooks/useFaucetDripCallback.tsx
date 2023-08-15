@@ -10,7 +10,13 @@ export function useFaucetDripCallback(
   token: any,
   recipientAddressOrName: string | undefined, // the ENS name or address of the recipient of the drip, or null if drip should be returned to sender
 ): { state: FaucetDripCallbackState; callback: null | (() => Promise<string>); error: ReactNode | null } {
-  const tokenAddress = token ? token.tokenInfo.address : undefined
+  let tokenAddress:any = undefined
+  try {
+    const token1 = token as any
+    const token2 = token1.wrapped || token1
+    const token3 = token2.tokenInfo || token2
+    tokenAddress = token3.address
+  } catch(e) {}
   const { account } = useWeb3React()
 
   const addTransaction = useTransactionAdder()

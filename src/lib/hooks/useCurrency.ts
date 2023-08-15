@@ -102,6 +102,27 @@ export function useTokensFromMap(tokens: TokenMap, tokenAddresses?: string[] | n
 }
 
 /**
+ * Returns a Token from the tokenAddress.
+ * Returns null if token is loading or null was passed.
+ * Returns undefined if tokenAddress is invalid or token does not exist.
+ */
+export function useTokensFromMap2(tokens: TokenMap, tokenAddresses?: string[] | null): (Token | undefined)[] {
+  return useMemo(() => {
+    if(!tokens || !tokenAddresses || tokenAddresses.length == 0) return []
+    return tokenAddresses.map((addr:string) => {
+      const address = isAddress(addr)
+      //return address ? tokens[address] : undefined
+      //return (address || addr == "ETH")
+      if(address) return tokens[address]
+      if(addr == "ETH") return tokens["ETH"]
+      if(addr == "MATIC") return tokens["MATIC"]
+      // add support for gas tokens here (1/99)
+      return undefined
+    })
+  }, [tokens, tokenAddresses])
+}
+
+/**
  * Returns a Currency from the currencyId.
  * Returns null if currency is loading or null was passed.
  * Returns undefined if currencyId is invalid or token does not exist.
@@ -109,7 +130,7 @@ export function useTokensFromMap(tokens: TokenMap, tokenAddresses?: string[] | n
 export function useCurrencyFromMap(tokens: TokenMap, currencyId?: string | null): Currency | null | undefined {
   const nativeCurrency = useNativeCurrency()
   const { chainId } = useWeb3React()
-  const isNative = Boolean(nativeCurrency && currencyId?.toUpperCase() === 'ETH')
+  const isNative = Boolean(nativeCurrency && (currencyId?.toUpperCase() === 'ETH' || currencyId?.toUpperCase() === 'MATIC')) // add support for gas token here (2/99)
   const shorthandMatchAddress = useMemo(() => {
     const chain = supportedChainId(chainId)
     return chain && currencyId ? TOKEN_SHORTHANDS[currencyId.toUpperCase()]?.[chain] : undefined
@@ -134,6 +155,18 @@ export function useCurrencyFromMap(tokens: TokenMap, currencyId?: string | null)
 export function useCurrenciesFromMap(tokens: TokenMap, currencyIds?: string[] | null): (Currency | undefined)[] {
   const { chainId } = useWeb3React()
   const currencies = useTokensFromMap(tokens, currencyIds)
+  if(!isSupportedChain(chainId)) return []
+  return currencies
+}
+
+/**
+ * Returns Currencies from a list of currencyIds.
+ * Returns null if currency is loading or null was passed.
+ * Returns undefined if currencyId is invalid or token does not exist.
+ */
+export function useCurrenciesFromMap2(tokens: TokenMap, currencyIds?: string[] | null): (Currency | undefined)[] {
+  const { chainId } = useWeb3React()
+  const currencies = useTokensFromMap2(tokens, currencyIds)
   if(!isSupportedChain(chainId)) return []
   return currencies
 }

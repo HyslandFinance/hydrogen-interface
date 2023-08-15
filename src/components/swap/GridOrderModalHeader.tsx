@@ -63,12 +63,14 @@ export default function GridOrderModalHeader({
             parsedAmountSell?.quotient,
             parsedAmountOneBase?.quotient,
           ) : undefined
+          const baseTokenInfo = baseToken.tokenInfo || baseToken
+          const quoteTokenInfo = quoteToken.tokenInfo || quoteToken
           return (
             <div key={pairIndex}>
               {buyPrice && (
                 <LightCard style={{ marginBottom: '0.25rem', padding: "0.25rem 0" }}>
                   <CenteringDiv>
-                    {`Buy ${baseToken.tokenInfo.symbol} at`}
+                    {`Buy ${baseTokenInfo.symbol} at`}
                     <span style={{width:"4px"}}/>
                     <TradePrice price={buyPrice} showDollarAmount={false}/>
                   </CenteringDiv>
@@ -77,7 +79,7 @@ export default function GridOrderModalHeader({
               {sellPrice && (
                 <LightCard style={{ marginBottom: '0.25rem', padding: "0.25rem 0" }}>
                   <CenteringDiv>
-                    {`Sell ${baseToken.tokenInfo.symbol} at`}
+                    {`Sell ${baseTokenInfo.symbol} at`}
                     <span style={{width:"4px"}}/>
                     <TradePrice price={sellPrice} showDollarAmount={false}/>
                   </CenteringDiv>
@@ -110,7 +112,7 @@ export default function GridOrderModalHeader({
                     <RowFixed gap="0px">
                       <CurrencyLogo currency={token} size="20px" style={{ marginRight: '12px' }} />
                       <Text fontSize={20} fontWeight={500}>
-                        {token.tokenInfo.symbol}
+                        {(token.tokenInfo||token).symbol}
                       </Text>
                     </RowFixed>
                   </RowBetween>

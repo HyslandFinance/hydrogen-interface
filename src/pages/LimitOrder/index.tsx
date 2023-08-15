@@ -239,15 +239,17 @@ export default function LimitOrderPage({ className }: { className?: string }) {
 
   const handleTypeInput = useCallback(
     (value: string) => {
+      if(showWrap) onUserInput(Field.OUTPUT, value)
       onUserInput(Field.INPUT, value)
     },
-    [onUserInput]
+    [onUserInput, showWrap]
   )
   const handleTypeOutput = useCallback(
     (value: string) => {
+      if(showWrap) onUserInput(Field.INPUT, value)
       onUserInput(Field.OUTPUT, value)
     },
-    [onUserInput]
+    [onUserInput, showWrap]
   )
 
   // reset if they close warning without tokens in params
@@ -257,26 +259,32 @@ export default function LimitOrderPage({ className }: { className?: string }) {
   }, [navigate])
 
   // modal and loading
-  const [{ showConfirm, tradeToConfirm, swapErrorMessage, attemptingTxn, txHash }, swapError] = useState<{
+  const [{ showConfirm, tradeToConfirm, errorMessage, attemptingTxn, txHash }, setModalState] = useState<{
     showConfirm: boolean
     tradeToConfirm: Trade<Currency, Currency, TradeType> | undefined
     attemptingTxn: boolean
-    swapErrorMessage: string | undefined
+    errorMessage: string | undefined
     txHash: string | undefined
   }>({
     showConfirm: false,
     tradeToConfirm: undefined,
     attemptingTxn: false,
-    swapErrorMessage: undefined,
+    errorMessage: undefined,
     txHash: undefined,
   })
 
   const formattedAmounts = useMemo(
-    () => ({
-      [Field.INPUT]: typedValueInput,
-      [Field.OUTPUT]: typedValueOutput,
-    }),
-    [typedValueInput, typedValueOutput]
+    () => {
+      if(showWrap) return {
+        [Field.INPUT]: typedValueInput,
+        [Field.OUTPUT]: typedValueInput,
+      }
+      return {
+        [Field.INPUT]: typedValueInput,
+        [Field.OUTPUT]: typedValueOutput,
+      }
+    },
+    [typedValueInput, typedValueOutput, showWrap]
   )
 
   const userHasSpecifiedInputOutput = Boolean(
@@ -363,7 +371,7 @@ export default function LimitOrderPage({ className }: { className?: string }) {
   const showMaxButton = Boolean(maxInputAmount?.greaterThan(0) && !parsedAmounts[Field.INPUT]?.equalTo(maxInputAmount))
 
   // the callback to execute the swap
-  const { callback: swapCallback, error: swapCallbackError } = useLimitOrderCallback(
+  const { callback: limitOrderCallback, error: limitOrderCallbackError } = useLimitOrderCallback(
     trade,
     allowedSlippage,
     recipient,
@@ -374,36 +382,36 @@ export default function LimitOrderPage({ className }: { className?: string }) {
   const [createdPoolID, setCreatedPoolID] = useState<number | undefined>(undefined)
   const pollStatsApiForPoolID = usePollStatsApiForPoolID()
 
-  const handleSwap = useCallback(() => {
-    if (!swapCallback) {
+  const handlePlaceLimitOrder = useCallback(() => {
+    if (!limitOrderCallback) {
       return
     }
     if (stablecoinPriceImpact && !confirmPriceImpactWithoutFee(stablecoinPriceImpact)) {
       return
     }
     if(!!createdPoolID) setCreatedPoolID(undefined)
-    swapError({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined })
-    swapCallback()
+    setModalState({ attemptingTxn: true, tradeToConfirm, showConfirm, errorMessage: undefined, txHash: undefined })
+    limitOrderCallback()
       .then((response) => {
-        const hash = response.hash
-        swapError({ attemptingTxn: false, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: hash })
+        setModalState({ attemptingTxn: false, tradeToConfirm, showConfirm, errorMessage: undefined, txHash: response.hash })
         response.wait(1).then((receipt:any)=> {
-          const poolID = BigNumber.from(receipt.logs[0].topics[1]).toNumber()
+          const createEvent = receipt.logs.filter((log:any) => log.topics.includes('0xfa88d81eaffbf548e3ffc6c6458827ce9906ad714060746b80909cdf8d1d7ef7'))[0]
+          const poolID = BigNumber.from(createEvent.topics[1]).toNumber()
           setCreatedPoolID(poolID)
-          pollStatsApiForPoolID(`${poolID}`)
+          pollStatsApiForPoolID(poolID)
         })
       })
       .catch((error) => {
-        swapError({
+        setModalState({
           attemptingTxn: false,
           tradeToConfirm,
           showConfirm,
-          swapErrorMessage: error.message,
+          errorMessage: error.message,
           txHash: undefined,
         })
       })
   }, [
-    swapCallback,
+    limitOrderCallback,
     stablecoinPriceImpact,
     tradeToConfirm,
     showConfirm,
@@ -438,18 +446,18 @@ export default function LimitOrderPage({ className }: { className?: string }) {
     !(priceImpactSeverity > 3 && !isExpertMode)
 
   const handleConfirmDismiss = useCallback(() => {
-    swapError({ showConfirm: false, tradeToConfirm, attemptingTxn, swapErrorMessage, txHash })
+    setModalState({ showConfirm: false, tradeToConfirm, attemptingTxn, errorMessage, txHash })
     // if there was a tx hash, we want to clear the inputs
     if (txHash) {
       onUserInput(Field.OUTPUT, '')
       onUserInput(Field.INPUT, '')
     }
     if(!!createdPoolID) setCreatedPoolID(undefined)
-  }, [attemptingTxn, onUserInput, swapErrorMessage, tradeToConfirm, txHash])
+  }, [attemptingTxn, onUserInput, errorMessage, tradeToConfirm, txHash])
 
   const handleAcceptChanges = useCallback(() => {
-    swapError({ tradeToConfirm: trade, swapErrorMessage, txHash, attemptingTxn, showConfirm })
-  }, [attemptingTxn, showConfirm, swapErrorMessage, trade, txHash])
+    setModalState({ tradeToConfirm: trade, errorMessage, txHash, attemptingTxn, showConfirm })
+  }, [attemptingTxn, showConfirm, errorMessage, trade, txHash])
 
   const handleInputSelect = useCallback(
     (inputCurrency: Currency) => {
@@ -523,8 +531,8 @@ export default function LimitOrderPage({ className }: { className?: string }) {
               txHash={txHash}
               recipient={recipient}
               allowedSlippage={allowedSlippage}
-              onConfirm={handleSwap}
-              swapErrorMessage={swapErrorMessage}
+              onConfirm={handlePlaceLimitOrder}
+              swapErrorMessage={errorMessage}
               onDismiss={handleConfirmDismiss}
               swapQuoteReceivedDate={swapQuoteReceivedDate}
               fiatValueInput={fiatValueInput}
@@ -696,12 +704,12 @@ export default function LimitOrderPage({ className }: { className?: string }) {
                       <ButtonError
                         onClick={() => {
                           if (isExpertMode) {
-                            handleSwap()
+                            handlePlaceLimitOrder()
                           } else {
-                            swapError({
+                            setModalState({
                               tradeToConfirm: trade,
                               attemptingTxn: false,
-                              swapErrorMessage: undefined,
+                              errorMessage: undefined,
                               showConfirm: true,
                               txHash: undefined,
                             })
@@ -781,12 +789,12 @@ export default function LimitOrderPage({ className }: { className?: string }) {
                   <ButtonError
                     onClick={() => {
                       if (isExpertMode) {
-                        handleSwap()
+                        handlePlaceLimitOrder()
                       } else {
-                        swapError({
+                        setModalState({
                           tradeToConfirm: trade,
                           attemptingTxn: false,
-                          swapErrorMessage: undefined,
+                          errorMessage: undefined,
                           showConfirm: true,
                           txHash: undefined,
                         })
@@ -796,9 +804,9 @@ export default function LimitOrderPage({ className }: { className?: string }) {
                     disabled={
                       !isValid ||
                       priceImpactTooHigh ||
-                      (permit2Enabled ? permit.state === PermitState.LOADING : Boolean(swapCallbackError))
+                      (permit2Enabled ? permit.state === PermitState.LOADING : Boolean(limitOrderCallbackError))
                     }
-                    error={isValid && priceImpactSeverity > 2 && (permit2Enabled || !swapCallbackError)}
+                    error={isValid && priceImpactSeverity > 2 && (permit2Enabled || !limitOrderCallbackError)}
                   >
                     <Text fontSize={20} fontWeight={600}>
                       {limitOrderInputError ? (
@@ -809,7 +817,7 @@ export default function LimitOrderPage({ className }: { className?: string }) {
                     </Text>
                   </ButtonError>
                 )}
-                {isExpertMode && swapErrorMessage ? <SwapCallbackError error={swapErrorMessage} /> : null}
+                {isExpertMode && errorMessage ? <SwapCallbackError error={errorMessage} /> : null}
               </div>
             </AutoColumn>
           </SwapWrapper>

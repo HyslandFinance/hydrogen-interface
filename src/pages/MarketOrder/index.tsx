@@ -64,6 +64,7 @@ import { computeFiatValuePriceImpact } from '../../utils/computeFiatValuePriceIm
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import { computeRealizedPriceImpact, warningSeverity } from '../../utils/prices'
 import { supportedChainId } from '../../utils/supportedChainId'
+import { currencyAmountToString } from 'lib/utils/currencyAmountToString'
 
 const ArrowContainer = styled.div`
   display: inline-block;
@@ -227,6 +228,44 @@ export default function MarketOrderPage({ className }: { className?: string }) {
     () => [!trade?.swaps, TradeState.LOADING === tradeState, TradeState.SYNCING === tradeState],
     [trade, tradeState]
   )
+  const [routeNotFound, routeIsLoading, routeIsSyncing] = useMemo(() => {
+    const routeNotFound = !trade?.swaps
+    const routeIsSyncing = TradeState.SYNCING === tradeState
+    const routeIsLoading = (() => {
+      if(TradeState.LOADING === tradeState) return true
+      if(!currencies.INPUT || !currencies.OUTPUT) {
+        //console.log("less than two currencies given. still invalid")
+        return false
+      }
+      const parsedIn = currencyAmountToString(parsedAmounts.INPUT)
+      const parsedOut = currencyAmountToString(parsedAmounts.OUTPUT)
+      if(!parsedIn && !parsedOut) {
+        return false
+      }
+      if(!parsedIn || !parsedOut) {
+        return true
+      }
+      if(!trade) {
+        return true
+      }
+      const parsedCurrencyIn = parsedAmounts?.INPUT?.currency as any
+      const parsedCurrencyOut = parsedAmounts?.OUTPUT?.currency as any
+      const tradeCurrencyIn = trade.inputAmount.currency as any
+      const tradeCurrencyOut = trade.outputAmount.currency as any
+      const addrIn1 = (parsedCurrencyIn.tokenInfo || parsedCurrencyIn).address
+      const addrIn2 = (tradeCurrencyIn.tokenInfo || tradeCurrencyIn).address
+      const addrOut1 = (parsedCurrencyOut.tokenInfo || parsedCurrencyOut).address
+      const addrOut2 = (tradeCurrencyOut.tokenInfo || tradeCurrencyOut).address
+      if(addrIn1 != addrIn2 || addrOut1 != addrOut2) {
+        return true
+      }
+
+      const tradeIn = currencyAmountToString(trade?.inputAmount)
+      const tradeOut = currencyAmountToString(trade?.outputAmount)
+      return false
+    })()
+    return [routeNotFound, routeIsLoading, routeIsSyncing]
+  }, [trade, tradeState, parsedAmounts, currencies])
 
   const fiatValueInput = useStablecoinValue(parsedAmounts[Field.INPUT])
   const fiatValueOutput = useStablecoinValue(parsedAmounts[Field.OUTPUT])
@@ -845,7 +884,7 @@ export default function MarketOrderPage({ className }: { className?: string }) {
                       {marketOrderInputError ? (
                         marketOrderInputError
                       ) : routeIsSyncing || routeIsLoading ? (
-                        <Trans>Place Market Order</Trans>
+                        <Trans>Searching...</Trans>
                       ) : priceImpactTooHigh ? (
                         <Trans>Price Impact Too High</Trans>
                       ) : priceImpactSeverity > 2 ? (

@@ -72,6 +72,9 @@ export const WETH_POLYGON_MUMBAI = new Token(SupportedChainId.POLYGON_MUMBAI, '0
 export const CELO_CELO_ALFAJORES = new Token(SupportedChainId.CELO_ALFAJORES, '0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9', 18, 'CELO', 'Celo')
 export const CUSD_CELO_ALFAJORES = new Token(SupportedChainId.CELO_ALFAJORES, '0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1', 18, 'CUSD', 'Celo Dollar')
 export const CEUR_CELO_ALFAJORES = new Token(SupportedChainId.CELO_ALFAJORES, '0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F', 18, 'CEUR', 'Celo Euro Stablecoin')
+// base
+export const DAI_BASE = new Token(SupportedChainId.BASE_GOERLI, '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb', 18, 'DAI', 'Dai Stablecoin')
+export const USDC_BASE = new Token(SupportedChainId.BASE_GOERLI, '0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA', 6, 'USDbC', 'USD Base Coin')
 // base goerli
 export const DAI_BASE_GOERLI = new Token(SupportedChainId.BASE_GOERLI, '0x7D691e6b03b46B5A5769299fC9a32EaC690B7abc', 18, 'DAI', 'Dai Stablecoin')
 export const USDC_BASE_GOERLI = new Token(SupportedChainId.BASE_GOERLI, '0x35CD54a3547190056A0F690357b1B2692B90Fb00', 6, 'USDC', 'USD//C')
@@ -178,6 +181,7 @@ export const TOKEN_SHORTHANDS: { [shorthand: string]: { [chainId in SupportedCha
     [SupportedChainId.RINKEBY]: USDC_RINKEBY.address,
     [SupportedChainId.KOVAN]: USDC_KOVAN.address,
     [SupportedChainId.ROPSTEN]: USDC_ROPSTEN.address,
+    [SupportedChainId.BASE]: USDC_BASE.address,
     [SupportedChainId.BASE_GOERLI]: USDC_BASE_GOERLI.address,
   },
 }

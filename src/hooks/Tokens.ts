@@ -3,7 +3,7 @@ import { useWeb3React } from '@web3-react/core'
 import { getChainInfo } from 'constants/chainInfo'
 import { SupportedChainId } from 'constants/chains'
 import { DEFAULT_INACTIVE_LIST_URLS } from 'constants/lists'
-import { useCurrencyFromMap, useCurrenciesFromMap, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
+import { useCurrencyFromMap, useCurrenciesFromMap, useCurrenciesFromMap2, useTokenFromMapOrNetwork } from 'lib/hooks/useCurrency'
 import { getTokenFilter } from 'lib/hooks/useTokenList/filtering'
 import { useMemo } from 'react'
 import { isL2ChainId } from 'utils/chains'
@@ -12,6 +12,7 @@ import { useAllLists, useCombinedActiveList } from '../state/lists/hooks'
 import { WrappedTokenInfo } from '../state/lists/wrappedTokenInfo'
 import { useUserAddedTokens, useUserAddedTokensOnChain } from '../state/user/hooks'
 import { TokenAddressMap, useUnsupportedTokenList } from './../state/lists/hooks'
+import useNativeCurrency from 'lib/hooks/useNativeCurrency'
 
 // reduce token map into standard address <-> Token mapping, optionally include user added tokens
 function useTokensFromMap(tokenMap: TokenAddressMap): { [address: string]: Token } {
@@ -31,7 +32,7 @@ export function useAllTokens(): { [address: string]: Token } {
   const allTokens = useCombinedActiveList()
   const tokensFromMap = useTokensFromMap(allTokens)
   const userAddedTokens = useUserAddedTokens()
-  return useMemo(() => {
+  const reducedTokens = useMemo(() => {
     return (
       userAddedTokens
         // reduce into all ALL_TOKENS filtered by the current chain
@@ -46,6 +47,7 @@ export function useAllTokens(): { [address: string]: Token } {
         )
     )
   }, [tokensFromMap, userAddedTokens])
+  return reducedTokens
 }
 
 type BridgeInfo = Record<
@@ -171,7 +173,27 @@ export function useCurrency(currencyId?: string | null): Currency | null | undef
   return useCurrencyFromMap(tokens, currencyId)
 }
 
+export function useCurrencyOrNative(currencyId?: string | null): Currency | null | undefined {
+  const tokens = useAllTokens()
+  const native = useNativeCurrency()
+  const wrapped = native.wrapped
+  if(!!wrapped.address && !tokens.hasOwnProperty(wrapped.address)) tokens[wrapped.address] = wrapped
+  if(!!native.symbol && !tokens.hasOwnProperty(native.symbol)) tokens[native.symbol] = native as any
+  const fromMap = useCurrencyFromMap(tokens, currencyId)
+  return fromMap
+}
+
 export function useCurrencies(currencyIds?: string[] | null): (Currency | undefined)[] {
   const tokens = useAllTokens()
   return useCurrenciesFromMap(tokens, currencyIds)
+}
+
+export function useCurrenciesAndNatives(currencyIds?: string[] | null): (Currency | undefined)[] {
+  const tokens = useAllTokens()
+  const native = useNativeCurrency()
+  const wrapped = native.wrapped
+  if(!!wrapped.address && !tokens.hasOwnProperty(wrapped.address)) tokens[wrapped.address] = wrapped
+  if(!!native.symbol && !tokens.hasOwnProperty(native.symbol)) tokens[native.symbol] = native as any
+  const fromMap = useCurrenciesFromMap2(tokens, currencyIds)
+  return fromMap
 }
