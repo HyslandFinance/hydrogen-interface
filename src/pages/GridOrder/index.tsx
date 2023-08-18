@@ -246,10 +246,10 @@ export default function GridOrderPage({ className }: { className?: string }) {
     txHash: undefined,
   })
 
-const handleConfirmDismiss = useCallback(() => {
-  setModalState({ showConfirm: false, attemptingTxn, errorMessage, txHash })
-  if(!!createdPoolID) setCreatedPoolID(undefined)
-}, [attemptingTxn, errorMessage, txHash])
+  const handleConfirmDismiss = useCallback(() => {
+    setModalState({ showConfirm: false, attemptingTxn, errorMessage, txHash })
+    if(!!createdPoolID) setCreatedPoolID(undefined)
+  }, [attemptingTxn, errorMessage, txHash])
 
   const handleCurrencySelect = useCallback(
     (pairIndex:number, field: Field, currencyNew: Currency) => {

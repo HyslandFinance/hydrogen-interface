@@ -3,7 +3,7 @@ import { Fraction, TradeType } from '@uniswap/sdk-core'
 import JSBI from 'jsbi'
 
 import { nativeOnChain } from '../../constants/tokens'
-import { useCurrency, useToken } from '../../hooks/Tokens'
+import { useCurrency, useToken, useCurrencyOrNative } from '../../hooks/Tokens'
 import useENSName from '../../hooks/useENSName'
 import { VoteOption } from '../../state/governance/types'
 import {
@@ -27,6 +27,9 @@ import {
   FaucetDripTransactionInfo,
   LimitOrderTransactionInfo,
   GridOrderTransactionInfo,
+  DepositTransactionInfo,
+  WithdrawTransactionInfo,
+  SetPricesTransactionInfo,
 } from '../../state/transactions/types'
 
 function formatAmount(amountRaw: string, decimals: number, sigFigs: number): string {
@@ -60,7 +63,9 @@ function FormattedCurrencyAmountManaged({
   currencyId: string
   sigFigs: number
 }) {
-  const currency = useCurrency(currencyId)
+  //const currency = useCurrency(currencyId)
+  const currency = useCurrencyOrNative(currencyId)
+  //console.log("in FormattedCurrencyAmountManaged()", {currencyId, currency})
   return currency ? (
     <FormattedCurrencyAmount
       rawAmount={rawAmount}
@@ -308,6 +313,7 @@ function SwapSummary({ info }: { info: ExactInputSwapTransactionInfo | ExactOutp
 }
 
 function LimitOrderSummary({ info }: { info: LimitOrderTransactionInfo }) {
+  //console.log("in LimitOrderSummary", {info})
   return (
     <Trans>
       {'Place limit order '}
@@ -342,6 +348,81 @@ function FaucetDripSummary({ info }: { info: FaucetDripTransactionInfo }) {
   )
 }
 
+function DepositSummary({ info }: { info: DepositTransactionInfo }) {
+  //console.log("in LimitOrderSummary", {info})
+  const list = [' '] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    //currencyAmountRaws: withdraws.map((withdraw,withdrawIndex) => parseUnits(withdraw.typedAmount, currenciesById[withdraw.currencyId||''].decimals).toString()),
+    //poolID,
+    //list.push(<FormattedCurrencyAmountManaged rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={6} />)
+    list.push(<FormattedCurrencyAmountManaged rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={6} />)
+    if(i < info.currencyIds.length - 1) list.push(', ')
+    else list.push(' ')
+  }
+  const list2 = list.map((item,index)=>(<span key={index}>{item}</span>))
+  //console.log("TransactionSummary.DepositSummary()", {list})
+  return (
+    <>
+      <Trans>
+        {'Deposit '}
+      </Trans>
+      {list2}
+      <Trans>
+        {` into pool ${info.poolID}`}
+      </Trans>
+    </>
+  )
+}
+
+function WithdrawSummary({ info }: { info: WithdrawTransactionInfo }) {
+  //console.log("in LimitOrderSummary", {info})
+  const list = [' '] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    //currencyAmountRaws: deposits.map((deposit,depositIndex) => parseUnits(deposit.typedAmount, currenciesById[deposit.currencyId||''].decimals).toString()),
+    //poolID,
+    //list.push(<FormattedCurrencyAmountManaged rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={6} />)
+    list.push(<FormattedCurrencyAmountManaged rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={6} />)
+    if(i < info.currencyIds.length - 1) list.push(', ')
+    else list.push(' ')
+  }
+  const list2 = list.map((item,index)=>(<span key={index}>{item}</span>))
+  //console.log("TransactionSummary.WithdrawSummary()", {list})
+  return (
+    <>
+      <Trans>
+        {'Withdraw '}
+      </Trans>
+      {list2}
+      <Trans>
+        {` from pool ${info.poolID}`}
+      </Trans>
+    </>
+  )
+}
+
+function SetPricesSummary({ info }: { info: SetPricesTransactionInfo }) {
+  //console.log("in LimitOrderSummary", {info})
+  /*
+  const list = [' '] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    //currencyAmountRaws: deposits.map((deposit,depositIndex) => parseUnits(deposit.typedAmount, currenciesById[deposit.currencyId||''].decimals).toString()),
+    //poolID,
+    //list.push(<FormattedCurrencyAmountManaged rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={6} />)
+    list.push(<FormattedCurrencyAmountManaged rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={6} />)
+    if(i < info.currencyIds.length - 1) list.push(', ')
+    else list.push(' ')
+  }
+  */
+  //console.log("TransactionSummary.SetPricesSummary()", {list})
+  return (
+    <>
+      <Trans>
+        {'SetPrices '}
+      </Trans>
+    </>
+  )
+}
+
 function UnknownTransactionSummary({ info }: { info: any }) {
   return (
     <Trans>
@@ -351,6 +432,8 @@ function UnknownTransactionSummary({ info }: { info: any }) {
 }
 
 export function TransactionSummary({ info }: { info: TransactionInfo }) {
+
+  //console.log("TransactionSummary()", {info})
 
   switch (info.type) {
     case TransactionType.ADD_LIQUIDITY_V3_POOL:
@@ -412,6 +495,15 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
 
     case TransactionType.FAUCET_DRIP:
       return <FaucetDripSummary info={info} />
+
+    case TransactionType.DEPOSIT:
+      return <DepositSummary info={info} />
+
+    case TransactionType.WITHDRAW:
+      return <WithdrawSummary info={info} />
+
+    //case TransactionType.SET_PRICES:
+      //return <SetPricesSummary info={info} />
 
     default:
       return <UnknownTransactionSummary info={info}/>

@@ -18,6 +18,7 @@ import statsApi from './statsApi/reducer'
 import marketOrder from './marketOrder/reducer'
 import limitOrder from './limitOrder/reducer'
 import gridOrder from './gridOrder/reducer'
+import poolManagement from './poolManagement/reducer'
 import transactions from './transactions/reducer'
 import user from './user/reducer'
 import wallets from './wallets/reducer'
@@ -35,6 +36,7 @@ const store = configureStore({
     marketOrder,
     limitOrder,
     gridOrder,
+    poolManagement,
     mint,
     mintV3,
     burn,

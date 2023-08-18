@@ -70,10 +70,20 @@ const getCurrency = ({ info, chainId }: { info: TransactionInfo; chainId: number
       return { currencyId0: info.tokenAddress, currencyId1: undefined }
     }
     case TransactionType.GRID_ORDER:
-      const currencies = { currencyId0: undefined, currencyId1: undefined } as any
-      if(info.currencyIds.length > 0) currencies.currencyId0 = info.currencyIds[0]
-      if(info.currencyIds.length > 1) currencies.currencyId1 = info.currencyIds[1]
-      return currencies
+      const gridCurrencies = { currencyId0: undefined, currencyId1: undefined } as any
+      if(info.currencyIds.length > 0) gridCurrencies.currencyId0 = info.currencyIds[0]
+      if(info.currencyIds.length > 1) gridCurrencies.currencyId1 = info.currencyIds[1]
+      return gridCurrencies
+    case TransactionType.DEPOSIT:
+      const depositCurrencies = { currencyId0: undefined, currencyId1: undefined } as any
+      if(info.currencyIds.length > 0) depositCurrencies.currencyId0 = info.currencyIds[0]
+      if(info.currencyIds.length > 1) depositCurrencies.currencyId1 = info.currencyIds[1]
+      return depositCurrencies
+    case TransactionType.WITHDRAW:
+      const withdrawCurrencies = { currencyId0: undefined, currencyId1: undefined } as any
+      if(info.currencyIds.length > 0) withdrawCurrencies.currencyId0 = info.currencyIds[0]
+      if(info.currencyIds.length > 1) withdrawCurrencies.currencyId1 = info.currencyIds[1]
+      return withdrawCurrencies
     default:
       return { currencyId0: undefined, currencyId1: undefined }
   }

@@ -19,25 +19,28 @@ export interface SerializableTransactionReceipt {
  */
 export enum TransactionType {
   APPROVAL = 0,
-  SWAP,
-  DEPOSIT_LIQUIDITY_STAKING,
-  WITHDRAW_LIQUIDITY_STAKING,
-  CLAIM,
-  VOTE,
-  DELEGATE,
-  WRAP,
-  CREATE_V3_POOL,
-  ADD_LIQUIDITY_V3_POOL,
-  ADD_LIQUIDITY_V2_POOL,
-  MIGRATE_LIQUIDITY_V3,
-  COLLECT_FEES,
-  REMOVE_LIQUIDITY_V3,
-  SUBMIT_PROPOSAL,
-  QUEUE,
-  EXECUTE,
-  LIMIT_ORDER,
-  FAUCET_DRIP,
-  GRID_ORDER,
+  SWAP = 1,
+  DEPOSIT_LIQUIDITY_STAKING = 2,
+  WITHDRAW_LIQUIDITY_STAKING = 3,
+  CLAIM = 4,
+  VOTE = 5,
+  DELEGATE = 6,
+  WRAP = 7,
+  CREATE_V3_POOL = 8,
+  ADD_LIQUIDITY_V3_POOL = 9,
+  ADD_LIQUIDITY_V2_POOL = 10,
+  MIGRATE_LIQUIDITY_V3 = 11,
+  COLLECT_FEES = 12,
+  REMOVE_LIQUIDITY_V3 = 13,
+  SUBMIT_PROPOSAL = 14,
+  QUEUE = 15,
+  EXECUTE = 16,
+  LIMIT_ORDER = 17,
+  FAUCET_DRIP = 18,
+  GRID_ORDER = 19,
+  DEPOSIT = 20,
+  WITHDRAW = 21,
+  SET_PRICES = 22,
 }
 
 interface BaseTransactionInfo {
@@ -190,6 +193,27 @@ export interface GridOrderTransactionInfo {
   currencyIds: string[]
 }
 
+export interface DepositTransactionInfo extends BaseTransactionInfo {
+  type: TransactionType.DEPOSIT
+  currencyIds: string[]
+  currencyAmountRaws: string[]
+  poolID: string
+}
+
+export interface WithdrawTransactionInfo extends BaseTransactionInfo {
+  type: TransactionType.WITHDRAW
+  currencyIds: string[]
+  currencyAmountRaws: string[]
+  poolID: string
+}
+
+export interface SetPricesTransactionInfo extends BaseTransactionInfo {
+  type: TransactionType.WITHDRAW
+  currencyIds: string[]
+  currencyAmountRaws: string[]
+  poolID: string
+}
+
 export type TransactionInfo =
   | ApproveTransactionInfo
   | ExactOutputSwapTransactionInfo
@@ -212,6 +236,9 @@ export type TransactionInfo =
   | LimitOrderTransactionInfo
   | FaucetDripTransactionInfo
   | GridOrderTransactionInfo
+  | DepositTransactionInfo
+  | WithdrawTransactionInfo
+  | SetPricesTransactionInfo
 
 export interface TransactionDetails {
   hash: string

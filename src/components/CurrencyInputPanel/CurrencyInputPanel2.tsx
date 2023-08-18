@@ -171,6 +171,7 @@ const StyledBalanceMax = styled.button<{ disabled?: boolean }>`
 const StyledNumericalInput = styled(NumericalInput)<{ $loading: boolean }>`
   ${loadingOpacityMixin};
   text-align: left;
+  width: 260px;
 `
 
 interface CurrencyInputPanelProps {
@@ -196,6 +197,7 @@ interface CurrencyInputPanelProps {
   locked?: boolean
   loading?: boolean
   error?: boolean
+  overrideBalance?: CurrencyAmount<Token> | undefined
 }
 
 export default function CurrencyInputPanel2({
@@ -220,11 +222,14 @@ export default function CurrencyInputPanel2({
   locked = false,
   loading = false,
   error = false,
+  overrideBalance = undefined,
   ...rest
 }: CurrencyInputPanelProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const { account, chainId } = useWeb3React()
   const selectedCurrencyBalance = useCurrencyBalance(account ?? undefined, currency ?? undefined)
+  const balance = overrideBalance || selectedCurrencyBalance
+  //console.log("CurrencyInputPanel2()", {selectedCurrencyBalance, overrideBalance, balance})
   const theme = useTheme()
 
   const handleDismissSearch = useCallback(() => {
@@ -333,15 +338,15 @@ export default function CurrencyInputPanel2({
                     fontSize={14}
                     style={{ display: 'inline', cursor: 'pointer' }}
                   >
-                    {!hideBalance && currency && selectedCurrencyBalance ? (
+                    {!hideBalance && currency && balance ? (
                       renderBalance ? (
-                        renderBalance(selectedCurrencyBalance)
+                        renderBalance(balance)
                       ) : (
-                        <Trans>Balance: {formatCurrencyAmount(selectedCurrencyBalance, 4)}</Trans>
+                        <Trans>Balance: {formatCurrencyAmount(balance, 4)}</Trans>
                       )
                     ) : null}
                   </ThemedText.DeprecatedBody>
-                  {showMaxButton && selectedCurrencyBalance ? (
+                  {showMaxButton && balance ? (
                     <TraceEvent
                       events={[BrowserEvent.onClick]}
                       name={EventName.SWAP_MAX_TOKEN_AMOUNT_SELECTED}

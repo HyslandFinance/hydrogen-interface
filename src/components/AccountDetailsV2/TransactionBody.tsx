@@ -15,6 +15,9 @@ import {
   LimitOrderTransactionInfo,
   FaucetDripTransactionInfo,
   GridOrderTransactionInfo,
+  DepositTransactionInfo,
+  WithdrawTransactionInfo,
+  SetPricesTransactionInfo,
 } from 'state/transactions/types'
 import styled from 'styled-components/macro'
 
@@ -51,8 +54,18 @@ const Action = ({ pending, success, failed, transactionState }: ActionProps) => 
   }
 }
 
-const formatAmount = (amountRaw: string, decimals: number, sigFigs: number): string =>
-  new Fraction(amountRaw, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))).toSignificant(sigFigs)
+//const formatAmount = (amountRaw: string, decimals: number, sigFigs: number): string =>
+  //new Fraction(amountRaw, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))).toSignificant(sigFigs)
+const formatAmount = (amountRaw: string, decimals: number, sigFigs: number): string => {
+  //console.log("TransactionBody.formatAmount() 1", {amountRaw, decimals, sigFigs})
+
+  //console.log("formatAmount() 1", {amountRaw, decimals, sigFigs})
+  //console.log("formatAmount() 2", {amountRaw, decimals, sigFigs, exp: JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))})
+  const formattedAmount = new Fraction(amountRaw, JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(decimals))).toSignificant(sigFigs)
+  return formattedAmount
+
+  //return ''
+}
 
 const FailedText = ({ transactionState }: { transactionState: TransactionState }) =>
   transactionState === TransactionState.Failed ? <Trans>failed</Trans> : <span />
@@ -80,6 +93,7 @@ const FormattedCurrencyAmount = ({
   sigFigs: number
 }) => {
   const currency = useCurrency(currencyId)
+  console.log("FormattedCurrencyAmount", {rawAmount, currencyId, currency})
 
   return currency ? (
     <HighlightText>
@@ -426,6 +440,142 @@ const GridOrderSummary = ({
   )
 }
 
+const DepositSummary = ({
+  info,
+  transactionState,
+}: {
+  info: DepositTransactionInfo
+  transactionState: TransactionState
+}) => {
+  const actionProps = {
+    transactionState,
+    pending: <Trans>Depositing</Trans>,
+    success: <Trans>Deposited</Trans>,
+    failed: <Trans>Deposit</Trans>,
+  }
+
+  //console.log("TransactionBody.DepositSummary()", {info, transactionState})
+  /*
+  const list = [] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    list.push(<FormattedCurrencyAmount rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={2} />)
+    if(i < info.currencyIds.length - 1) list.push(', ')
+    else list.push(' ')
+  }
+  */
+  const list0 = [] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    try {
+      list0.push(<FormattedCurrencyAmount rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={2} />)
+    } catch(e) {}
+  }
+
+  const list1 = [] as any[]
+  for(let i = 0; i < list0.length; i++) {
+    list1.push(list0[i])
+    if(i < list0.length - 1) list1.push(', ')
+    else list1.push(' ')
+  }
+
+  const list2 = list1.map((item,index)=>(<span key={index}>{item}</span>))
+
+  return (
+    <BodyWrap>
+      <Action {...actionProps} />{' '}
+      {list2}
+      {` into pool ${info.poolID}`}
+      <FailedText transactionState={transactionState} />
+    </BodyWrap>
+  )
+}
+
+const WithdrawSummary = ({
+  info,
+  transactionState,
+}: {
+  info: WithdrawTransactionInfo
+  transactionState: TransactionState
+}) => {
+  const actionProps = {
+    transactionState,
+    pending: <Trans>Withdrawing</Trans>,
+    success: <Trans>Withdrew</Trans>,
+    failed: <Trans>Withdraw</Trans>,
+  }
+
+  //console.log("TransactionBody.WithdrawSummary()", {info, transactionState})
+  /*
+  const list = [] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    list.push(<FormattedCurrencyAmount rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={2} />)
+    if(i < info.currencyIds.length - 1) list.push(', ')
+    else list.push(' ')
+  }
+
+  const list2 = list.map((item,index)=>(<span key={index}>{item}</span>))
+  */
+
+  const list0 = [] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    try {
+      list0.push(<FormattedCurrencyAmount rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={2} />)
+    } catch(e) {}
+  }
+
+  const list1 = [] as any[]
+  for(let i = 0; i < list0.length; i++) {
+    list1.push(list0[i])
+    if(i < list0.length - 1) list1.push(', ')
+    else list1.push(' ')
+  }
+
+  const list2 = list1.map((item,index)=>(<span key={index}>{item}</span>))
+
+  return (
+    <BodyWrap>
+      <Action {...actionProps} />{' '}
+      {list2}
+      {` from pool ${info.poolID}`}
+      <FailedText transactionState={transactionState} />
+    </BodyWrap>
+  )
+}
+
+const SetPricesSummary = ({
+  info,
+  transactionState,
+}: {
+  info: SetPricesTransactionInfo
+  transactionState: TransactionState
+}) => {
+  const actionProps = {
+    transactionState,
+    pending: <Trans>Setting prices</Trans>,
+    success: <Trans>Prices set</Trans>,
+    failed: <Trans>Set prices</Trans>,
+  }
+
+  //console.log("TransactionBody.SetPricesSummary()", {info, transactionState})
+  /*
+  const list = [] as any[]
+  for(let i = 0; i < info.currencyIds.length; i++) {
+    list.push(<FormattedCurrencyAmount rawAmount={info.currencyAmountRaws[i]} currencyId={info.currencyIds[i]} sigFigs={2} />)
+    if(i < info.currencyIds.length - 1) list.push(', ')
+    else list.push(' ')
+  }
+
+  {list}
+  {` into pool ${info.poolID}`}
+  */
+  return (
+    <BodyWrap>
+      <Action {...actionProps} />{' '}
+
+      <FailedText transactionState={transactionState} />
+    </BodyWrap>
+  )
+}
+
 const TransactionBody = ({ info, transactionState }: { info: TransactionInfo; transactionState: TransactionState }) => {
   switch (info.type) {
     case TransactionType.SWAP:
@@ -448,6 +598,12 @@ const TransactionBody = ({ info, transactionState }: { info: TransactionInfo; tr
       return <FaucetDripSummary info={info} transactionState={transactionState} />
     case TransactionType.GRID_ORDER:
       return <GridOrderSummary info={info} transactionState={transactionState} />
+    case TransactionType.DEPOSIT:
+      return <DepositSummary info={info} transactionState={transactionState} />
+    case TransactionType.WITHDRAW:
+      return <WithdrawSummary info={info} transactionState={transactionState} />
+    //case TransactionType.SET_PRICES:
+      //return <SetPricesSummary info={info} transactionState={transactionState} />
     default:
       return <span />
   }
