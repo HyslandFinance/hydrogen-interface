@@ -417,7 +417,7 @@ function SetPricesSummary({ info }: { info: SetPricesTransactionInfo }) {
   return (
     <>
       <Trans>
-        {'SetPrices '}
+        {`Set prices of pool ${info.poolID}`}
       </Trans>
     </>
   )
@@ -502,8 +502,8 @@ export function TransactionSummary({ info }: { info: TransactionInfo }) {
     case TransactionType.WITHDRAW:
       return <WithdrawSummary info={info} />
 
-    //case TransactionType.SET_PRICES:
-      //return <SetPricesSummary info={info} />
+    case TransactionType.SET_PRICES:
+      return <SetPricesSummary info={info} />
 
     default:
       return <UnknownTransactionSummary info={info}/>

@@ -33,10 +33,12 @@ export interface WithdrawState {
 
 export interface PoolManagementState {
   readonly pairs: PairState[]
+  readonly pairsOriginal: PairState[]
   readonly deposits: DepositState[]
   readonly withdraws: WithdrawState[]
   // the typed recipient address or ENS name, or null if swap should go to sender
   readonly recipient: string | null
+  readonly poolID: string
 }
 
 export const selectCurrencies = createAction<{ pairIndex: number; currencyIdBase: string|undefined; currencyIdQuote: string|undefined }>('PoolManagement/selectCurrencies')

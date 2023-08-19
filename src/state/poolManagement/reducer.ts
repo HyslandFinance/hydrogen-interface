@@ -10,9 +10,16 @@ const initialState: PoolManagementState = {
       [Field.BASE_TOKEN]: { currencyId: undefined },
       [Field.QUOTE_TOKEN]: { currencyId: undefined },
     }],
+    pairsOriginal: [{
+      typedValueBuyPrice: '',
+      typedValueSellPrice: '',
+      [Field.BASE_TOKEN]: { currencyId: undefined },
+      [Field.QUOTE_TOKEN]: { currencyId: undefined },
+    }],
     deposits: [],
     withdraws: [],
     recipient: null,
+    poolID: "",
 }
 
 export default createReducer<PoolManagementState>(initialState, (builder) => (

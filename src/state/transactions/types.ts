@@ -208,9 +208,8 @@ export interface WithdrawTransactionInfo extends BaseTransactionInfo {
 }
 
 export interface SetPricesTransactionInfo extends BaseTransactionInfo {
-  type: TransactionType.WITHDRAW
+  type: TransactionType.SET_PRICES
   currencyIds: string[]
-  currencyAmountRaws: string[]
   poolID: string
 }
 

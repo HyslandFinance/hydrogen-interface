@@ -84,6 +84,11 @@ const getCurrency = ({ info, chainId }: { info: TransactionInfo; chainId: number
       if(info.currencyIds.length > 0) withdrawCurrencies.currencyId0 = info.currencyIds[0]
       if(info.currencyIds.length > 1) withdrawCurrencies.currencyId1 = info.currencyIds[1]
       return withdrawCurrencies
+    case TransactionType.SET_PRICES:
+      const setPricesCurrencies = { currencyId0: undefined, currencyId1: undefined } as any
+      if(info.currencyIds.length > 0) setPricesCurrencies.currencyId0 = info.currencyIds[0]
+      if(info.currencyIds.length > 1) setPricesCurrencies.currencyId1 = info.currencyIds[1]
+      return setPricesCurrencies
     default:
       return { currencyId0: undefined, currencyId1: undefined }
   }

@@ -57,6 +57,10 @@ import { stringValueIsPositiveFloat } from 'utils/stringValueIsPositiveFloat'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import ConfirmDepositModal from 'components/poolManagement/ConfirmDepositModal'
 import ConfirmWithdrawModal from 'components/poolManagement/ConfirmWithdrawModal'
+import ConfirmSetPricesModal from 'components/poolManagement/ConfirmSetPricesModal'
+import { colors } from 'theme/colors'
+import { determinePairOrder } from './../Pool/determinePairOrder'
+import { formatTransactionAmount, priceToPreciseFloat } from 'utils/formatNumbers'
 
 const ContentLayout = styled.div`
   display: grid;
@@ -260,6 +264,27 @@ const Tab = styled.div<{ isDarkMode: boolean, isSelected?:boolean|undefined }>`
   }
 `
 
+const SwapWrapperWrapper = styled.div`
+  margin-bottom: 16px;
+`
+
+const SwapWrapperInner = styled.div`
+  margin: 8px 12px;
+`
+
+const MarketPriceText = styled.p`
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 12px;
+  margin-bottom: 0;
+`
+
+const PairCardMessageText = styled.p`
+  margin: 0.5rem 0 0 0;
+  font-size: 13px;
+`
+
 const TabTextContainer = styled(CenteringDiv)<{ isDarkMode: boolean }>`
   width: 140px;
   font-size: 16px;
@@ -275,8 +300,7 @@ export default function GridOrderPoolPage(props:any) {
   const { account, chainId, provider } = useWeb3React()
   const nucleusState = useNucleusState() as any
   const isDarkMode = useIsDarkMode()
-  const { poolID } = props
-  const poolManagementState = usePoolManagementState()
+  //const { poolID } = props
 
   // dismiss warning if all imported tokens are in active lists
   const defaultTokens = useAllTokens()
@@ -309,7 +333,7 @@ export default function GridOrderPoolPage(props:any) {
   const [isExpertMode] = useExpertModeManager()
   // swap state
   const currentState = usePoolManagementState()
-  const { pairs, deposits, withdraws, recipient } = currentState
+  const { pairs, deposits, withdraws, recipient, poolID } = currentState
   const {
     currenciesById,
     currencyBalancesById,
@@ -318,6 +342,8 @@ export default function GridOrderPoolPage(props:any) {
     atLeastOneDepositAmountFilled,
     atLeastOneWithdrawAmountFilled,
   } = useDerivedPoolManagementInfo()
+
+  //console.log("GridOrderPoolPage", {pairs, deposits, withdraws, currenciesById, currencyBalancesById, atLeastOnePairsInfoFilled, allPairsInfoFilled, atLeastOneDepositAmountFilled, atLeastOneWithdrawAmountFilled, pool:nucleusState.pools[poolID], poolID})
 
   const { onCurrencySelection, onPriceInput, onDepositAmountInput, onWithdrawAmountInput, onReplacePoolManagementState, onClearPoolManagementState } = usePoolManagementActionHandlers()
 
@@ -494,12 +520,16 @@ export default function GridOrderPoolPage(props:any) {
 
   const poolBalances2 = useMemo(() => {
     return withdraws.map((withdraw) => {
-      const currencyId = withdraw?.currencyId||''
-      const token = currenciesById[currencyId]
-      //return '0'
-      const balStr = formatUnits(poolBalances[currencyId] || '0', token.decimals)
-      //return tryParseCurrencyAmount(withdraw?.typedAmount||"0", token)
-      return tryParseCurrencyAmount2(balStr, token)
+      try {
+        const currencyId = withdraw?.currencyId||''
+        const token = currenciesById[currencyId]
+        //console.log("poolBalances2()", {currencyId, token, currenciesById})
+        const token2 = token.tokenInfo || token
+        //return '0'
+        const balStr = formatUnits(poolBalances[currencyId] || '0', token2.decimals)
+        //return tryParseCurrencyAmount(withdraw?.typedAmount||"0", token)
+        return tryParseCurrencyAmount2(balStr, token)
+      } catch(e) { return undefined }
     })
   }, [withdraws, poolBalances])
 
@@ -618,7 +648,7 @@ export default function GridOrderPoolPage(props:any) {
     // encode transaction
     const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(account)
     //const userInternalLocation = HydrogenNucleusHelper.internalAddressToLocation(account)
-    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(poolID)
+    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(BigNumber.from(poolID))
 
     const currencyIds = deposits.map((deposit) => deposit.currencyId).filter(x=>!!x) as string[]
 
@@ -729,7 +759,7 @@ export default function GridOrderPoolPage(props:any) {
     // encode transaction
     const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(account)
     //const userInternalLocation = HydrogenNucleusHelper.internalAddressToLocation(account)
-    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(poolID)
+    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(BigNumber.from(poolID))
 
     const currencyIds = withdraws.map((withdraw) => withdraw.currencyId).filter(x=>!!x) as string[]
 
@@ -833,8 +863,103 @@ export default function GridOrderPoolPage(props:any) {
   }
 
   async function handleSetPrices() {
-    console.log("todo: handleSetPrices()")
+    // checks
+    if (!chainId || !provider || !account) return
+    if(!HYDROGEN_NUCLEUS_ADDRESSES[chainId]) return
+    if(!allPairsInfoFilled) return
+    // encode transaction
+    const tradeRequests = pairs.map((pair,pairIndex) => {
+      const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
+      const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
+      //console.log("encoding trade request", {pairIndex, pair, currencyBase, currencyQuote})
+      if(!currencyBase || !currencyQuote) return []
+      const tokenBase = currencyBase?.wrapped
+      const tokenQuote = currencyQuote?.wrapped
+      const baseAmount = tryParseCurrencyAmount('1', tokenBase)
+      const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
+      const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
+      if(!baseAmount || !parsedQuoteAmountBuy || !parsedQuoteAmountSell) return []
+      const baseAmountBN = currencyAmountToBigNumber(baseAmount)
+      const quoteAmountBuyBN = currencyAmountToBigNumber(parsedQuoteAmountBuy)
+      const quoteAmountSellBN = currencyAmountToBigNumber(parsedQuoteAmountSell)
+      if(!baseAmountBN || !quoteAmountBuyBN || !quoteAmountSellBN || baseAmountBN.eq(0) || quoteAmountBuyBN.eq(0) || quoteAmountSellBN.eq(0)) return []
+      const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
+      const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
+      const tradeRequests = [{
+        tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+        tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+        exchangeRate: exchangeRateBuy,
+        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+      },{
+        tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+        tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+        exchangeRate: exchangeRateSell,
+        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+      }]
+      return tradeRequests
+    }).flat().filter(x=>!!x)
+
+    if(tradeRequests.length == 0) return
+
+    const params = {
+      poolID,
+      tokenSources: [],
+      tradeRequests
+    }
+    const calldata = nucleusInterface.encodeFunctionData("updateGridOrderPool", [params])
+    const txn: { to: string; data: string; value: string } = {
+      to: HYDROGEN_NUCLEUS_ADDRESSES[chainId],
+      data: calldata,
+      value: '0',
+    }
+
+    setModalState({ attemptingTxn: true, showConfirm, errorMessage: undefined, txHash: undefined, showModal })
+
+    const currencyIds = [pairs[0][Field.BASE_TOKEN].currencyId||'', pairs[0][Field.QUOTE_TOKEN].currencyId||'']
+
+    provider
+      .getSigner()
+      .estimateGas(txn)
+      .then((estimate) => {
+        const newTxn = {
+          ...txn,
+          gasLimit: calculateGasMargin(estimate),
+        }
+
+        return provider
+          .getSigner()
+          .sendTransaction(newTxn)
+          .then((response: TransactionResponse) => {
+            setModalState({ attemptingTxn: false, showConfirm, errorMessage: undefined, txHash: response.hash, showModal })
+            addTransaction(response, {
+              type: TransactionType.SET_PRICES,
+              currencyIds,
+              poolID,
+            })
+            response.wait(1).then(() => {
+              handleResetPoolManagementState()
+            })
+          })
+      })
+      .catch((error) => {
+        console.error('Failed to send transaction', error)
+        setModalState({
+          attemptingTxn: false,
+          showConfirm,
+          errorMessage: error.message,
+          txHash: undefined,
+          showModal,
+        })
+        // we only care if the error is something _other_ than the user rejected the tx
+        if (error?.code !== 4001) {
+          console.error(error)
+        }
+      })
   }
+
+  //if(JSON.stringify(currentState.pairs) != JSON.stringify(currentState.pairsOriginal)) {
+    //console.log("prices have been modified, show button")
+  //}
 
   const [isManageCardOpen, setIsManageCardOpen] = useState(false)
   const [openTab, setOpenTab] = useState("deposit")
@@ -856,6 +981,8 @@ export default function GridOrderPoolPage(props:any) {
     for(let i = 0; i < withdraws.length; i++) {
       newState.withdraws[i].typedAmount = ''
     }
+    newState.pairsOriginal = newState.pairs
+    //newState.poolID = poolID
     await onReplacePoolManagementStateWithDelay(newState)
   }
 
@@ -876,24 +1003,229 @@ export default function GridOrderPoolPage(props:any) {
   }, [poolBalances, deposits, currentState])
   */
   // scroll on page view or poolID changed
-  const [previousPoolID, setPreviousPoolID] = useState("0")
-  useMemo(async () => {
-    if(poolID != previousPoolID) {
-      window.scrollTo(0, 0)
-      setPreviousPoolID(poolID)
-      const tokenAs = Object.keys(pool.tradeRequests)
+  //const [previousPoolID, setPreviousPoolID] = useState("0")
+  /*
+  async function changePoolID(newPoolID:string) {
+    console.log(`changePoolID(${newPoolID})`)
+    try {
       const newState = JSON.parse(JSON.stringify(currentState))
-      //if(deposits.length == 0) {
-      //newState.deposits = [{currencyId: tokenA, typedAmount: ''}]
-      newState.deposits = tokenAs.map((tokenA) => ({currencyId: tokenA, typedAmount: ''}))
-      //}
-      //if(withdraws.length == 0) {
-      //newState.withdraws = [{currencyId: tokenA, typedAmount: ''}]
-      newState.withdraws = tokenAs.map((tokenA) => ({currencyId: tokenA, typedAmount: ''}))
-      //}
+      newState.poolID = newPoolID
       await onReplacePoolManagementStateWithDelay(newState)
+
+      const tokenAs = Object.keys(pool.tradeRequests)
+      newState.deposits = tokenAs.map((tokenA) => ({currencyId: tokenA, typedAmount: ''}))
+      newState.withdraws = tokenAs.map((tokenA) => ({currencyId: tokenA, typedAmount: ''}))
+
+      const newPairs:any = []
+      if(tokenAs.length == 2) {
+        const tokenAAddress = tokenAs[0]
+        const tokenBAddress = Object.keys(pool.tradeRequests[tokenAAddress])[0]
+        // todo: order into base and quote
+        const [tokenBase, tokenQuote] = determinePairOrder(tokenAAddress, tokenBAddress)
+
+        const curBase = currenciesById[tokenBase]
+        const curQuote = currenciesById[tokenQuote]
+        console.log("init pair 0", {tokenAAddress, tokenBAddress, tokenBase, tokenQuote, curBase, curQuote, currenciesById})
+        const currencyBase = curBase.tokenInfo || curBase
+        const currencyQuote = curQuote.tokenInfo || curQuote
+        const exchangeRateBaseQuote = pool.tradeRequests[tokenBase][tokenQuote].exchangeRate
+        const exchangeRateQuoteBase = pool.tradeRequests[tokenQuote][tokenBase].exchangeRate
+        const erBaseQuote = HydrogenNucleusHelper.decodeExchangeRate(exchangeRateBaseQuote)
+        const erQuoteBase = HydrogenNucleusHelper.decodeExchangeRate(exchangeRateQuoteBase)
+        const amountsBaseQuote = HydrogenNucleusHelper.calculateRelativeAmounts(erBaseQuote[0], currencyBase.decimals, erBaseQuote[1], currencyQuote.decimals)
+        const amountsQuoteBase = HydrogenNucleusHelper.calculateRelativeAmounts(erQuoteBase[0], currencyQuote.decimals, erQuoteBase[1], currencyBase.decimals)
+        console.log("init pair 1", {tokenAAddress, tokenBAddress, tokenBase, tokenQuote, currencyBase, currencyQuote, exchangeRateBaseQuote, exchangeRateQuoteBase, erBaseQuote, erQuoteBase, amountsBaseQuote, amountsQuoteBase})
+
+        const parsedAmountOneBase = tryParseCurrencyAmount('1', currencyBase)
+        const parsedAmountOneQuote = tryParseCurrencyAmount('1', currencyQuote)
+        const parsedAmountQuote = tryParseCurrencyAmount(formatUnits(amountsBaseQuote.amountAperB, currencyQuote.decimals), currencyQuote)
+        const parsedAmountBase = tryParseCurrencyAmount(formatUnits(amountsQuoteBase.amountBperA, currencyBase.decimals), currencyBase)
+        console.log("init pair 2", {parsedAmountOneBase, parsedAmountOneQuote, parsedAmountQuote, parsedAmountBase})
+        const priceBuy = ((parsedAmountOneQuote && parsedAmountBase) ? new Price(
+          currencyBase,
+          currencyQuote,
+          parsedAmountOneQuote?.quotient,
+          parsedAmountBase?.quotient,
+        ) : undefined) as any
+        const priceSell = ((parsedAmountOneBase && parsedAmountQuote) ? new Price(
+          currencyBase,
+          currencyQuote,
+          parsedAmountOneBase?.quotient,
+          parsedAmountQuote?.quotient,
+        ) : undefined) as any
+        console.log("init pair 3", {parsedAmountOneBase, parsedAmountOneQuote, parsedAmountQuote, parsedAmountBase, priceBuy, priceSell})
+
+        const typedValueBuyPrice = formatTransactionAmount(priceToPreciseFloat(priceBuy.invert())).replace(/,/g, '')
+        const typedValueSellPrice = formatTransactionAmount(priceToPreciseFloat(priceSell.invert())).replace(/,/g, '')
+
+        console.log("init pair 4", {typedValueBuyPrice, typedValueSellPrice})
+
+        newPairs.push({
+          BASE_TOKEN: { currencyId: tokenBase },
+          QUOTE_TOKEN: { currencyId: tokenQuote },
+          typedValueBuyPrice,
+          typedValueSellPrice,
+        })
+      }
+      newState.pairs = newPairs
+
+      window.scrollTo(0, 0)
+      newState.poolID = newPoolID
+      await onReplacePoolManagementStateWithDelay(newState)
+    } catch(e) {
+      console.error("Error in changePoolID()", e)
     }
-  }, [poolID, previousPoolID])
+  }
+  if(poolID != props.poolID) {
+    //changePoolID(props.poolID)
+  }
+  //console.log({poolID, propsPoolID: props.poolID})
+  */
+
+  const pairCard = (pair:any,pairIndex:number) => {
+    //console.log("in pairCard", {currenciesById, baseId:pair[Field.BASE_TOKEN].currencyId, quoteId:pair[Field.QUOTE_TOKEN].currencyId})
+    const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''] ?? null
+    const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''] ?? null
+    const tokenBase = currencyBase?.wrapped
+    const tokenQuote = currencyQuote?.wrapped
+    const baseAmount = tryParseCurrencyAmount('1', tokenBase)
+    const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
+    const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
+    const buyPrice = (baseAmount && parsedQuoteAmountBuy
+      ? new Price(
+          currencyBase,
+          currencyQuote,
+          baseAmount.quotient,
+          parsedQuoteAmountBuy.quotient
+        )
+      : undefined
+    )
+    const sellPrice = (baseAmount && parsedQuoteAmountSell
+      ? new Price(
+          currencyBase,
+          currencyQuote,
+          baseAmount.quotient,
+          parsedQuoteAmountSell.quotient
+        )
+      : undefined
+    )
+
+    function currencyIdToUsdcAmount(currencyId:string|undefined) {
+      try {
+        if(!currencyId) return undefined
+        let depositIndex = -1
+        for(let i = 0; i < deposits.length; i++) {
+          if(deposits[i].currencyId == currencyId) {
+            depositIndex = i
+            break
+          }
+        }
+        if(depositIndex == -1) return undefined
+        const fiatValue = fiatValuesPerTokenDeposit[depositIndex]
+        if(!fiatValue) return undefined
+        const usdcAmount = currencyAmountToBigNumber(fiatValue)
+        return usdcAmount
+      } catch(e) {
+        return undefined
+      }
+    }
+
+    const baseTokenUsdcAmount = currencyIdToUsdcAmount(pair[Field.BASE_TOKEN].currencyId)
+    const quoteTokenUsdcAmount = currencyIdToUsdcAmount(pair[Field.QUOTE_TOKEN].currencyId)
+
+    function formatAmount(amount:string) {
+      // if integer
+      if(!amount.includes('.')) return amount
+      // if x < 1
+      if(amount[0] == '0') {
+        for(let i = 2; i < amount.length; i++) {
+          if(amount[i] != '0') {
+            return amount.substring(0, i+3)
+          }
+        }
+        return amount
+      }
+      // if 1 <= x < 100
+      if(amount.indexOf('.') <= 2) {
+        return amount.substring(0, 4)
+      }
+      // if x >= 100
+      return amount.substring(0, amount.indexOf('.'))
+    }
+
+    const priceString = ((baseTokenUsdcAmount && quoteTokenUsdcAmount)
+      ? formatAmount(formatUnits(baseTokenUsdcAmount.mul(WeiPerEther).div(quoteTokenUsdcAmount)))
+      : undefined
+    )
+
+    function tryParseFloat(s: string | undefined) {
+      try {
+        if(!s) return undefined
+        return parseFloat(s)
+      } catch(e) {
+        return undefined
+      }
+    }
+
+    const buyPrice2 = tryParseFloat(pair.typedValueBuyPrice)
+    const sellPrice2 = tryParseFloat(pair.typedValueSellPrice)
+    const marketPrice2 = tryParseFloat(priceString)
+
+    function formatPercent(n: number) {
+      let s = `${n * 100}`
+      const index = s.indexOf('.')
+      if(index >= 0) {
+        s = s.substring(0, index)
+      }
+      return `${s}%`
+    }
+
+    const messages = []
+    if(buyPrice2 && sellPrice2) {
+      if(buyPrice2 > sellPrice2) messages.push({color: colors.red400, text: 'Buy price is greater than sell price'})
+      else if(marketPrice2) {
+        if(buyPrice2 < marketPrice2 * 0.5) messages.push({color: colors.yellow100, text: `Buy price is ${formatPercent(1-(buyPrice2/marketPrice2))} lower than market price. Are you sure?`})
+        else if(buyPrice2 > marketPrice2 * 1.05) messages.push({color: colors.yellow100, text: `Buy price is ${formatPercent((buyPrice2/marketPrice2)-1)} greater than market price. Are you sure?`})
+        if(sellPrice2 < marketPrice2 * 0.95) messages.push({color: colors.yellow100, text: `Sell price is ${formatPercent(1-(sellPrice2/marketPrice2))} lower than market price. Are you sure?`})
+        else if(sellPrice2 > marketPrice2 * 1.5) messages.push({color: colors.yellow100, text: `Sell price is ${formatPercent((sellPrice2/marketPrice2)-1)} greater than market price. Are you sure?`})
+      }
+    }
+
+    //console.log("rendering grid order", {currencyBase, currencyQuote})
+
+    if(!currencyBase || !currencyQuote) return undefined
+    return (
+      <div key={pairIndex}>
+        <PriceSelectors
+          buyPrice={buyPrice}
+          sellPrice={sellPrice}
+          onBuyPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.BUY_PRICE, price)}}
+          onSellPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.SELL_PRICE, price)}}
+          currencyBase={currencyBase}
+          currencyQuote={currencyQuote}
+        />
+        {priceString && (
+          <CenteringDiv>
+            <MarketPriceText>
+              Current market price: {priceString} {currencyQuote?.symbol} per {currencyBase?.symbol}
+            </MarketPriceText>
+          </CenteringDiv>
+        )}
+        {messages.length > 0 && (
+          <div>
+            <div style={{marginTop:"0.5rem"}}/>
+            {messages.map((message:any,messageIndex:number) => (
+              <CenteringDiv key={messageIndex}>
+                <PairCardMessageText style={{color:message.color}}>
+                  {message.text}
+                </PairCardMessageText>
+              </CenteringDiv>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   const HptImage = () => (
     <HptImageCardContainer>
@@ -1110,6 +1442,81 @@ export default function GridOrderPoolPage(props:any) {
     </div>
   ))
 
+  const setPriceButton = (
+    <RowBetween>
+      <ButtonError
+        onClick={() => {
+          setModalState({
+            attemptingTxn: false,
+            errorMessage: undefined,
+            showConfirm: true,
+            txHash: undefined,
+            showModal: "setprices",
+          })
+        }}
+        disabled={false}
+        error={false}
+      >
+        Set prices
+      </ButtonError>
+    </RowBetween>
+  )
+
+  const setPricesButtons = (allPairsInfoFilled && (JSON.stringify(currentState.pairs) != JSON.stringify(currentState.pairsOriginal)) ? (
+    addIsUnsupported ? (
+      <ButtonPrimary disabled={true} $borderRadius="12px" padding="12px">
+        <ThemedText.DeprecatedMain mb="4px">
+          <Trans>Unsupported Asset</Trans>
+        </ThemedText.DeprecatedMain>
+      </ButtonPrimary>
+    ) : !account ? (
+      <ButtonLight onClick={toggleWalletModal} $borderRadius="12px" padding="12px">
+        <Trans>Connect Wallet</Trans>
+      </ButtonLight>
+    ) : (
+      <AutoColumn gap="md">
+        {areAnyPricesUnordered ? (
+          pricesUnorderedButtons
+        ) : (
+          setPriceButton
+        )}
+      </AutoColumn>
+    )
+  ): (
+    <div style={{visibility:"hidden"}}>
+      {setPriceButton}
+    </div>
+  ))
+
+  //pricesUnorderedButtons
+  /*
+  const buttons = (allPairsInfoFilled && atLeastOneDepositAmountFilled && (
+    addIsUnsupported ? (
+      <ButtonPrimary disabled={true} $borderRadius="12px" padding="12px">
+        <ThemedText.DeprecatedMain mb="4px">
+          <Trans>Unsupported Asset</Trans>
+        </ThemedText.DeprecatedMain>
+      </ButtonPrimary>
+    ) : !account ? (
+      <ButtonLight onClick={toggleWalletModal} $borderRadius="12px" padding="12px">
+        <Trans>Connect Wallet</Trans>
+      </ButtonLight>
+    ) : (
+      <AutoColumn gap="md">
+        {areAnyPricesUnordered ? (
+          pricesUnorderedButtons
+        ) : areAnyDepositsAboveBalances ? (
+          insufficientWalletBalanceButtons
+        ) : areAnyTokensAwaitingApproval ? (
+          tokenApprovalButtons
+        ) : (
+          placeGridOrderButton
+        )}
+      </AutoColumn>
+    )
+  ))
+  */
+
   const OpenPoolManagementButton = () => (
     <OrderTypeContainer onClick={()=>{setIsManageCardOpen(true)}}>
       <OrderTypeSelector isDarkMode={isDarkMode}>
@@ -1134,7 +1541,7 @@ export default function GridOrderPoolPage(props:any) {
             onConfirm={handleDeposit}
             swapErrorMessage={errorMessage}
             onDismiss={handleConfirmDismiss}
-            poolID={poolID}
+            poolID={BigNumber.from(poolID||"0").toNumber()}
           />
           <ConfirmWithdrawModal
             isOpen={showConfirm && showModal == "withdraw"}
@@ -1146,7 +1553,18 @@ export default function GridOrderPoolPage(props:any) {
             onConfirm={handleWithdraw}
             swapErrorMessage={errorMessage}
             onDismiss={handleConfirmDismiss}
-            poolID={poolID}
+            poolID={BigNumber.from(poolID||"0").toNumber()}
+          />
+          <ConfirmSetPricesModal
+            isOpen={showConfirm && showModal == "setprices"}
+            trade={undefined}
+            attemptingTxn={attemptingTxn}
+            txHash={txHash}
+            recipient={recipient}
+            onConfirm={handleSetPrices}
+            swapErrorMessage={errorMessage}
+            onDismiss={handleConfirmDismiss}
+            poolID={BigNumber.from(poolID||"0").toNumber()}
           />
       </div>
       <CenteringDiv>
@@ -1193,11 +1611,11 @@ export default function GridOrderPoolPage(props:any) {
             </CenteringDiv>
             */}
             <CenteringDiv style={{width:"100%"}}>
-              {pool.owner != account ? null : (
+              {(!pool || (pool.owner != account)) ? null : (
                 !isManageCardOpen ? (
                   <OpenPoolManagementButton/>
                 ) : (
-                  <SwapWrapper style={{width:"100%"}}>
+                  <SwapWrapper style={{width:"100%",paddingBottom:"20px"}}>
                     <div>
                       <CenteringDiv>
                         <div style={{margin:"18px 0 36px 0"}}>
@@ -1303,52 +1721,14 @@ export default function GridOrderPoolPage(props:any) {
                                   </RowBetween>
                                 </div>
                               </CenteringDiv>
-                              {/*
-                              <AutoColumn gap="md">
-                                <>
-                                  <AutoColumn gap="md">
-                                    <RowBetween>
-                                      <PriceSelector
-                                        value={buyPrice?.toSignificant(5) ?? ''}
-                                        onUserInput={onBuyPriceInput}
-                                        width="48%"
-                                        label={buyPrice ? `${currencyQuote?.symbol}` : '-'}
-                                        title={<Trans>Buy Price</Trans>}
-                                        tokenBase={currencyBase?.symbol}
-                                        tokenQuote={currencyQuote?.symbol}
-                                      />
-                                    </RowBetween>
-                                  </AutoColumn>
-                                  <PriceSelectors
-                                    buyPrice={buyPrice}
-                                    sellPrice={sellPrice}
-                                    onBuyPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.BUY_PRICE, price)}}
-                                    onSellPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.SELL_PRICE, price)}}
-                                    currencyBase={currencyBase}
-                                    currencyQuote={currencyQuote}
-                                  />
-                                  {priceString && (
-                                    <CenteringDiv>
-                                      <MarketPriceText>
-                                        Current market price: {priceString} {currencyQuote?.symbol} per {currencyBase?.symbol}
-                                      </MarketPriceText>
-                                    </CenteringDiv>
-                                  )}
-                                  {messages.length > 0 && (
-                                    <div>
-                                      <div style={{marginTop:"0.5rem"}}/>
-                                      {messages.map((message:any,messageIndex:number) => (
-                                        <CenteringDiv key={messageIndex}>
-                                          <PairCardMessageText style={{color:message.color}}>
-                                            {message.text}
-                                          </PairCardMessageText>
-                                        </CenteringDiv>
-                                      ))}
-                                    </div>
-                                  )}
-                                </>
-                              </AutoColumn>
-                              */}
+                              <SwapWrapperInner>
+                                <AutoColumn gap="md">
+                                  {pairs.map(pairCard)}
+                                </AutoColumn>
+                              </SwapWrapperInner>
+                              <div style={{height:"12px"}}/>
+                              {setPricesButtons}
+
                             </div>
                           )}
                         </div>

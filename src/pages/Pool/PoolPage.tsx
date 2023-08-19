@@ -12,15 +12,33 @@ import { useNucleusState } from "state/statsApi/hooks"
 import PoolCard from './PoolCard'
 import LimitOrderPoolPage from './LimitOrderPoolPage'
 import GridOrderPoolPage from './GridOrderPoolPage'
+import { Currency, CurrencyAmount, Percent, Price, Token, TradeType } from '@uniswap/sdk-core'
+import { Field, PriceField, PairState, DepositState, WithdrawState, PoolManagementState } from '../../state/poolManagement/actions'
+import {
+  useDerivedPoolManagementInfo,
+  usePoolManagementActionHandlers,
+  usePoolManagementState,
+} from '../../state/poolManagement/hooks'
+import { determinePairOrder } from './../Pool/determinePairOrder'
+import { formatTransactionAmount, priceToPreciseFloat } from 'utils/formatNumbers'
+import { useCurrencies, useCurrenciesAndNatives, useCurrency } from '../../hooks/Tokens'
+import { deduplicateArray } from 'lib/utils/arrays'
+import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
+import { formatUnits, Interface } from 'ethers/lib/utils'
+import { BigNumber } from '@ethersproject/bignumber'
 
 export default function PoolPage() {
   const navigate = useNavigate()
   const { account, chainId } = useWeb3React()
   const loadedUrlParams = useDefaultsFromURLSearch()
   const nucleusState = useNucleusState() as any
+  // swap state
+  const currentState = usePoolManagementState()
+  const { poolID } = currentState
+  const { onChangePoolID } = usePoolManagementActionHandlers()
 
   // get poolID from url params
-  const poolID = useMemo(() => {
+  const poolIDurl = useMemo(() => {
     const poolID = loadedUrlParams.poolid || loadedUrlParams.poolId || loadedUrlParams.poolID
     if(HydrogenNucleusHelper.poolIDisValid(poolID)) return poolID
     return undefined
@@ -28,22 +46,33 @@ export default function PoolPage() {
 
   // if the poolID is invalid, redirect to /trade
   useEffect(() => {
-    if(!poolID) navigate('/trade/')
-  }, [poolID])
+    if(!poolIDurl) navigate('/trade/')
+  }, [poolIDurl])
 
   // if the pool was recently created give the stats api some time to pick it up
   const [searching, setSearching] = useState(true)
   useEffect(() => {
     setTimeout(() => setSearching(false), 30000)
-  }, [poolID])
+  }, [poolIDurl])
 
   // if still fetching from stats api
-  if(nucleusState.loading) return (
+  if(!nucleusState || !!nucleusState.loading) return (
     <>
       <p style={{display:"inline", marginRight: "8px"}}>{`Loading pool ${poolID}`}</p>
       <Loader/>
     </>
   )
+
+  async function onChangePoolIDWithDelay(poolIDurl:any) {
+    async function _sleeper(ms: number) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+    await _sleeper(0);
+    onChangePoolID(poolIDurl)
+  }
+  if(poolID != poolIDurl) {
+    onChangePoolIDWithDelay(poolIDurl)
+  }
 
   const pool = nucleusState?.pools[poolID]
   const balances = nucleusState?.internalBalancesByPool[poolID]

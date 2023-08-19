@@ -93,7 +93,7 @@ const FormattedCurrencyAmount = ({
   sigFigs: number
 }) => {
   const currency = useCurrency(currencyId)
-  console.log("FormattedCurrencyAmount", {rawAmount, currencyId, currency})
+  //console.log("FormattedCurrencyAmount", {rawAmount, currencyId, currency})
 
   return currency ? (
     <HighlightText>
@@ -407,11 +407,11 @@ const GridOrderSummary = ({
   }
 
   const formattedCurrencies = info.currencyIds.map(currencyId => (
-    <FormattedCurrency currencyId={currencyId} />
+    <FormattedCurrency currencyId={currencyId} key={currencyId}/>
   ))
 
   const len = info.currencyIds.length
-  const items = len == 0 ? [] : len == 1 ? ([
+  const items = (len == 0 ? [] : len == 1 ? ([
     formattedCurrencies[0],
     ' '
   ]) : len == 2 ? ([
@@ -429,7 +429,7 @@ const GridOrderSummary = ({
         , ' '
       ]
     }).flat().filter(x=>!!x)
-  ])
+  ])).map((item,itemIndex) => <span key={itemIndex}>{item}</span>)
 
   return (
     <BodyWrap>
@@ -551,7 +551,7 @@ const SetPricesSummary = ({
   const actionProps = {
     transactionState,
     pending: <Trans>Setting prices</Trans>,
-    success: <Trans>Prices set</Trans>,
+    success: <Trans>Set prices</Trans>,
     failed: <Trans>Set prices</Trans>,
   }
 
@@ -569,8 +569,8 @@ const SetPricesSummary = ({
   */
   return (
     <BodyWrap>
-      <Action {...actionProps} />{' '}
-
+      <Action {...actionProps} />
+      {` in pool ${info.poolID}`}
       <FailedText transactionState={transactionState} />
     </BodyWrap>
   )
@@ -602,8 +602,8 @@ const TransactionBody = ({ info, transactionState }: { info: TransactionInfo; tr
       return <DepositSummary info={info} transactionState={transactionState} />
     case TransactionType.WITHDRAW:
       return <WithdrawSummary info={info} transactionState={transactionState} />
-    //case TransactionType.SET_PRICES:
-      //return <SetPricesSummary info={info} transactionState={transactionState} />
+    case TransactionType.SET_PRICES:
+      return <SetPricesSummary info={info} transactionState={transactionState} />
     default:
       return <span />
   }

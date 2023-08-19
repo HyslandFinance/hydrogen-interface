@@ -124,7 +124,7 @@ const PriceSelector = ({
 
   return (
     <FocusedOutlineCard pulsing={pulsing} active={active} onFocus={handleOnFocus} onBlur={handleOnBlur} width={width}>
-      <AutoColumn gap="6px">
+      <AutoColumn gap="6px" style={{maxWidth:"177px"}}>
         <InputTitle fontSize={12} textAlign="center">
           {title}
         </InputTitle>
