@@ -33,14 +33,14 @@ import RadialGradientByChainUpdater from './theme/components/RadialGradientByCha
 if (window.ethereum) {
   window.ethereum.autoRefreshOnNetworkChange = false
 }
-
+/*
 if (isSentryEnabled()) {
   Sentry.init({
     dsn: process.env.REACT_APP_SENTRY_DSN,
     release: process.env.REACT_APP_GIT_COMMIT_HASH,
   })
 }
-
+*/
 function Updaters() {
   return (
     <>
@@ -85,7 +85,8 @@ createRoot(container).render(
     </Provider>
   </StrictMode>
 )
-
+/*
 if (process.env.REACT_APP_SERVICE_WORKER !== 'false') {
   serviceWorkerRegistration.register()
 }
+*/

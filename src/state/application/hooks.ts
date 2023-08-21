@@ -27,6 +27,8 @@ interface MoonpayIPAddressesResponse {
 }
 
 async function getMoonpayAvailability(): Promise<boolean> {
+  return false
+  /*
   const moonpayPublishableKey = process.env.REACT_APP_MOONPAY_PUBLISHABLE_KEY
   if (!moonpayPublishableKey) {
     throw new Error('Must provide a publishable key for moonpay.')
@@ -38,9 +40,17 @@ async function getMoonpayAvailability(): Promise<boolean> {
   const res = await fetch(`${moonpayApiURI}/v4/ip_address?apiKey=${moonpayPublishableKey}`)
   const data = await (res.json() as Promise<MoonpayIPAddressesResponse>)
   return data.isBuyAllowed ?? false
+  */
 }
 
 export function useFiatOnrampAvailability(shouldCheck: boolean, callback?: () => void) {
+  return {
+    available: false,
+    availabilityChecked: true,
+    loading: false,
+    error: null,
+  }
+  /*
   const dispatch = useAppDispatch()
   const { available, availabilityChecked } = useAppSelector((state: AppState) => state.application.fiatOnramp)
   const [error, setError] = useState<string | null>(null)
@@ -79,6 +89,7 @@ export function useFiatOnrampAvailability(shouldCheck: boolean, callback?: () =>
   }, [availabilityChecked, callback, dispatch, shouldCheck])
 
   return { available, availabilityChecked, loading, error }
+  */
 }
 
 export function useToggleModal(modal: ApplicationModal): () => void {
