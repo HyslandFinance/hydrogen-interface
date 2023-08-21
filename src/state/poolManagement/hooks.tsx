@@ -55,22 +55,14 @@ export function usePoolManagementActionHandlers(): {
   )
 
   const initialPoolManagementState: PoolManagementState = {
-      pairs: [{
-        typedValueBuyPrice: '',
-        typedValueSellPrice: '',
-        [Field.BASE_TOKEN]: { currencyId: undefined },
-        [Field.QUOTE_TOKEN]: { currencyId: undefined },
-      }],
-      pairsOriginal: [{
-        typedValueBuyPrice: '',
-        typedValueSellPrice: '',
-        [Field.BASE_TOKEN]: { currencyId: undefined },
-        [Field.QUOTE_TOKEN]: { currencyId: undefined },
-      }],
-      deposits: [],
-      withdraws: [],
-      recipient: null,
-      poolID: "",
+    poolID: "",
+    deposits: [],
+    withdraws: [],
+    pairs: [],
+    pairsOriginal: [],
+    limitOrder: {currencyIdA: "", currencyIdB: "", typedValueBuyPrice: "", typedValueSellPrice: "", direction: "buy"},
+    limitOrderOriginal: {currencyIdA: "", currencyIdB: "", typedValueBuyPrice: "", typedValueSellPrice: "", direction: "buy"},
+    recipient: null,
   }
 
   const onClearPoolManagementState = useCallback(
@@ -122,22 +114,14 @@ export function usePoolManagementActionHandlers(): {
       if(currentState.poolID == poolID) return
       //console.log(`in onChangePoolID(${poolID}) 1`, {currentState, nucleusState, poolID, allTokens})
       const newState:any = {
-        pairs: [{
-          typedValueBuyPrice: '',
-          typedValueSellPrice: '',
-          [Field.BASE_TOKEN]: { currencyId: undefined },
-          [Field.QUOTE_TOKEN]: { currencyId: undefined },
-        }],
-        pairsOriginal: [{
-          typedValueBuyPrice: '',
-          typedValueSellPrice: '',
-          [Field.BASE_TOKEN]: { currencyId: undefined },
-          [Field.QUOTE_TOKEN]: { currencyId: undefined },
-        }],
+        poolID: poolID,
         deposits: [],
         withdraws: [],
+        pairs: [],
+        pairsOriginal: [],
+        limitOrder: {currencyIdA: "", currencyIdB: "", typedValueBuyPrice: "", typedValueSellPrice: "", direction: "buy"},
+        limitOrderOriginal: {currencyIdA: "", currencyIdB: "", typedValueBuyPrice: "", typedValueSellPrice: "", direction: "buy"},
         recipient: null,
-        poolID: poolID,
       }
       if(!nucleusState || !!nucleusState.loading) return
       //console.log(`in onChangePoolID(${poolID}) 2`)
@@ -177,74 +161,87 @@ export function usePoolManagementActionHandlers(): {
       const tokenAs = Object.keys(tradeRequests)
       newState.deposits = tokenAs.map((tokenA) => ({currencyId: tokenA, typedAmount: ''}))
       newState.withdraws = tokenAs.map((tokenA) => ({currencyId: tokenA, typedAmount: ''}))
-      const newPairs:any = []
-      if(tokenAs.length == 2) {
+      if(poolID.substring(poolID.length-3) == '001') {
+        //console.log("setting up pairs for limit order 1")
+        //const newLimitOrder = {currencyIdA: "", currencyIdB: "", typedValuePrice: "", direction: "buy"},
         const tokenAAddress = tokenAs[0]
         const tokenBAddress = Object.keys(pool.tradeRequests[tokenAAddress])[0]
-        // todo: order into base and quote
         const [tokenBase, tokenQuote] = determinePairOrder(tokenAAddress, tokenBAddress)
 
+        const curA = currenciesById[tokenAAddress]
+        const curB = currenciesById[tokenBAddress]
+        if(!curA || !curB) return
+        const currencyA = curA.tokenInfo || curA
+        const currencyB = curB.tokenInfo || curB
+        const exchangeRate = pool.tradeRequests[tokenAAddress][tokenBAddress].exchangeRate
+        const er = HydrogenNucleusHelper.decodeExchangeRate(exchangeRate)
+        const amounts = HydrogenNucleusHelper.calculateRelativeAmounts(er[0], currencyA.decimals, er[1], currencyB.decimals)
+        const amtA = formatUnits(amounts.amountAperB, currencyA.decimals)
+        const amtB = formatUnits(amounts.amountBperA, currencyB.decimals)
+        //console.log("setting up pairs for limit order 2", {tokenAAddress, tokenBAddress, tokenBase, tokenQuote, currencyA, currencyB, exchangeRate, er, amounts, amtA, amtB})
+        /*
+        const [typedValueBuyPrice, typedValueSellPrice] = ((tokenAAddress == tokenBase)
+          ? [amtA, amtB]
+          : [amtB, amtA])
+        newLimitOrders.push({
+          BASE_TOKEN: { currencyId: tokenBase },
+          QUOTE_TOKEN: { currencyId: tokenQuote },
+          typedValueBuyPrice,
+          typedValueSellPrice,
+        })
+        */
+        const dir = (tokenAAddress == tokenQuote) ? "buy" : "sell"
+        //const [dir, val] = ((tokenAAddress == tokenQuote)
+          //? ["buy", amtA]
+          //: ["sell", amtB])
+        /*
+        newLimitOrders.push({
+          currencyIdA: tokenAAddress,
+          currencyIdB: tokenBAddress,
+          typedValuePrice: val,
+          direction: dir
+        })
+        newState.limitOrders = newLimitOrders
+        newState.limitOrdersOriginal = newLimitOrders
+        */
+        const newLimitOrder = {
+          currencyIdA: tokenAAddress,
+          currencyIdB: tokenBAddress,
+          typedValueBuyPrice: amtA,
+          typedValueSellPrice: amtB,
+          direction: dir
+        }
+        newState.limitOrder = newLimitOrder
+        newState.limitOrderOriginal = newLimitOrder
+      }
+      else if(tokenAs.length == 2) {
+        const newPairs:any = []
+        const tokenAAddress = tokenAs[0]
+        const tokenBAddress = Object.keys(pool.tradeRequests[tokenAAddress])[0]
+        const [tokenBase, tokenQuote] = determinePairOrder(tokenAAddress, tokenBAddress)
         const curBase = currenciesById[tokenBase]
         const curQuote = currenciesById[tokenQuote]
-        //console.log(`in onChangePoolID(${poolID}) 5`, {tokenAAddress, tokenBAddress, tokenBase, tokenQuote, curBase, curQuote, currenciesById})
+        if(!curBase || !curQuote) return
         const currencyBase = curBase.tokenInfo || curBase
         const currencyQuote = curQuote.tokenInfo || curQuote
         const exchangeRateBaseQuote = pool.tradeRequests[tokenBase][tokenQuote].exchangeRate
         const exchangeRateQuoteBase = pool.tradeRequests[tokenQuote][tokenBase].exchangeRate
         const erBaseQuote = HydrogenNucleusHelper.decodeExchangeRate(exchangeRateBaseQuote)
         const erQuoteBase = HydrogenNucleusHelper.decodeExchangeRate(exchangeRateQuoteBase)
-        //const amountsBaseQuote = HydrogenNucleusHelper.calculateRelativeAmounts(erBaseQuote[0], currencyBase.decimals, erBaseQuote[1], currencyQuote.decimals)
+        const amountsBaseQuote = HydrogenNucleusHelper.calculateRelativeAmounts(erBaseQuote[0], currencyBase.decimals, erBaseQuote[1], currencyQuote.decimals)
         const amountsQuoteBase = HydrogenNucleusHelper.calculateRelativeAmounts(erQuoteBase[0], currencyQuote.decimals, erQuoteBase[1], currencyBase.decimals)
-        const amountsBaseQuote = HydrogenNucleusHelper.calculateRelativeAmounts(erBaseQuote[0], currencyQuote.decimals, erBaseQuote[1], currencyBase.decimals)
-        //const amountsQuoteBase = HydrogenNucleusHelper.calculateRelativeAmounts(erQuoteBase[0], currencyBase.decimals, erQuoteBase[1], currencyQuote.decimals)
-        //const amountsBaseQuote = HydrogenNucleusHelper.calculateRelativeAmounts(erBaseQuote[0], 0, erBaseQuote[1], 0)
-        //const amountsQuoteBase = HydrogenNucleusHelper.calculateRelativeAmounts(erQuoteBase[0], 0, erQuoteBase[1], 0)
-        //console.log("init pair 1", {tokenAAddress, tokenBAddress, tokenBase, tokenQuote, currencyBase, currencyQuote, exchangeRateBaseQuote, exchangeRateQuoteBase, erBaseQuote, erQuoteBase, amountsBaseQuote, amountsQuoteBase})
-
-        const parsedAmountOneBase = tryParseCurrencyAmount('1', currencyBase)
-        const parsedAmountOneQuote = tryParseCurrencyAmount('1', currencyQuote)
-        //const parsedAmountOneB = tryParseCurrencyAmount('1', tokenB)
-        //const parsedAmountA = tryParseCurrencyAmount(formatUnits(amountAperB, decimalsA), tokenA)
-        const parsedAmountQuote = tryParseCurrencyAmount(formatUnits(amountsBaseQuote.amountAperB, currencyQuote.decimals), currencyQuote)
-        const parsedAmountBase = tryParseCurrencyAmount(formatUnits(amountsQuoteBase.amountBperA, currencyBase.decimals), currencyBase)
-        /*
-        const priceAperB = ((parsedAmountA && parsedAmountOneB) ? new Price(
-          tokenA,
-          tokenB,
-          parsedAmountA?.quotient,
-          parsedAmountOneB?.quotient,
-        ) : undefined) as any
-        */
-        //console.log("init pair 2", {parsedAmountOneBase, parsedAmountOneQuote, parsedAmountQuote, parsedAmountBase})
-        const priceBuy = ((parsedAmountOneQuote && parsedAmountBase) ? new Price(
-          currencyQuote,
-          currencyBase,
-          parsedAmountOneQuote?.quotient,
-          parsedAmountBase?.quotient,
-        ) : undefined) as any
-        const priceSell = ((parsedAmountOneBase && parsedAmountQuote) ? new Price(
-          currencyQuote,
-          currencyBase,
-          parsedAmountOneBase?.quotient,
-          parsedAmountQuote?.quotient,
-        ) : undefined) as any
-        //console.log("init pair 3", {parsedAmountOneBase, parsedAmountOneQuote, parsedAmountQuote, parsedAmountBase, priceBuy, priceSell})
-
-        const typedValueBuyPrice = formatTransactionAmount(priceToPreciseFloat(priceBuy.invert())).replace(/,/g, '')
-        const typedValueSellPrice = formatTransactionAmount(priceToPreciseFloat(priceSell.invert())).replace(/,/g, '')
-
-        //console.log("init pair 4", {typedValueBuyPrice, typedValueSellPrice})
-
+        const amtBaseSell = formatUnits(amountsBaseQuote.amountBperA, currencyQuote.decimals)
+        const amtBaseBuy = formatUnits(amountsQuoteBase.amountAperB, currencyQuote.decimals)
+        const [typedValueBuyPrice, typedValueSellPrice] = [amtBaseBuy, amtBaseSell]
         newPairs.push({
           BASE_TOKEN: { currencyId: tokenBase },
           QUOTE_TOKEN: { currencyId: tokenQuote },
           typedValueBuyPrice,
           typedValueSellPrice,
         })
+        newState.pairs = newPairs
+        newState.pairsOriginal = newPairs
       }
-      newState.pairs = newPairs
-      newState.pairsOriginal = newPairs
-
       dispatch(replacePoolManagementState({ newState }))
     },
     [dispatch, currentState, nucleusState, allTokens]
@@ -281,10 +278,11 @@ export function useDerivedPoolManagementInfo(): {
   allPairsInfoFilled: boolean
   atLeastOneDepositAmountFilled: boolean
   atLeastOneWithdrawAmountFilled: boolean
+  isLimitOrderInfoFilled: boolean
 } {
   const { account } = useWeb3React()
 
-  const { pairs, deposits, withdraws, recipient, poolID } = usePoolManagementState()
+  const { pairs, deposits, withdraws, recipient, poolID, limitOrder } = usePoolManagementState()
   /*
   const currencyIds = useMemo(() => deduplicateArray(
     pairs
@@ -322,7 +320,7 @@ export function useDerivedPoolManagementInfo(): {
     }
     return d
   }, [currencyIds, currencies])
-
+  //console.log("in pool management order hooks", {currencies, currencyIds, currenciesById})
   const recipientLookup = useENS(recipient ?? undefined)
   const to: string | null = (recipient === null ? account : recipientLookup.address) ?? null
 
@@ -414,6 +412,31 @@ export function useDerivedPoolManagementInfo(): {
     return true
   }, [pairs, currenciesById])
 
+  const isLimitOrderInfoFilled = useMemo(() => {
+    //console.log('isLimitOrderInfoFilled')
+    //console.log(!limitOrder.currencyIdA)
+    //console.log(!currenciesById[limitOrder.currencyIdA||''])
+    //console.log(!limitOrder.currencyIdB)
+    //console.log(!currenciesById[limitOrder.currencyIdB||''])
+    //console.log(!limitOrder.typedValueBuyPrice)
+    //console.log(!limitOrder.typedValueSellPrice)
+    //console.log(!stringValueIsPositiveFloat(limitOrder.typedValueBuyPrice))
+    //console.log(!stringValueIsPositiveFloat(limitOrder.typedValueSellPrice))
+    //console.log(limitOrder.typedValueBuyPrice)
+    //console.log(limitOrder.typedValueSellPrice)
+    if(
+      !limitOrder.currencyIdA ||
+      !currenciesById[limitOrder.currencyIdA||''] ||
+      !limitOrder.currencyIdB ||
+      !currenciesById[limitOrder.currencyIdB||''] ||
+      !limitOrder.typedValueBuyPrice ||
+      !limitOrder.typedValueSellPrice ||
+      !stringValueIsPositiveFloat(limitOrder.typedValueBuyPrice) ||
+      !stringValueIsPositiveFloat(limitOrder.typedValueSellPrice)
+    ) return false
+    return true
+  }, [limitOrder, currenciesById])
+
   const atLeastOneDepositAmountFilled = useMemo(() => {
     for(const deposit of deposits) {
       if(stringValueIsPositiveFloat(deposit.typedAmount)) return true
@@ -437,6 +460,7 @@ export function useDerivedPoolManagementInfo(): {
       currencyBalancesById: currencyBalancesById,
       atLeastOnePairsInfoFilled: atLeastOnePairsInfoFilled,
       allPairsInfoFilled: allPairsInfoFilled,
+      isLimitOrderInfoFilled: isLimitOrderInfoFilled,
       atLeastOneDepositAmountFilled: atLeastOneDepositAmountFilled,
       atLeastOneWithdrawAmountFilled: atLeastOneWithdrawAmountFilled,
     }
@@ -448,6 +472,7 @@ export function useDerivedPoolManagementInfo(): {
     parsedWithdrawAmounts,
     inputError,
     atLeastOnePairsInfoFilled,
+    isLimitOrderInfoFilled,
     atLeastOneDepositAmountFilled,
     atLeastOneWithdrawAmountFilled,
   ])

@@ -4,22 +4,14 @@ import { parsedQueryString } from 'hooks/useParsedQueryString'
 import { Field, PriceField, PairState, DepositState, WithdrawState, PoolManagementState, replacePoolManagementState, selectCurrencies, typeInput, depositAmountInput, withdrawAmountInput } from './actions'
 
 const initialState: PoolManagementState = {
-    pairs: [{
-      typedValueBuyPrice: '',
-      typedValueSellPrice: '',
-      [Field.BASE_TOKEN]: { currencyId: undefined },
-      [Field.QUOTE_TOKEN]: { currencyId: undefined },
-    }],
-    pairsOriginal: [{
-      typedValueBuyPrice: '',
-      typedValueSellPrice: '',
-      [Field.BASE_TOKEN]: { currencyId: undefined },
-      [Field.QUOTE_TOKEN]: { currencyId: undefined },
-    }],
+    poolID: "",
     deposits: [],
     withdraws: [],
+    pairs: [],
+    pairsOriginal: [],
+    limitOrder: {currencyIdA: "", currencyIdB: "", typedValueBuyPrice: "", typedValueSellPrice: "", direction: "buy"},
+    limitOrderOriginal: {currencyIdA: "", currencyIdB: "", typedValueBuyPrice: "", typedValueSellPrice: "", direction: "buy"},
     recipient: null,
-    poolID: "",
 }
 
 export default createReducer<PoolManagementState>(initialState, (builder) => (

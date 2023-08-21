@@ -40,6 +40,7 @@ import { currencyId } from 'utils/currencyId'
 import PriceSelectors from 'components/PriceSelectors'
 import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import tryParseCurrencyAmount2 from 'lib/utils/tryParseCurrencyAmount2'
+import tryParseCurrencyAmount3 from 'lib/utils/tryParseCurrencyAmount3'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import CurrencyInputPanel2 from 'components/CurrencyInputPanel/CurrencyInputPanel2'
 import { AutoColumn } from '../../components/Column'
@@ -57,6 +58,11 @@ import { stringValueIsPositiveFloat } from 'utils/stringValueIsPositiveFloat'
 import { maxAmountSpend } from '../../utils/maxAmountSpend'
 import ConfirmDepositModal from 'components/poolManagement/ConfirmDepositModal'
 import ConfirmWithdrawModal from 'components/poolManagement/ConfirmWithdrawModal'
+import ConfirmSetPricesLimitOrderModal from 'components/poolManagement/ConfirmSetPricesLimitOrderModal'
+import { colors } from 'theme/colors'
+import { determinePairOrder } from './../Pool/determinePairOrder'
+import { formatTransactionAmount, priceToPreciseFloat } from 'utils/formatNumbers'
+import PriceSelectorSingle from 'components/PriceSelector/PriceSelectorSingle'
 
 const ContentLayout = styled.div`
   display: grid;
@@ -268,13 +274,33 @@ const TabTextContainer = styled(CenteringDiv)<{ isDarkMode: boolean }>`
       : 'black'};
 `
 
+const SwapWrapperWrapper = styled.div`
+  margin-bottom: 16px;
+`
+
+const SwapWrapperInner = styled.div`
+  margin: 8px 12px;
+`
+
+const MarketPriceText = styled.p`
+  color: ${({ theme }) => theme.textSecondary};
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: 12px;
+  margin-bottom: 0;
+`
+
+const PairCardMessageText = styled.p`
+  margin: 0.5rem 0 0 0;
+  font-size: 13px;
+`
+
 export default function LimitOrderPoolPage(props:any) {
   const navigate = useNavigate()
   const { account, chainId, provider } = useWeb3React()
   const nucleusState = useNucleusState() as any
   const isDarkMode = useIsDarkMode()
-  const { poolID } = props
-  const poolManagementState = usePoolManagementState()
+  //const { poolID } = props
   //console.log("in limit order pool page", {poolManagementState})
 
   // dismiss warning if all imported tokens are in active lists
@@ -308,12 +334,13 @@ export default function LimitOrderPoolPage(props:any) {
   const [isExpertMode] = useExpertModeManager()
   // swap state
   const currentState = usePoolManagementState()
-  const { pairs, deposits, withdraws, recipient } = currentState
+  const { pairs, deposits, withdraws, recipient, poolID, limitOrder } = currentState
   const {
     currenciesById,
     currencyBalancesById,
     atLeastOnePairsInfoFilled,
     allPairsInfoFilled,
+    isLimitOrderInfoFilled,
     atLeastOneDepositAmountFilled,
     atLeastOneWithdrawAmountFilled,
   } = useDerivedPoolManagementInfo()
@@ -423,6 +450,31 @@ export default function LimitOrderPoolPage(props:any) {
     //if(depositIndex < 2) console.log("in fiatValuesPerTokenDeposit() 3", {stablecoinValue, depositIndex, currencyAmount})
     return stablecoinValue
   })
+
+  const fiatValuesForLimitOrder = ((!limitOrder.currencyIdA || !limitOrder.currencyIdB)
+    ? []
+    : [limitOrder.currencyIdA, limitOrder.currencyIdB].map((currencyId:string) => {
+      const currencyAmount = (() => {
+        try {
+          const currency = currenciesById[currencyId]
+          //const c2 = (currency.tokenInfo || currency) as any
+          const c2 = currency.wrapped
+          //console.log("in fiatValuesPerTokenDeposit() 1", {depositIndex, deposit, currency, c2})
+          if(!c2 || !c2.decimals) return undefined
+          const value = '1'
+          const parsedAmount = parseUnits(value, c2.decimals).toString()
+          const currencyAmount = CurrencyAmount.fromRawAmount(c2, parsedAmount)
+          //console.log("in fiatValuesPerTokenDeposit() 2", {depositIndex, deposit, currency, c2, parsedAmount, currencyAmount})
+          return currencyAmount
+        } catch(e) {
+          return undefined
+        }
+      })()
+      const stablecoinValue = useStablecoinValue(currencyAmount)
+      //if(depositIndex < 2) console.log("in fiatValuesPerTokenDeposit() 3", {stablecoinValue, depositIndex, currencyAmount})
+      return stablecoinValue
+    })
+  )
 
   const fiatValuesForDepositAmount = depositIndices.map((depositIndex:number) => {
     const currencyAmount = (() => {
@@ -617,7 +669,7 @@ export default function LimitOrderPoolPage(props:any) {
     // encode transaction
     const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(account)
     //const userInternalLocation = HydrogenNucleusHelper.internalAddressToLocation(account)
-    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(poolID)
+    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(BigNumber.from(poolID))
 
     const currencyIds = deposits.map((deposit) => deposit.currencyId).filter(x=>!!x) as string[]
 
@@ -728,7 +780,7 @@ export default function LimitOrderPoolPage(props:any) {
     // encode transaction
     const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(account)
     //const userInternalLocation = HydrogenNucleusHelper.internalAddressToLocation(account)
-    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(poolID)
+    const poolLocation = HydrogenNucleusHelper.poolIDtoLocation(BigNumber.from(poolID))
 
     const currencyIds = withdraws.map((withdraw) => withdraw.currencyId).filter(x=>!!x) as string[]
 
@@ -831,8 +883,101 @@ export default function LimitOrderPoolPage(props:any) {
       })
   }
 
+  const onLimitOrderBuyPriceInput = (input:string) => {
+    //console.log(`onLimitOrderBuyPriceInput()`, input)
+    const newState = JSON.parse(JSON.stringify(currentState))
+    newState.limitOrder.typedValueBuyPrice = input
+    newState.limitOrder.typedValueSellPrice = `${(1.0/parseFloat(input))}`
+    onReplacePoolManagementState(newState)
+  }
+
+  const onLimitOrderSellPriceInput = (input:string) => {
+    //console.log(`onLimitOrderSellPriceInput()`, input)
+    const newState = JSON.parse(JSON.stringify(currentState))
+    newState.limitOrder.typedValueSellPrice = input
+    newState.limitOrder.typedValueBuyPrice = `${(1.0/parseFloat(input))}`
+    onReplacePoolManagementState(newState)
+  }
+
   async function handleSetPrices() {
-    console.log("todo: handleSetPrices()")
+    // checks
+    if (!chainId || !provider || !account) return
+    if(!HYDROGEN_NUCLEUS_ADDRESSES[chainId]) return
+    if(!isLimitOrderInfoFilled) return
+    // encode transaction
+    const userExternalLocation = HydrogenNucleusHelper.externalAddressToLocation(account)
+    const currencyA = currenciesById[limitOrder.currencyIdA||''] ?? null
+    const currencyB = currenciesById[limitOrder.currencyIdB||''] ?? null
+    const tokenA = (currencyA?.wrapped.tokenInfo || currencyA?.wrapped)
+    const tokenB = (currencyB?.wrapped.tokenInfo || currencyB?.wrapped)
+    //console.log("handleSetPrices() 2", {currencyA, currencyB, tokenA, tokenB})
+    const amountOneA = currencyAmountToBigNumber(tryParseCurrencyAmount('1', tokenA))
+    const amountOneB = currencyAmountToBigNumber(tryParseCurrencyAmount('1', tokenB))
+    const amountAperB = currencyAmountToBigNumber(tryParseCurrencyAmount3(limitOrder.typedValueSellPrice, tokenB))
+    const amountBperA = currencyAmountToBigNumber(tryParseCurrencyAmount3(limitOrder.typedValueBuyPrice, tokenA))
+    //console.log("handleSetPrices() 3", {amountOneA, amountOneB, amountAperB, amountBperA})
+    if(!amountOneA || !amountOneB || !amountBperA || !amountAperB) return
+    //console.log("handleSetPrices() 3.1", {amountOneA:amountOneA.toString(), amountOneB:amountOneB.toString(), amountAperB:amountAperB.toString(), amountBperA:amountBperA.toString()})
+    const exchangeRate = (limitOrder.direction == "buy"
+      ? HydrogenNucleusHelper.encodeExchangeRate(amountBperA, amountOneB)
+      : HydrogenNucleusHelper.encodeExchangeRate(amountOneA, amountAperB)
+    )
+    //const exchangeRate = HydrogenNucleusHelper.encodeExchangeRate(amountOneA, amountBperA)
+    //const exchangeRate = HydrogenNucleusHelper.encodeExchangeRate(amountBperA, amountOneA)
+    //const exchangeRate = HydrogenNucleusHelper.encodeExchangeRate(amountOneA, amountAperB)
+    //console.log("handleSetPrices() 4", {exchangeRate})
+    const txdata = nucleusInterface.encodeFunctionData("updateLimitOrderPool", [{
+      poolID: poolID,
+      exchangeRate: exchangeRate,
+      locationB: userExternalLocation
+    }])
+    const txn: { to: string; data: string; value: string } = {
+      to: HYDROGEN_NUCLEUS_ADDRESSES[chainId],
+      data: txdata,
+      value: '0',
+    }
+    setModalState({ attemptingTxn: true, showConfirm, errorMessage: undefined, txHash: undefined, showModal })
+
+    const currencyIds = [limitOrder.currencyIdA||'', limitOrder.currencyIdB||'']
+
+    provider
+      .getSigner()
+      .estimateGas(txn)
+      .then((estimate) => {
+        const newTxn = {
+          ...txn,
+          gasLimit: calculateGasMargin(estimate),
+        }
+
+        return provider
+          .getSigner()
+          .sendTransaction(newTxn)
+          .then((response: TransactionResponse) => {
+            setModalState({ attemptingTxn: false, showConfirm, errorMessage: undefined, txHash: response.hash, showModal })
+            addTransaction(response, {
+              type: TransactionType.SET_PRICES,
+              currencyIds,
+              poolID,
+            })
+            response.wait(1).then(() => {
+              handleResetPoolManagementState()
+            })
+          })
+      })
+      .catch((error) => {
+        console.error('Failed to send transaction', error)
+        setModalState({
+          attemptingTxn: false,
+          showConfirm,
+          errorMessage: error.message,
+          txHash: undefined,
+          showModal,
+        })
+        // we only care if the error is something _other_ than the user rejected the tx
+        if (error?.code !== 4001) {
+          console.error(error)
+        }
+      })
   }
 
   const [isManageCardOpen, setIsManageCardOpen] = useState(false)
@@ -858,39 +1003,213 @@ export default function LimitOrderPoolPage(props:any) {
     await onReplacePoolManagementStateWithDelay(newState)
   }
 
-  // on first load, has no deposits or withdraws. this adds a blank with the pool tokenA
-  /*
-  useEffect(() => {
-    if(deposits.length == 0 || withdraws.length == 0) {
-      const tokenA = Object.keys(pool.tradeRequests)[0]
-      const newState = JSON.parse(JSON.stringify(currentState))
-      if(deposits.length == 0) {
-        newState.deposits = [{currencyId: tokenA, typedAmount: ''}]
+  const LimitOrderContent = () => {
+    //return <pre>{`LimitOrderContent\n${JSON.stringify(limitOrder, undefined, 2)}`}</pre>
+    //console.log("LimitOrderContent() 1", {limitOrder})
+    const currencyA = currenciesById[limitOrder.currencyIdA||''] ?? null
+    const currencyB = currenciesById[limitOrder.currencyIdB||''] ?? null
+    if(!currencyA || !currencyB) return (<></>)
+    const tokenA = (currencyA?.wrapped.tokenInfo || currencyA?.wrapped)
+    const tokenB = (currencyB?.wrapped.tokenInfo || currencyB?.wrapped)
+    if(!tokenA || !tokenB) return (<></>)
+    //console.log("LimitOrderContent() 2", {currencyA, currencyB, tokenA, tokenB})
+    const amountOneA = tryParseCurrencyAmount('1', tokenA)
+    const amountOneB = tryParseCurrencyAmount('1', tokenB)
+    const amountAperB = tryParseCurrencyAmount2(limitOrder.typedValueSellPrice, tokenB)
+    const amountBperA = tryParseCurrencyAmount2(limitOrder.typedValueBuyPrice, tokenA)
+    //console.log("LimitOrderContent() 3", {amountOneA, amountOneB, amountAperB, amountBperA, aperb:currencyAmountToString(amountAperB), bpera:currencyAmountToString(amountBperA)})
+    const priceBperA = (amountOneA && amountBperA && amountOneB && amountAperB
+      ? new Price(
+          currencyB,
+          currencyA,
+          amountAperB.quotient,
+          amountOneA.quotient,
+        )
+      : undefined
+    )
+    const priceAperB = (amountOneA && amountBperA && amountOneB && amountAperB
+      ? new Price(
+          currencyA,
+          currencyB,
+          amountBperA.quotient,
+          amountOneB.quotient,
+        )
+      : undefined
+    )
+    //console.log("LimitOrderContent() 4", {priceAperB, priceBperA})
+    function currencyIdToUsdcAmount(index:number) {
+      try {
+        const fiatValue = fiatValuesForLimitOrder[index]
+        if(!fiatValue) return undefined
+        const usdcAmount = currencyAmountToBigNumber(fiatValue)
+        return usdcAmount
+      } catch(e) {
+        return undefined
       }
-      if(withdraws.length == 0) {
-        newState.withdraws = [{currencyId: tokenA, typedAmount: ''}]
-      }
-      onReplacePoolManagementState(newState)
     }
-  }, [poolBalances, deposits, currentState])
+    const tokenAUsdcAmount = currencyIdToUsdcAmount(0)
+    const tokenBUsdcAmount = currencyIdToUsdcAmount(1)
+    function formatAmount(amount:string) {
+      // if integer
+      if(!amount.includes('.')) return amount
+      // if x < 1
+      if(amount[0] == '0') {
+        for(let i = 2; i < amount.length; i++) {
+          if(amount[i] != '0') {
+            return amount.substring(0, i+3)
+          }
+        }
+        return amount
+      }
+      // if 1 <= x < 100
+      if(amount.indexOf('.') <= 2) {
+        return amount.substring(0, 4)
+      }
+      // if x >= 100
+      return amount.substring(0, amount.indexOf('.'))
+    }
+    const priceStringAperB = ((tokenAUsdcAmount && tokenBUsdcAmount)
+      ? formatAmount(formatUnits(tokenAUsdcAmount.mul(WeiPerEther).div(tokenBUsdcAmount)))
+      : undefined
+    )
+    const priceStringBperA = ((tokenAUsdcAmount && tokenBUsdcAmount)
+      ? formatAmount(formatUnits(tokenBUsdcAmount.mul(WeiPerEther).div(tokenAUsdcAmount)))
+      : undefined
+    )
+    const priceString = limitOrder.direction == "buy" ? priceStringBperA : priceStringAperB
+    //console.log("LimitOrderContent() 5", {tokenAUsdcAmount, tokenBUsdcAmount, priceStringAperB, priceStringBperA, fiatValuesForLimitOrder, priceString })
+    function tryParseFloat(s: string | undefined) {
+      try {
+        if(!s) return undefined
+        return parseFloat(s)
+      } catch(e) {
+        return undefined
+      }
+    }
+    const buyPrice2 = tryParseFloat(limitOrder.typedValueBuyPrice)
+    const sellPrice2 = tryParseFloat(limitOrder.typedValueSellPrice)
+    const marketBuyPrice2 = tryParseFloat(priceStringBperA)
+    const marketSellPrice2 = tryParseFloat(priceStringAperB)
+    //console.log("LimitOrderContent() 6", {buyPrice2, sellPrice2, marketBuyPrice2, marketSellPrice2 })
+    function formatPercent(n: number) {
+      let s = `${n * 100}`
+      const index = s.indexOf('.')
+      if(index >= 0) {
+        s = s.substring(0, index)
+      }
+      return `${s}%`
+    }
+    const messages:any[] = []
+    if(limitOrder.direction == "buy") {
+      if(buyPrice2 && marketBuyPrice2) {
+        if(buyPrice2 < marketBuyPrice2 * 0.5) messages.push({color: colors.yellow100, text: `Buy price is ${formatPercent(1-(buyPrice2/marketBuyPrice2))} lower than market price. Are you sure?`})
+        else if(buyPrice2 > marketBuyPrice2 * 1.05) messages.push({color: colors.yellow100, text: `Buy price is ${formatPercent((buyPrice2/marketBuyPrice2)-1)} greater than market price. Are you sure?`})
+      }
+    } else if(limitOrder.direction == "sell") {
+      if(sellPrice2 && marketSellPrice2) {
+        if(sellPrice2 < marketSellPrice2 * 0.95) messages.push({color: colors.yellow100, text: `Sell price is ${formatPercent(1-(sellPrice2/marketSellPrice2))} lower than market price. Are you sure?`})
+        else if(sellPrice2 > marketSellPrice2 * 1.5) messages.push({color: colors.yellow100, text: `Sell price is ${formatPercent((sellPrice2/marketSellPrice2)-1)} greater than market price. Are you sure?`})
+      }
+    } else {
+      //console.error(`"unknown direction ${limitOrder.direction}`)
+    }
+    //console.log("LimitOrderContent() 7", {messages })
+    const [symbolL, symbolR] = (limitOrder.direction == "buy"
+      ? [currencyA?.symbol,currencyB?.symbol]
+      : [currencyB?.symbol,currencyA?.symbol])
+    return (
+      <div>
+        {/*
+        <PriceSelectors
+          buyPrice={buyPrice}
+          sellPrice={sellPrice}
+          onBuyPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.BUY_PRICE, price)}}
+          onSellPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.SELL_PRICE, price)}}
+          currencyBase={currencyBase}
+          currencyQuote={currencyQuote}
+        />
+        */}
+        {limitOrder.direction == "buy" && (
+          <PriceSelectorSingle
+            value={limitOrder.typedValueBuyPrice ?? ''}
+            onUserInput={onLimitOrderBuyPriceInput}
+            width="48%"
+            label={buyPrice2 ? `${currencyA?.symbol}` : '-'}
+            title={<Trans>Buy Price</Trans>}
+            tokenBase={currencyB?.symbol}
+            tokenQuote={currencyA?.symbol}
+          />
+        )}
+        {limitOrder.direction == "sell" && (
+          <PriceSelectorSingle
+            value={limitOrder.typedValueSellPrice ?? ''}
+            onUserInput={onLimitOrderSellPriceInput}
+            width="48%"
+            label={sellPrice2 ? `${currencyB?.symbol}` : '-'}
+            title={<Trans>Sell Price</Trans>}
+            tokenBase={currencyA?.symbol}
+            tokenQuote={currencyB?.symbol}
+          />
+        )}
+        {priceString && (
+          <CenteringDiv>
+            <MarketPriceText>
+              Current market price: {priceString} {symbolL} per {symbolR}
+            </MarketPriceText>
+          </CenteringDiv>
+        )}
+        {messages.length > 0 && (
+          <div>
+            <div style={{marginTop:"0.5rem"}}/>
+            {messages.map((message:any,messageIndex:number) => (
+              <CenteringDiv key={messageIndex}>
+                <PairCardMessageText style={{color:message.color}}>
+                  {message.text}
+                </PairCardMessageText>
+              </CenteringDiv>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+    //return <pre>{`LimitOrderContent\n${JSON.stringify(limitOrder, undefined, 2)}`}</pre>
+  }
+    /*
+
+    if(!currencyBase || !currencyQuote) return undefined
+    return (
+      <div key={pairIndex}>
+        <PriceSelectors
+          buyPrice={buyPrice}
+          sellPrice={sellPrice}
+          onBuyPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.BUY_PRICE, price)}}
+          onSellPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.SELL_PRICE, price)}}
+          currencyBase={currencyBase}
+          currencyQuote={currencyQuote}
+        />
+        {priceString && (
+          <CenteringDiv>
+            <MarketPriceText>
+              Current market price: {priceString} {currencyQuote?.symbol} per {currencyBase?.symbol}
+            </MarketPriceText>
+          </CenteringDiv>
+        )}
+        {messages.length > 0 && (
+          <div>
+            <div style={{marginTop:"0.5rem"}}/>
+            {messages.map((message:any,messageIndex:number) => (
+              <CenteringDiv key={messageIndex}>
+                <PairCardMessageText style={{color:message.color}}>
+                  {message.text}
+                </PairCardMessageText>
+              </CenteringDiv>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
   */
-  // scroll on page view or poolID changed
-  const [previousPoolID, setPreviousPoolID] = useState("0")
-  useMemo(async () => {
-    if(poolID != previousPoolID) {
-      window.scrollTo(0, 0)
-      setPreviousPoolID(poolID)
-      const tokenA = Object.keys(pool.tradeRequests)[0]
-      const newState = JSON.parse(JSON.stringify(currentState))
-      //if(deposits.length == 0) {
-        newState.deposits = [{currencyId: tokenA, typedAmount: ''}]
-      //}
-      //if(withdraws.length == 0) {
-        newState.withdraws = [{currencyId: tokenA, typedAmount: ''}]
-      //}
-      await onReplacePoolManagementStateWithDelay(newState)
-    }
-  }, [poolID, previousPoolID])
 
   const HptImage = () => (
     <HptImageCardContainer>
@@ -1106,26 +1425,50 @@ export default function LimitOrderPoolPage(props:any) {
       {withdrawButton}
     </div>
   ))
-  /*
-  const OpenPoolManagementButton = () => (
-    <OpenPoolManagementButtonStyled onClick={()=>{setIsManageCardOpen(true)}} isDarkMode={isDarkMode}>
-      <p>Manage pool</p>
-    </OpenPoolManagementButtonStyled>
+
+  const setPriceButton = (
+    <RowBetween>
+      <ButtonError
+        onClick={() => {
+          setModalState({
+            attemptingTxn: false,
+            errorMessage: undefined,
+            showConfirm: true,
+            txHash: undefined,
+            showModal: "setprices",
+          })
+        }}
+        disabled={false}
+        error={false}
+      >
+        Set price
+      </ButtonError>
+    </RowBetween>
   )
-  */
-  /*
-  const OpenPoolManagementButton = () => (
-    <SwapWrapper onClick={()=>{setIsManageCardOpen(true)}}>
-      <div>
-        <CenteringDiv>
-          <div style={{margin:"8px 24px"}}>
-            <p style={{fontSize:"20px"}}>Manage pool</p>
-          </div>
-        </CenteringDiv>
-      </div>
-    </SwapWrapper>
-  )
-  */
+
+  const setPricesButtons = (isLimitOrderInfoFilled && (JSON.stringify(currentState.limitOrder) != JSON.stringify(currentState.limitOrderOriginal)) ? (
+    addIsUnsupported ? (
+      <ButtonPrimary disabled={true} $borderRadius="12px" padding="12px">
+        <ThemedText.DeprecatedMain mb="4px">
+          <Trans>Unsupported Asset</Trans>
+        </ThemedText.DeprecatedMain>
+      </ButtonPrimary>
+    ) : !account ? (
+      <ButtonLight onClick={toggleWalletModal} $borderRadius="12px" padding="12px">
+        <Trans>Connect Wallet</Trans>
+      </ButtonLight>
+    ) : (
+      <AutoColumn gap="md">
+        {setPriceButton}
+      </AutoColumn>
+    )
+  ): (
+    <div style={{visibility:"hidden"}}>
+      {setPriceButton}
+    </div>
+  ))
+  //console.log("setPricesButtons", {isLimitOrderInfoFilled})
+
   const OpenPoolManagementButton = () => (
     <OrderTypeContainer onClick={()=>{setIsManageCardOpen(true)}}>
       <OrderTypeSelector isDarkMode={isDarkMode}>
@@ -1150,7 +1493,7 @@ export default function LimitOrderPoolPage(props:any) {
             onConfirm={handleDeposit}
             swapErrorMessage={errorMessage}
             onDismiss={handleConfirmDismiss}
-            poolID={poolID}
+            poolID={BigNumber.from(poolID||"0").toNumber()}
           />
           <ConfirmWithdrawModal
             isOpen={showConfirm && showModal == "withdraw"}
@@ -1162,7 +1505,18 @@ export default function LimitOrderPoolPage(props:any) {
             onConfirm={handleWithdraw}
             swapErrorMessage={errorMessage}
             onDismiss={handleConfirmDismiss}
-            poolID={poolID}
+            poolID={BigNumber.from(poolID||"0").toNumber()}
+          />
+          <ConfirmSetPricesLimitOrderModal
+            isOpen={showConfirm && showModal == "setprices"}
+            trade={undefined}
+            attemptingTxn={attemptingTxn}
+            txHash={txHash}
+            recipient={recipient}
+            onConfirm={handleSetPrices}
+            swapErrorMessage={errorMessage}
+            onDismiss={handleConfirmDismiss}
+            poolID={BigNumber.from(poolID||"0").toNumber()}
           />
       </div>
       <CenteringDiv>
@@ -1184,30 +1538,10 @@ export default function LimitOrderPoolPage(props:any) {
                   </CenteringDiv>
                 </FirstRowContainerRight>
               </FirstRowContainer>
-              {/*
-              <div>
-                <HptImageCardContainer>
-                  <HptImageCard src={`https://assets.hydrogendefi.xyz/hpt/${chainId}/${poolID}.svg`} />
-                </HptImageCardContainer>
-                <div style={{display:"inline"}}>
-                  <PoolCard poolID={poolID}/>
-                </div>
-              </div>
-              */}
             </CenteringDiv>
           </div>
 
           <div style={{margin:"32px 0 0 0", width:"100%"}}>
-            {/*
-            <CenteringDiv>
-              <h2 style={{margin:"32px 0"}}>Pool management coming soon</h2>
-            </CenteringDiv>
-            <CenteringDiv>
-              <a href={`${getChainInfo(chainId)?.analyticsLink}pools/${poolID}`} target="_blank" style={{textDecoration:"none"}}>
-                <p style={{margin:"0"}}>View pool analytics</p>
-              </a>
-            </CenteringDiv>
-            */}
             <CenteringDiv style={{width:"100%"}}>
               {pool.owner != account ? null : (
                 !isManageCardOpen ? (
@@ -1217,11 +1551,6 @@ export default function LimitOrderPoolPage(props:any) {
                     <div>
                       <CenteringDiv>
                         <div style={{margin:"18px 0 36px 0"}}>
-                          {/*
-                          <Tab onClick={()=>setOpenTab("deposit")} isSelected={openTab=="deposit"} isDarkMode={isDarkMode}>Deposit</Tab>
-                          <Tab onClick={()=>setOpenTab("withdraw")} isSelected={openTab=="withdraw"} isDarkMode={isDarkMode}>Withdraw</Tab>
-                          <Tab onClick={()=>setOpenTab("setprices")} isSelected={openTab=="setprices"} isDarkMode={isDarkMode}>Set Prices</Tab>
-                          */}
                           <Tab isDarkMode={isDarkMode} isSelected={openTab=="deposit"} onClick={()=>setOpenTab("deposit")}>
                             <TabTextContainer isDarkMode={isDarkMode}>
                               <p>Deposit</p>
@@ -1319,52 +1648,13 @@ export default function LimitOrderPoolPage(props:any) {
                                   </RowBetween>
                                 </div>
                               </CenteringDiv>
-                              {/*
-                              <AutoColumn gap="md">
-                                <>
-                                  <AutoColumn gap="md">
-                                    <RowBetween>
-                                      <PriceSelector
-                                        value={buyPrice?.toSignificant(5) ?? ''}
-                                        onUserInput={onBuyPriceInput}
-                                        width="48%"
-                                        label={buyPrice ? `${currencyQuote?.symbol}` : '-'}
-                                        title={<Trans>Buy Price</Trans>}
-                                        tokenBase={currencyBase?.symbol}
-                                        tokenQuote={currencyQuote?.symbol}
-                                      />
-                                    </RowBetween>
-                                  </AutoColumn>
-                                  <PriceSelectors
-                                    buyPrice={buyPrice}
-                                    sellPrice={sellPrice}
-                                    onBuyPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.BUY_PRICE, price)}}
-                                    onSellPriceInput={(price:string)=>{handlePriceInput(pairIndex, PriceField.SELL_PRICE, price)}}
-                                    currencyBase={currencyBase}
-                                    currencyQuote={currencyQuote}
-                                  />
-                                  {priceString && (
-                                    <CenteringDiv>
-                                      <MarketPriceText>
-                                        Current market price: {priceString} {currencyQuote?.symbol} per {currencyBase?.symbol}
-                                      </MarketPriceText>
-                                    </CenteringDiv>
-                                  )}
-                                  {messages.length > 0 && (
-                                    <div>
-                                      <div style={{marginTop:"0.5rem"}}/>
-                                      {messages.map((message:any,messageIndex:number) => (
-                                        <CenteringDiv key={messageIndex}>
-                                          <PairCardMessageText style={{color:message.color}}>
-                                            {message.text}
-                                          </PairCardMessageText>
-                                        </CenteringDiv>
-                                      ))}
-                                    </div>
-                                  )}
-                                </>
-                              </AutoColumn>
-                              */}
+                              <SwapWrapperInner>
+                                <AutoColumn gap="md">
+                                  <LimitOrderContent/>
+                                </AutoColumn>
+                              </SwapWrapperInner>
+                              <div style={{height:"12px"}}/>
+                              {setPricesButtons}
                             </div>
                           )}
                         </div>

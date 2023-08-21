@@ -264,6 +264,16 @@ const Tab = styled.div<{ isDarkMode: boolean, isSelected?:boolean|undefined }>`
   }
 `
 
+const TabTextContainer = styled(CenteringDiv)<{ isDarkMode: boolean }>`
+  width: 140px;
+  font-size: 16px;
+  font-weight: 400;
+  color: ${({ isDarkMode }) =>
+    isDarkMode
+      ? 'white'
+      : 'black'};
+`
+
 const SwapWrapperWrapper = styled.div`
   margin-bottom: 16px;
 `
@@ -283,16 +293,6 @@ const MarketPriceText = styled.p`
 const PairCardMessageText = styled.p`
   margin: 0.5rem 0 0 0;
   font-size: 13px;
-`
-
-const TabTextContainer = styled(CenteringDiv)<{ isDarkMode: boolean }>`
-  width: 140px;
-  font-size: 16px;
-  font-weight: 400;
-  color: ${({ isDarkMode }) =>
-    isDarkMode
-      ? 'white'
-      : 'black'};
 `
 
 export default function GridOrderPoolPage(props:any) {
@@ -1488,35 +1488,6 @@ export default function GridOrderPoolPage(props:any) {
     </div>
   ))
 
-  //pricesUnorderedButtons
-  /*
-  const buttons = (allPairsInfoFilled && atLeastOneDepositAmountFilled && (
-    addIsUnsupported ? (
-      <ButtonPrimary disabled={true} $borderRadius="12px" padding="12px">
-        <ThemedText.DeprecatedMain mb="4px">
-          <Trans>Unsupported Asset</Trans>
-        </ThemedText.DeprecatedMain>
-      </ButtonPrimary>
-    ) : !account ? (
-      <ButtonLight onClick={toggleWalletModal} $borderRadius="12px" padding="12px">
-        <Trans>Connect Wallet</Trans>
-      </ButtonLight>
-    ) : (
-      <AutoColumn gap="md">
-        {areAnyPricesUnordered ? (
-          pricesUnorderedButtons
-        ) : areAnyDepositsAboveBalances ? (
-          insufficientWalletBalanceButtons
-        ) : areAnyTokensAwaitingApproval ? (
-          tokenApprovalButtons
-        ) : (
-          placeGridOrderButton
-        )}
-      </AutoColumn>
-    )
-  ))
-  */
-
   const OpenPoolManagementButton = () => (
     <OrderTypeContainer onClick={()=>{setIsManageCardOpen(true)}}>
       <OrderTypeSelector isDarkMode={isDarkMode}>
@@ -1586,30 +1557,10 @@ export default function GridOrderPoolPage(props:any) {
                   </CenteringDiv>
                 </FirstRowContainerRight>
               </FirstRowContainer>
-              {/*
-              <div>
-                <HptImageCardContainer>
-                  <HptImageCard src={`https://assets.hydrogendefi.xyz/hpt/${chainId}/${poolID}.svg`} />
-                </HptImageCardContainer>
-                <div style={{display:"inline"}}>
-                  <PoolCard poolID={poolID}/>
-                </div>
-              </div>
-              */}
             </CenteringDiv>
           </div>
 
           <div style={{margin:"32px 0 0 0", width:"100%"}}>
-            {/*
-            <CenteringDiv>
-              <h2 style={{margin:"32px 0"}}>Pool management coming soon</h2>
-            </CenteringDiv>
-            <CenteringDiv>
-              <a href={`${getChainInfo(chainId)?.analyticsLink}pools/${poolID}`} target="_blank" style={{textDecoration:"none"}}>
-                <p style={{margin:"0"}}>View pool analytics</p>
-              </a>
-            </CenteringDiv>
-            */}
             <CenteringDiv style={{width:"100%"}}>
               {(!pool || (pool.owner != account)) ? null : (
                 !isManageCardOpen ? (
@@ -1619,11 +1570,6 @@ export default function GridOrderPoolPage(props:any) {
                     <div>
                       <CenteringDiv>
                         <div style={{margin:"18px 0 36px 0"}}>
-                          {/*
-                          <Tab onClick={()=>setOpenTab("deposit")} isSelected={openTab=="deposit"} isDarkMode={isDarkMode}>Deposit</Tab>
-                          <Tab onClick={()=>setOpenTab("withdraw")} isSelected={openTab=="withdraw"} isDarkMode={isDarkMode}>Withdraw</Tab>
-                          <Tab onClick={()=>setOpenTab("setprices")} isSelected={openTab=="setprices"} isDarkMode={isDarkMode}>Set Prices</Tab>
-                          */}
                           <Tab isDarkMode={isDarkMode} isSelected={openTab=="deposit"} onClick={()=>setOpenTab("deposit")}>
                             <TabTextContainer isDarkMode={isDarkMode}>
                               <p>Deposit</p>
@@ -1728,7 +1674,6 @@ export default function GridOrderPoolPage(props:any) {
                               </SwapWrapperInner>
                               <div style={{height:"12px"}}/>
                               {setPricesButtons}
-
                             </div>
                           )}
                         </div>

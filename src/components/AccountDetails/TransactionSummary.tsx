@@ -367,9 +367,9 @@ function DepositSummary({ info }: { info: DepositTransactionInfo }) {
         {'Deposit '}
       </Trans>
       {list2}
-      <Trans>
+      <span>
         {` into pool ${info.poolID}`}
-      </Trans>
+      </span>
     </>
   )
 }
@@ -393,9 +393,9 @@ function WithdrawSummary({ info }: { info: WithdrawTransactionInfo }) {
         {'Withdraw '}
       </Trans>
       {list2}
-      <Trans>
+      <span>
         {` from pool ${info.poolID}`}
-      </Trans>
+      </span>
     </>
   )
 }
@@ -414,13 +414,7 @@ function SetPricesSummary({ info }: { info: SetPricesTransactionInfo }) {
   }
   */
   //console.log("TransactionSummary.SetPricesSummary()", {list})
-  return (
-    <>
-      <Trans>
-        {`Set prices of pool ${info.poolID}`}
-      </Trans>
-    </>
-  )
+  return (<span>{`Set prices of pool ${info.poolID}`}</span>)
 }
 
 function UnknownTransactionSummary({ info }: { info: any }) {

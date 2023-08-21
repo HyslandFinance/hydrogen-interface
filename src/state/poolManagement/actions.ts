@@ -21,6 +21,14 @@ export interface PairState {
   }
 }
 
+export interface LimitOrderState {
+  readonly currencyIdA: string | undefined
+  readonly currencyIdB: string | undefined
+  readonly typedValueBuyPrice: string
+  readonly typedValueSellPrice: string
+  readonly direction: string
+}
+
 export interface DepositState {
   readonly currencyId: string | undefined
   readonly typedAmount: string
@@ -32,13 +40,15 @@ export interface WithdrawState {
 }
 
 export interface PoolManagementState {
-  readonly pairs: PairState[]
-  readonly pairsOriginal: PairState[]
+  readonly poolID: string
   readonly deposits: DepositState[]
   readonly withdraws: WithdrawState[]
+  readonly pairs: PairState[]
+  readonly pairsOriginal: PairState[]
+  readonly limitOrder: LimitOrderState
+  readonly limitOrderOriginal: LimitOrderState
   // the typed recipient address or ENS name, or null if swap should go to sender
   readonly recipient: string | null
-  readonly poolID: string
 }
 
 export const selectCurrencies = createAction<{ pairIndex: number; currencyIdBase: string|undefined; currencyIdQuote: string|undefined }>('PoolManagement/selectCurrencies')
@@ -62,3 +72,4 @@ export const replacePoolManagementState = createAction<{
   newState: PoolManagementState
 }>('PoolManagement/replacePoolManagementState')
 export const clearPoolManagementState = createAction<{}>('PoolManagement/clearPoolManagementState')
+//export const changePoolID = createAction<{}>('PoolManagement/changePoolID')

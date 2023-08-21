@@ -55,13 +55,15 @@ export default function PoolPage() {
     setTimeout(() => setSearching(false), 30000)
   }, [poolIDurl])
 
-  // if still fetching from stats api
-  if(!nucleusState || !!nucleusState.loading) return (
+  const Loading = () => (
     <>
-      <p style={{display:"inline", marginRight: "8px"}}>{`Loading pool ${poolID}`}</p>
+      <p style={{display:"inline", marginRight: "8px"}}>{`Loading pool ${poolIDurl}`}</p>
       <Loader/>
     </>
   )
+
+  // if still fetching from stats api
+  if(!nucleusState || !!nucleusState.loading) return <Loading/>
 
   async function onChangePoolIDWithDelay(poolIDurl:any) {
     async function _sleeper(ms: number) {
@@ -72,6 +74,7 @@ export default function PoolPage() {
   }
   if(poolID != poolIDurl) {
     onChangePoolIDWithDelay(poolIDurl)
+    return <Loading/>
   }
 
   const pool = nucleusState?.pools[poolID]
@@ -80,12 +83,7 @@ export default function PoolPage() {
   // if pool not known to stats api
   if(!pool || !balances) {
     // if still in buffer time
-    if(searching) return (
-      <>
-        <p style={{display:"inline", marginRight: "8px"}}>{`Loading pool ${poolID}`}</p>
-        <Loader/>
-      </>
-    )
+    if(searching) return <Loading/>
     // if time up
     else return (
       <>
@@ -97,9 +95,9 @@ export default function PoolPage() {
 
   return (
     poolID.substring(poolID.length-3) === "001" ? (
-      <LimitOrderPoolPage poolID={poolID}/>
+      <LimitOrderPoolPage/>
     ) : (
-      <GridOrderPoolPage poolID={poolID}/>
+      <GridOrderPoolPage/>
     )
   )
 }
