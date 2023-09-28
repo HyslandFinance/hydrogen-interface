@@ -89,7 +89,7 @@ export const FALLBACK_URLS: { [key in SupportedChainId]: string[] } = {
   ],
   [SupportedChainId.BASE]: [
     // "Fallback" URLs
-    `https://base.public.blastapi.io`,
+    `https://base-mainnet.public.blastapi.io`,
   ],
   [SupportedChainId.BASE_GOERLI]: [
     // "Fallback" URLs

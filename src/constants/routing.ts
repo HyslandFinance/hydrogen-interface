@@ -11,6 +11,7 @@ import {
   CUSD_CELO_ALFAJORES,
   DAI,
   DAI_ARBITRUM_ONE,
+  DAI_BASE,
   DAI_BASE_GOERLI,
   DAI_OPTIMISM,
   DAI_POLYGON,
@@ -28,6 +29,7 @@ import {
   SWISE,
   TRIBE,
   USDC_ARBITRUM_ONE,
+  USDC_BASE,
   USDC_BASE_GOERLI,
   USDC_ETHEREUM,
   USDC_OPTIMISM,
@@ -197,13 +199,21 @@ export const COMMON_BASES: ChainCurrencyList = {
     CUSD_CELO_ALFAJORES,
     CEUR_CELO_ALFAJORES,
   ],
+  [SupportedChainId.BASE]: [
+    nativeOnChain(SupportedChainId.BASE),
+    WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE] as Token,
+    DAI_BASE,
+    USDC_BASE,
+    //USDT_BASE,
+    //WBTC_BASE,
+  ],
   [SupportedChainId.BASE_GOERLI]: [
-    nativeOnChain(SupportedChainId.BASE_GOERLI), // todo: re add
+    nativeOnChain(SupportedChainId.BASE_GOERLI),
+    WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE_GOERLI] as Token,
     DAI_BASE_GOERLI,
     USDC_BASE_GOERLI,
     USDT_BASE_GOERLI,
     WBTC_BASE_GOERLI,
-    WRAPPED_NATIVE_CURRENCY[SupportedChainId.BASE_GOERLI] as Token,
   ],
 }
 

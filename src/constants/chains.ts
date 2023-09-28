@@ -24,7 +24,7 @@ export enum SupportedChainId {
   BASE_GOERLI = 84531,
 }
 
-export const DEFAULT_CHAIN_ID = SupportedChainId.BASE_GOERLI
+export const DEFAULT_CHAIN_ID = SupportedChainId.BASE
 
 export const CHAIN_IDS_TO_NAMES = {
   [SupportedChainId.ETHEREUM]: 'ethereum',

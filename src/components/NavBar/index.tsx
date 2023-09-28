@@ -45,6 +45,7 @@ const MenuItem = ({ href, dataTestId, id, isActive, children }: MenuItemProps) =
 
 export const PageTabs = () => {
   const { pathname } = useLocation()
+  const { chainId } = useWeb3React()
 
   const isTradeActive =
     pathname.startsWith('/trade') ||
@@ -58,6 +59,11 @@ export const PageTabs = () => {
   const isFaucetActive =
     pathname.startsWith('/faucet')
 
+  const CHAINS_WITH_FAUCETS = [84531, 80001]
+  const chainExists = !!chainId
+  const chainHasFaucet = chainExists && CHAINS_WITH_FAUCETS.includes(chainId)
+  const showFaucet = chainExists && chainHasFaucet
+
   return (
     <>
       <MenuItem href="/trade" id="trade-nav-link" isActive={isTradeActive}>
@@ -66,9 +72,11 @@ export const PageTabs = () => {
       <MenuItem href="/pools" id="pool-nav-link" isActive={isPoolActive}>
         <Trans>Pools</Trans>
       </MenuItem>
-      <MenuItem href="/faucet" id="faucet-nav-link" isActive={isFaucetActive}>
-        <Trans>Faucet</Trans>
-      </MenuItem>
+      {showFaucet && (
+        <MenuItem href="/faucet" id="faucet-nav-link" isActive={isFaucetActive}>
+          <Trans>Faucet</Trans>
+        </MenuItem>
+      )}
     </>
   )
 }

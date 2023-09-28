@@ -7,6 +7,7 @@ import { TOKEN_SHORTHANDS } from '../../constants/tokens'
 import { useAllTokens, useCurrency } from '../../hooks/Tokens'
 import { supportedChainId } from '../../utils/supportedChainId'
 import { useFaucetDripCallback } from 'hooks/useFaucetDripCallback'
+import { NavLink, NavLinkProps, useLocation, useNavigate } from 'react-router-dom'
 
 const CenteringDiv = styled.div`
   display: flex;
@@ -139,7 +140,8 @@ export default function FaucetPage({ className }: { className?: string }) {
       console.error("no token to drip")
       return
     }
-    const tokenSymbol = token.tokenInfo.symbol
+    const tokenInfo = token.tokenInfo || token
+    const tokenSymbol = tokenInfo.symbol
     if(!account) {
       console.error("connect to your wallet first")
       setErrorMessages({...errorMessages, [tokenSymbol]: "Connect to your wallet first"})
@@ -160,7 +162,7 @@ export default function FaucetPage({ className }: { className?: string }) {
           txHash: undefined,
         })
       })
-}, [token, account])
+  }, [token, account])
 
   const handleAddToWallet = useCallback(async (token:any) => {
     if(!token) {
@@ -199,19 +201,24 @@ export default function FaucetPage({ className }: { className?: string }) {
 
   const sortedTokens = useMemo(() => {
     if(!defaultTokens) return []
-    const symbols = ['DAI', 'USDC', 'USDT', 'WETH', 'WBTC', 'DOGE', 'FRAX', 'WMATIC']
+    let symbols:any[] = []
+    if(chainId == 84531) symbols = ['DAI', 'USDC', 'USDT', 'mWETH', 'WBTC', 'DOGE', 'FRAX', 'wstETH', 'rETH', 'frxETH', 'sfrxETH', 'cbETH', 'icETH']
+    else if(chainId == 80001) symbols = ['DAI', 'USDC', 'USDT', 'WETH', 'WBTC', 'DOGE', 'FRAX', 'mWMATIC2']
+    //const symbols = ['DAI', 'USDC', 'USDT', 'WETH', 'WBTC', 'DOGE', 'FRAX', 'WMATIC', 'wstETH', 'rETH', 'frxETH', 'sfrxETH', 'cbETH', 'icETH']
     const tokens:any[] = []
     const addresses = Object.keys(defaultTokens)
     for(let symbol of symbols) {
       for(let address of addresses) {
-        const token = defaultTokens[address] as any
-        if(token.tokenInfo.symbol == symbol) {
-          tokens.push(token)
+        const token1 = defaultTokens[address] as any
+        const token2 = token1.wrapped || token1
+        const token3 = token2.tokenInfo || token2
+        if(token3.symbol == symbol) {
+          tokens.push(token1)
         }
       }
     }
     return tokens
-  }, [defaultTokens])
+  }, [defaultTokens, chainId])
 
   const gasTokenNotes = useMemo(() => {
     if(!chainId) return undefined
@@ -222,13 +229,26 @@ export default function FaucetPage({ className }: { className?: string }) {
 
   const tokenNotes = useMemo(() => {
     if(!chainId) return {}
-    if(chainId == 84531) return {'WETH': <p style={{marginBottom:"0"}}>Note: this mock WETH is <TokenTextBreaker/>not redeemable for ETH</p>}
+    if(chainId == 84531) return {'mWETH': <p style={{marginBottom:"0"}}>Note: this mock WETH is <TokenTextBreaker/>not redeemable for ETH</p>}
     if(chainId == 80001) return {
       'WETH': <p style={{marginBottom:"0"}}>Note: this mock WETH is <TokenTextBreaker/>not redeemable for ETH</p>,
-      'WMATIC': <p style={{marginBottom:"0"}}>Note: this mock WETH is <TokenTextBreaker/>not redeemable for MATIC</p>,
+      'mWMATIC2': <p style={{marginBottom:"0"}}>Note: this mock WMATIC is <TokenTextBreaker/>not redeemable for MATIC</p>,
     }
     return {}
   }, [chainId]) as any
+
+  //console.log("in faucet page")
+  //console.log({defaultTokens, sortedTokens, gasTokenNotes, tokenNotes})
+
+  const navigate = useNavigate()
+  const CHAINS_WITH_FAUCETS = [84531, 80001]
+  const chainExists = !!chainId
+  const chainHasFaucet = chainExists && CHAINS_WITH_FAUCETS.includes(chainId)
+  const chainCondition = chainExists && !chainHasFaucet
+  if(chainCondition) {
+    navigate({ pathname: '/', })
+    return (<></>)
+  }
 
   return (
     <>
@@ -236,65 +256,71 @@ export default function FaucetPage({ className }: { className?: string }) {
       {gasTokenNotes}
       <p>You can drip any of the tokens below from the Hydrogen faucet.</p>
       <AllTokensContainer>
-        {sortedTokens.map(token => (
-          <TokenOuterContainer key={token.tokenInfo.address}>
-            <TokenInnerContainer>
-              <TokenMetadataMobileView>
-                <CenteringDiv>
-                  <div>
-                    <TokenIcon src={`https://assets.hydrogendefi.xyz/tokens/${token.tokenInfo.symbol}`} alt={`${token.tokenInfo.symbol} icon`}/>
+        {sortedTokens.map(token => {
+          const token1 = token as any
+          const token2 = token1.wrapped || token1
+          const token3 = token2.tokenInfo || token2
+          return (
+            <TokenOuterContainer key={token3.address}>
+              <TokenInnerContainer>
+                <TokenMetadataMobileView>
+                  <CenteringDiv>
+                    <div>
+                      <TokenIcon src={`https://assets.hydrogendefi.xyz/tokens/${token3.symbol}`} alt={`${token3.symbol} icon`}/>
+                      <TokenText>
+                        {token3.symbol}
+                      </TokenText>
+                    </div>
+                  </CenteringDiv>
+                  <CenteringDiv>
+                    <p style={{marginTop:"32px", marginBottom:"0"}}>
+                      {token3.address.substring(0,21)}<TokenTextBreaker/>{token3.address.substring(21)}
+                    </p>
+                  </CenteringDiv>
+                  {
+                    tokenNotes[token3.symbol] ? (
+                      <CenteringDiv>
+                        <TokenWarningContainer>
+                          {tokenNotes[token3.symbol]}
+                        </TokenWarningContainer>
+                      </CenteringDiv>
+                    ) : null
+                  }
+                </TokenMetadataMobileView>
+                <TokenMetadataDesktopView>
+                  <TokenIcon src={`https://assets.hydrogendefi.xyz/tokens/${token3.symbol}`} alt={`${token3.symbol} icon`}/>
+                  <TokenTextContainer>
                     <TokenText>
-                      {token.tokenInfo.symbol}
+                      {`${token3.symbol} ${token3.address}`}
                     </TokenText>
-                  </div>
-                </CenteringDiv>
-                <CenteringDiv>
-                  <p style={{marginTop:"32px", marginBottom:"0"}}>
-                    {token.tokenInfo.address.substring(0,21)}<TokenTextBreaker/>{token.tokenInfo.address.substring(21)}
-                  </p>
-                </CenteringDiv>
-                {
-                  tokenNotes[token.tokenInfo.symbol] ? (
-                    <CenteringDiv>
+                  </TokenTextContainer>
+                  {
+                    tokenNotes[token3.symbol] ? (
+                      <>
+                      <TokenTextBreaker/>
                       <TokenWarningContainer>
-                        {tokenNotes[token.tokenInfo.symbol]}
+                        {tokenNotes[token3.symbol]}
                       </TokenWarningContainer>
-                    </CenteringDiv>
-                  ) : null
-                }
-              </TokenMetadataMobileView>
-              <TokenMetadataDesktopView>
-                <TokenIcon src={`https://assets.hydrogendefi.xyz/tokens/${token.tokenInfo.symbol}`} alt={`${token.tokenInfo.symbol} icon`}/>
-                <TokenTextContainer>
-                  <TokenText>
-                    {`${token.tokenInfo.symbol} ${token.tokenInfo.address}`}
-                  </TokenText>
-                </TokenTextContainer>
-                {
-                  tokenNotes[token.tokenInfo.symbol] ? (
-                    <>
-                    <TokenTextBreaker/>
-                    <TokenWarningContainer>
-                      {tokenNotes[token.tokenInfo.symbol]}
-                    </TokenWarningContainer>
-                    </>
-                  ) : null
-                }
-              </TokenMetadataDesktopView>
-              <TokenButtonRow>
-                <TokenButtonContainer onMouseDown={() => setToken(token)} onClick={() => handleDrip()}>
-                  <p>Drip</p>
-                </TokenButtonContainer>
-                <TokenButtonContainer onClick={() => handleAddToWallet(token)}>
-                  <p>Add to wallet</p>
-                </TokenButtonContainer>
-              </TokenButtonRow>
-              <ErrorContainer>
-                <p>{errorMessages[token.tokenInfo.symbol] || " "}</p>
-              </ErrorContainer>
-            </TokenInnerContainer>
-          </TokenOuterContainer>
-        ))}
+                      </>
+                    ) : null
+                  }
+                </TokenMetadataDesktopView>
+                <TokenButtonRow>
+                  <TokenButtonContainer onMouseDown={() => setToken(token)} onClick={() => handleDrip()}>
+                    <p>Drip</p>
+                  </TokenButtonContainer>
+                  <TokenButtonContainer onClick={() => handleAddToWallet(token)}>
+                    <p>Add to wallet</p>
+                  </TokenButtonContainer>
+                </TokenButtonRow>
+                <ErrorContainer>
+                  <p>{errorMessages[token3.symbol] || " "}</p>
+                </ErrorContainer>
+              </TokenInnerContainer>
+            </TokenOuterContainer>
+          )
+        }
+      )}
       </AllTokensContainer>
     </>
   )
