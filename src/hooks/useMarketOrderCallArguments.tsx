@@ -52,19 +52,19 @@ export function useMarketOrderCallArguments(
 
     const route = trade.route
     const hydrogenRoute = route.hydrogenRoute
-    const paths = hydrogenRoute.paths
+    const hops = hydrogenRoute.hops
     // null case
-    if (!paths || paths.length == 0) {
+    if(!hops || hops.length == 0) {
       return []
     }
     // single hop erc20 to erc20 case
-    else if (paths.length == 1 && paths[0].hops.length == 1 && !route.inputAmount.currency.isNative && !route.outputAmount.currency.isNative) {
-      const hop = paths[0].hops[0]
+    else if (hops.length == 1 && !route.inputAmount.currency.isNative && !route.outputAmount.currency.isNative) {
+      const hop = hops[0]
       const calldata = nucleusInterface.encodeFunctionData('executeMarketOrder', [
         {
           poolID: hop.poolID,
-          tokenA: paths[0].tokenList[1],
-          tokenB: paths[0].tokenList[0],
+          tokenA: hop.tokenA,
+          tokenB: hop.tokenB,
           amountA: hop.amountAMT,
           amountB: hop.amountBMT,
           locationA: recipientLocation,
@@ -87,12 +87,15 @@ export function useMarketOrderCallArguments(
       // input
       const amountIn = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.amount : hydrogenRoute.quote
       let gasTokenValue = '0'
+      // eth
       if(!!route.inputAmount.currency.isNative) {
         txdatas.push(
           nucleusInterface.encodeFunctionData('wrapGasToken', [userInternalLocation])
         )
         gasTokenValue = amountIn
-      } else {
+      }
+      // erc20
+      else {
         const tokenIn = (route.inputAmount.currency.tokenInfo || route.inputAmount.currency).address
         txdatas.push(
           nucleusInterface.encodeFunctionData('tokenTransfer', [
@@ -106,33 +109,33 @@ export function useMarketOrderCallArguments(
         )
       }
       // swaps
-      for (const path of paths) {
-        for (let hopIndex = 0; hopIndex < path.hops.length; hopIndex++) {
-          const hop = path.hops[hopIndex]
-          txdatas.push(
-            nucleusInterface.encodeFunctionData('executeMarketOrder', [
-              {
-                poolID: hop.poolID,
-                tokenA: path.tokenList[hopIndex + 1],
-                tokenB: path.tokenList[hopIndex],
-                amountA: hop.amountAMT,
-                amountB: hop.amountBMT,
-                locationA: userInternalLocation,
-                locationB: userInternalLocation,
-                flashSwapCallee: AddressZero,
-                callbackData: '0x',
-              },
-            ])
-          )
-        }
+      for(const hop of hops) {
+        txdatas.push(
+          nucleusInterface.encodeFunctionData('executeMarketOrder', [
+            {
+              poolID: hop.poolID,
+              tokenA: hop.tokenA,
+              tokenB: hop.tokenB,
+              amountA: hop.amountAMT,
+              amountB: hop.amountBMT,
+              locationA: userInternalLocation,
+              locationB: userInternalLocation,
+              flashSwapCallee: AddressZero,
+              callbackData: '0x',
+            },
+          ])
+        )
       }
       // output
       const amountOut = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.quote : hydrogenRoute.amount
+      // eth
       if(!!route.outputAmount.currency.isNative) {
         txdatas.push(
           nucleusInterface.encodeFunctionData('unwrapGasToken', [amountOut, userInternalLocation, recipientLocation])
         )
-      } else {
+      }
+      // erc20
+      else {
         const tokenOut = (route.outputAmount.currency.tokenInfo || route.outputAmount.currency).address
         txdatas.push(
           nucleusInterface.encodeFunctionData('tokenTransfer', [
