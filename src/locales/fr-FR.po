@@ -363,8 +363,8 @@ msgid "By adding liquidity you'll earn 0.3% of all trades on this pair proportio
 msgstr "En ajoutant de la liquidité, vous gagnerez 0,3 % de toutes les transactions sur cette paire proportionnellement à votre part du pool. Les frais sont ajoutés à la pool, accumulés en temps réel et peuvent être réclamés en retirant votre liquidité."
 
 #: src/components/WalletModal/index.tsx
-msgid "By connecting a wallet, you agree to Uniswap Labs’ <0>Terms of Service</0> and consent to its <1>Privacy Policy</1>."
-msgstr "En connectant un portefeuille, vous acceptez les <0>Conditions d'utilisation</0> d'Uniswap Labs et consentez à sa <1>Politique de confidentialité</1>."
+msgid "By connecting a wallet, you agree to Hysland Finance’ <0>Terms of Service</0> and consent to its <1>Privacy Policy</1>."
+msgstr "En connectant un portefeuille, vous acceptez les <0>Conditions d'utilisation</0> d'Hysland Finance et consentez à sa <1>Politique de confidentialité</1>."
 
 #: src/pages/Vote/styled.tsx
 msgid "Canceled"
@@ -1817,8 +1817,8 @@ msgid "The app fetches on-chain data and constructs contract calls with an Infur
 msgstr "L'application récupère les données en chaîne et construit des appels de contrat avec une API Infura."
 
 #: src/components/PrivacyPolicy/index.tsx
-msgid "The app fetches the optimal trade route from a Uniswap Labs server."
-msgstr "L'application récupère la route commerciale optimale à partir d'un serveur Uniswap Labs."
+msgid "The app fetches the optimal trade route from a Hysland Finance server."
+msgstr "L'application récupère la route commerciale optimale à partir d'un serveur Hysland Finance."
 
 #: src/components/PrivacyPolicy/index.tsx
 msgid "The app logs anonymized usage statistics in order to improve over time."
@@ -1898,8 +1898,8 @@ msgid "There is no liquidity data."
 msgstr "Il n'y a pas de données de liquidité."
 
 #: src/components/ConnectedAccountBlocked/index.tsx
-msgid "This address is blocked on the Uniswap Labs interface because it is associated with one or more"
-msgstr "Cette adresse est bloquée sur l'interface Uniswap Labs car elle est associée à un ou plusieurs"
+msgid "This address is blocked on the Hysland Finance interface because it is associated with one or more"
+msgstr "Cette adresse est bloquée sur l'interface Hysland Finance car elle est associée à un ou plusieurs"
 
 #: src/components/PrivacyPolicy/index.tsx
 msgid "This app uses the following third-party APIs:"
@@ -2074,8 +2074,8 @@ msgid "Uniswap Governance"
 msgstr "Gouvernance Uniswap"
 
 #: src/components/PrivacyPolicy/index.tsx
-msgid "Uniswap Labs' Terms of Service"
-msgstr "Conditions d'utilisation d'Uniswap Labs"
+msgid "Hysland Finance' Terms of Service"
+msgstr "Conditions d'utilisation d'Hysland Finance"
 
 #: src/components/SwitchLocaleLink/index.tsx
 msgid "Uniswap available in: <0>{0}</0>"
@@ -2146,8 +2146,8 @@ msgid "Update Delegation"
 msgstr "Mettre à jour la délégation"
 
 #: src/components/Settings/index.tsx
-msgid "Use the Uniswap Labs API to get faster quotes."
-msgstr "Utilisez l'API Uniswap Labs pour obtenir des devis plus rapidement."
+msgid "Use the Hysland Finance API to get faster quotes."
+msgstr "Utilisez l'API Hysland Finance pour obtenir des devis plus rapidement."
 
 #: src/components/claim/ClaimModal.tsx
 msgid "User"

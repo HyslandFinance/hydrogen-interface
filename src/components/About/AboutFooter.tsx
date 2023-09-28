@@ -83,7 +83,7 @@ export const AboutFooter = () => {
           </FooterLink>
         </TraceEvent>
       </FooterLinks>
-      <Copyright>© {new Date().getFullYear()} Uniswap Labs</Copyright>
+      <Copyright>© {new Date().getFullYear()} Hysland Finance</Copyright>
     </Footer>
   )
 }

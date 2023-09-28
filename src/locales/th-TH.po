@@ -363,8 +363,8 @@ msgid "By adding liquidity you'll earn 0.3% of all trades on this pair proportio
 msgstr "โดยการเพิ่มสภาพคล่อง คุณจะได้รับ 0.3% ของการซื้อขายทั้งหมดในคู่นี้ตามสัดส่วนของส่วนแบ่งในพูลของคุณ ค่าธรรมเนียมจะถูกเพิ่มเข้าในพูล สะสมตามเวลาจริง และสามารถอ้างสิทธิ์ได้โดยการถอนสภาพคล่องของคุณ"
 
 #: src/components/WalletModal/index.tsx
-msgid "By connecting a wallet, you agree to Uniswap Labs’ <0>Terms of Service</0> and consent to its <1>Privacy Policy</1>."
-msgstr "การเชื่อมต่อกระเป๋าเงินหมายความว่าคุณยอมรับข้อกำหนดในการให้บริการ <0>ของ Uniswap Labs</0> และยินยอมตาม <1>นโยบายความเป็นส่วนตัว</1>"
+msgid "By connecting a wallet, you agree to Hysland Finance’ <0>Terms of Service</0> and consent to its <1>Privacy Policy</1>."
+msgstr "การเชื่อมต่อกระเป๋าเงินหมายความว่าคุณยอมรับข้อกำหนดในการให้บริการ <0>ของ Hysland Finance</0> และยินยอมตาม <1>นโยบายความเป็นส่วนตัว</1>"
 
 #: src/pages/Vote/styled.tsx
 msgid "Canceled"
@@ -1817,8 +1817,8 @@ msgid "The app fetches on-chain data and constructs contract calls with an Infur
 msgstr "แอปดึงข้อมูลในสายโซ่และสร้างการเรียกสัญญาด้วย Infura API"
 
 #: src/components/PrivacyPolicy/index.tsx
-msgid "The app fetches the optimal trade route from a Uniswap Labs server."
-msgstr "แอพดึงเส้นทางการค้าที่เหมาะสมที่สุดจากเซิร์ฟเวอร์ Uniswap Labs"
+msgid "The app fetches the optimal trade route from a Hysland Finance server."
+msgstr "แอพดึงเส้นทางการค้าที่เหมาะสมที่สุดจากเซิร์ฟเวอร์ Hysland Finance"
 
 #: src/components/PrivacyPolicy/index.tsx
 msgid "The app logs anonymized usage statistics in order to improve over time."
@@ -1898,8 +1898,8 @@ msgid "There is no liquidity data."
 msgstr "ไม่มีข้อมูลสภาพคล่อง"
 
 #: src/components/ConnectedAccountBlocked/index.tsx
-msgid "This address is blocked on the Uniswap Labs interface because it is associated with one or more"
-msgstr "ที่อยู่นี้ถูกบล็อกบนอินเทอร์เฟซ Uniswap Labs เนื่องจากเชื่อมโยงกับหนึ่งรายการขึ้นไป"
+msgid "This address is blocked on the Hysland Finance interface because it is associated with one or more"
+msgstr "ที่อยู่นี้ถูกบล็อกบนอินเทอร์เฟซ Hysland Finance เนื่องจากเชื่อมโยงกับหนึ่งรายการขึ้นไป"
 
 #: src/components/PrivacyPolicy/index.tsx
 msgid "This app uses the following third-party APIs:"
@@ -2074,8 +2074,8 @@ msgid "Uniswap Governance"
 msgstr "การกำกับดูแล Uniswap"
 
 #: src/components/PrivacyPolicy/index.tsx
-msgid "Uniswap Labs' Terms of Service"
-msgstr "ข้อกำหนดในการให้บริการของ Uniswap Labs"
+msgid "Hysland Finance' Terms of Service"
+msgstr "ข้อกำหนดในการให้บริการของ Hysland Finance"
 
 #: src/components/SwitchLocaleLink/index.tsx
 msgid "Uniswap available in: <0>{0}</0>"
@@ -2146,8 +2146,8 @@ msgid "Update Delegation"
 msgstr "อัพเดทคณะผู้แทน"
 
 #: src/components/Settings/index.tsx
-msgid "Use the Uniswap Labs API to get faster quotes."
-msgstr "ใช้ Uniswap Labs API เพื่อรับใบเสนอราคาที่เร็วขึ้น"
+msgid "Use the Hysland Finance API to get faster quotes."
+msgstr "ใช้ Hysland Finance API เพื่อรับใบเสนอราคาที่เร็วขึ้น"
 
 #: src/components/claim/ClaimModal.tsx
 msgid "User"
