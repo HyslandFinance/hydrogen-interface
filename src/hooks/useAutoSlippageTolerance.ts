@@ -28,13 +28,11 @@ const LIMIT_ORDER_GAS_ESTIMATE = 300_000
 function guesstimateGas(trade: any | undefined): number | undefined {
   if (!trade) return undefined
   if(trade.orderType == "MarketOrder") {
-    const paths = trade.route.hydrogenRoute.paths
+    const hops = trade.route.hydrogenRoute.hops
     // single hop: 140k
-    if (paths.length == 1 && paths[0].hops.length == 1) return MARKET_ORDER_SINGLE_HOP_GAS_ESTIMATE
+    if (hops.length == 1) return MARKET_ORDER_SINGLE_HOP_GAS_ESTIMATE
     // multihop: 40k + num hops * 90k
-    let numHops = 0
-    for (const path of paths) numHops += path.hops.length
-    return MARKET_ORDER_MULTI_HOP_GAS_BASE_ESTIMATE + MARKET_ORDER_MULTI_HOP_GAS_PER_HOP_ESTIMATE * numHops
+    return MARKET_ORDER_MULTI_HOP_GAS_BASE_ESTIMATE + MARKET_ORDER_MULTI_HOP_GAS_PER_HOP_ESTIMATE * hops.length
   } else if(trade.orderType == "LimitOrder") {
     return LIMIT_ORDER_GAS_ESTIMATE
   }

@@ -13,10 +13,8 @@ export function computeRoutes(
   tradeType: TradeType,
   quoteResult: GetQuoteResult | undefined
 ) {
-  if (!quoteResult || !quoteResult.paths || !quoteResult.paths.length || !currencyIn || !currencyOut) return undefined
+  if (!quoteResult || !currencyIn || !currencyOut) return undefined
 
-  const paths = quoteResult.paths
-  if (paths.length === 0) return []
   const [rawAmountIn, rawAmountOut] = (quoteResult.swapType == "exactIn"
     ? [quoteResult.amount, quoteResult.quote]
     : [quoteResult.quote, quoteResult.amount]
