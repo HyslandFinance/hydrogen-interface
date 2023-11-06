@@ -71,7 +71,9 @@ import tryParseCurrencyAmount from 'lib/utils/tryParseCurrencyAmount'
 import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import CurrencyInputPanel2 from 'components/CurrencyInputPanel/CurrencyInputPanel2'
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
-import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
+import { NUCLEUS_VERSION } from 'constants/index'
+import nucleusAbiV100 from 'data/abi/Hydrogen/HydrogenNucleusV100.json'
+import nucleusAbiV101 from 'data/abi/Hydrogen/HydrogenNucleusV101.json'
 import HydrogenNucleusHelper from 'lib/utils/HydrogenNucleusHelper'
 import { formatUnits, Interface } from 'ethers/lib/utils'
 import { BigNumber } from '@ethersproject/bignumber'
@@ -424,7 +426,8 @@ export default function GridOrderPage({ className }: { className?: string }) {
   }, [pairs])
 
   const addIsUnsupported = false
-  const nucleusInterface = useMemo(() => new Interface(nucleusAbi), [nucleusAbi])
+  const nucleusInterfaceV101 = useMemo(() => new Interface(nucleusAbiV101), [nucleusAbiV101])
+  const nucleusInterfaceV100 = useMemo(() => new Interface(nucleusAbiV100), [nucleusAbiV100])
 
   const [createdPoolID, setCreatedPoolID] = useState<number | undefined>(undefined)
   const pollStatsApiForPoolID = usePollStatsApiForPoolID()
@@ -441,75 +444,163 @@ export default function GridOrderPage({ className }: { className?: string }) {
     const currencyIds = deposits.map((deposit) => deposit.currencyId).filter(x=>!!x) as string[]
 
     let gasTokenAmount = '0'
+    let calldata = "0x"
 
-    const tokenSources = deposits.map((deposit,depositIndex) => {
-      const parsedAmount = parsedAmounts[depositIndex] as any
-      if(!parsedAmount) return undefined
-      const amount = currencyAmountToString(parsedAmount) || '0'
-      const currency = currenciesById[deposit.currencyId||'']
-      if(currency.isNative) {
-        const address = currency.wrapped.address
-        gasTokenAmount = amount
-        return {
-          token: address,
-          amount: amount,
-          location: userInternalLocation,
-        }
-      } else {
-        const address = currency.address
-        return {
-          token: address,
-          amount: amount,
-          location: userExternalLocation,
-        }
-      }
-    }).filter(x=>!!x)
+    if(NUCLEUS_VERSION == "v1.0.1") {
 
-    const tradeRequests = pairs.map((pair,pairIndex) => {
+      const pair = pairs[0]
       const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
       const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
-      if(!currencyBase || !currencyQuote) return []
-      const tokenBase = currencyBase?.wrapped
-      const tokenQuote = currencyQuote?.wrapped
-      const baseAmount = tryParseCurrencyAmount('1', tokenBase)
-      const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
-      const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
-      if(!baseAmount || !parsedQuoteAmountBuy || !parsedQuoteAmountSell) return []
-      const baseAmountBN = currencyAmountToBigNumber(baseAmount)
-      const quoteAmountBuyBN = currencyAmountToBigNumber(parsedQuoteAmountBuy)
-      const quoteAmountSellBN = currencyAmountToBigNumber(parsedQuoteAmountSell)
-      if(!baseAmountBN || !quoteAmountBuyBN || !quoteAmountSellBN || baseAmountBN.eq(0) || quoteAmountBuyBN.eq(0) || quoteAmountSellBN.eq(0)) return []
-      const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
-      const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
-      const tradeRequests = [{
-        tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
-        tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
-        exchangeRate: exchangeRateBuy,
-        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
-      },{
-        tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
-        tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
-        exchangeRate: exchangeRateSell,
-        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
-      }]
-      return tradeRequests
-    }).flat().filter(x=>!!x)
+      const currencies = [currencyQuote, currencyBase]
+      const tokenSources = currencies.map((cur:any) => {
+        let deposit: any
+        let found = false
+        let depositIndex = 0;
+        for(; depositIndex < deposits.length; depositIndex++) {
+          deposit = deposits[depositIndex]
+          if(deposit.currencyId == cur.address) {
+            found = true
+            break
+          }
+        }
+        if(!found) {
+          depositIndex = 0;
+          for(; depositIndex < deposits.length; depositIndex++) {
+            deposit = deposits[depositIndex]
+            if(deposit.currencyId == cur.address || deposit.currencyId == "ETH") {
+              found = true
+              break
+            }
+          }
+        }
+        if(!found) {
+          console.error("deposit not found 1")
+          return undefined
+        }
+        const parsedAmount = parsedAmounts[depositIndex] as any
+        //if(!parsedAmount) return undefined
+        const amount = currencyAmountToString(parsedAmount) || '0'
+        const currency = currenciesById[deposit.currencyId||'']
+        if(!currency) {
+          console.error("currency unknown")
+          return undefined
+        }
+        if(currency.isNative) {
+          const address = currency.wrapped.address
+          gasTokenAmount = amount
+          return {
+            token: address,
+            amount: amount,
+          }
+        } else {
+          const address = currency.address
+          return {
+            token: address,
+            amount: amount,
+          }
+        }
+      })
 
-    if(tokenSources.length == 0 || tradeRequests.length == 0) return
+      const exchangeRates = pairs.map((pair,pairIndex) => {
+        const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
+        const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
+        if(!currencyBase || !currencyQuote) return []
+        const tokenBase = currencyBase?.wrapped
+        const tokenQuote = currencyQuote?.wrapped
+        const baseAmount = tryParseCurrencyAmount('1', tokenBase)
+        const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
+        const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
+        if(!baseAmount || !parsedQuoteAmountBuy || !parsedQuoteAmountSell) return []
+        const baseAmountBN = currencyAmountToBigNumber(baseAmount)
+        const quoteAmountBuyBN = currencyAmountToBigNumber(parsedQuoteAmountBuy)
+        const quoteAmountSellBN = currencyAmountToBigNumber(parsedQuoteAmountSell)
+        if(!baseAmountBN || !quoteAmountBuyBN || !quoteAmountSellBN || baseAmountBN.eq(0) || quoteAmountBuyBN.eq(0) || quoteAmountSellBN.eq(0)) return []
+        const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
+        const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
+        const exchangeRates = [exchangeRateBuy, exchangeRateSell]
+        return exchangeRates
+      }).flat().filter(x=>!!x)
 
-    const params = {
-      tokenSources,
-      tradeRequests,
-      hptReceiver: account,
+      if(tokenSources.length == 0 || exchangeRates.length == 0) return
+      const params = {
+        tokenSources: tokenSources,
+        exchangeRates: exchangeRates,
+      }
+      calldata = nucleusInterfaceV101.encodeFunctionData('createGridOrderPoolCompact', [params])
     }
-    let calldata = "0x"
-    if(gasTokenAmount == "0") {
-      calldata = nucleusInterface.encodeFunctionData('createGridOrderPool', [params])
-    } else {
-      const wrapcall = nucleusInterface.encodeFunctionData('wrapGasToken', [userInternalLocation])
-      const createcall = nucleusInterface.encodeFunctionData('createGridOrderPool', [params])
-      calldata = nucleusInterface.encodeFunctionData('multicall', [[wrapcall, createcall]])
+
+    else if(NUCLEUS_VERSION == "v1.0.0") {
+      const tokenSources = deposits.map((deposit,depositIndex) => {
+        const parsedAmount = parsedAmounts[depositIndex] as any
+        if(!parsedAmount) return undefined
+        const amount = currencyAmountToString(parsedAmount) || '0'
+        const currency = currenciesById[deposit.currencyId||'']
+        if(currency.isNative) {
+          const address = currency.wrapped.address
+          gasTokenAmount = amount
+          return {
+            token: address,
+            amount: amount,
+            location: userInternalLocation,
+          }
+        } else {
+          const address = currency.address
+          return {
+            token: address,
+            amount: amount,
+            location: userExternalLocation,
+          }
+        }
+      }).filter(x=>!!x)
+
+      const tradeRequests = pairs.map((pair,pairIndex) => {
+        const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
+        const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
+        if(!currencyBase || !currencyQuote) return []
+        const tokenBase = currencyBase?.wrapped
+        const tokenQuote = currencyQuote?.wrapped
+        const baseAmount = tryParseCurrencyAmount('1', tokenBase)
+        const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
+        const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
+        if(!baseAmount || !parsedQuoteAmountBuy || !parsedQuoteAmountSell) return []
+        const baseAmountBN = currencyAmountToBigNumber(baseAmount)
+        const quoteAmountBuyBN = currencyAmountToBigNumber(parsedQuoteAmountBuy)
+        const quoteAmountSellBN = currencyAmountToBigNumber(parsedQuoteAmountSell)
+        if(!baseAmountBN || !quoteAmountBuyBN || !quoteAmountSellBN || baseAmountBN.eq(0) || quoteAmountBuyBN.eq(0) || quoteAmountSellBN.eq(0)) return []
+        const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
+        const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
+        const tradeRequests = [{
+          tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+          tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+          exchangeRate: exchangeRateBuy,
+          locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+        },{
+          tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+          tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+          exchangeRate: exchangeRateSell,
+          locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+        }]
+        return tradeRequests
+      }).flat().filter(x=>!!x)
+
+      if(tokenSources.length == 0 || tradeRequests.length == 0) return
+      const params = {
+        tokenSources: tokenSources,
+        tradeRequests: tradeRequests,
+        hptReceiver: account,
+      }
+      if(gasTokenAmount == "0") {
+        calldata = nucleusInterfaceV100.encodeFunctionData('createGridOrderPool', [params])
+      } else {
+        const wrapcall = nucleusInterfaceV100.encodeFunctionData('wrapGasToken', [userInternalLocation])
+        const createcall = nucleusInterfaceV100.encodeFunctionData('createGridOrderPool', [params])
+        calldata = nucleusInterfaceV100.encodeFunctionData('multicall', [[wrapcall, createcall]])
+      }
     }
+    else {
+      throw new Error(`cannot encode create grid order for nucleus version ${NUCLEUS_VERSION}`)
+    }
+
     let txn: { to: string; data: string; value: string } = {
       to: HYDROGEN_NUCLEUS_ADDRESSES[chainId],
       data: calldata,
@@ -538,6 +629,7 @@ export default function GridOrderPage({ className }: { className?: string }) {
               currencyIds: currencyIds,
             })
             response.wait(1).then((receipt:any)=> {
+              //const poolID = BigNumber.from(receipt.logs[0].topics[1]).toNumber()
               const createEvent = receipt.logs.filter((log:any) => log.topics.includes('0xfa88d81eaffbf548e3ffc6c6458827ce9906ad714060746b80909cdf8d1d7ef7'))[0]
               const poolID = BigNumber.from(createEvent.topics[1]).toNumber()
               setCreatedPoolID(poolID)
@@ -751,37 +843,72 @@ export default function GridOrderPage({ className }: { className?: string }) {
     )
   }
 
-  const depositCard = (atLeastOnePairsInfoFilled || atLeastOneDepositAmountFilled) && (
-    <SwapWrapperWrapper>
-      <SwapWrapper className={className} id={`grid-order-deposit-card`}>
-        <div style={{margin:"8px 12px"}}>
-          <AutoColumn gap="md">
-            <RowBetween paddingBottom="20px">
-              <ThemedText.DeprecatedLabel>
-                <Trans>Deposit Amounts</Trans>
-              </ThemedText.DeprecatedLabel>
-            </RowBetween>
-            {deposits.map((deposit:DepositState,depositIndex:number) => (
-              <CurrencyInputPanel2
-                key={deposit.currencyId}
-                value={deposit.typedAmount}
-                onUserInput={(amount:string)=>{handleDepositAmountInput(depositIndex, amount)}}
-                onMax={()=>{handleDepositAmountInput(depositIndex, maxAmounts[depositIndex]?.toExact()??'')}}
-                showMaxButton={!atMaxAmounts[depositIndex]}
-                currency={currenciesById[deposit.currencyId||""] ?? null}
-                fiatValue={fiatValuesForDepositAmount[depositIndex]}
-                id={`deposit-amount-${deposit.currencyId}`}
-                isOptional={atLeastOneDepositAmountFilled}
-                showCommonBases
-                locked={false}
-                error={aboveBalances[depositIndex]}
-              />
-            ))}
-          </AutoColumn>
-        </div>
-      </SwapWrapper>
-    </SwapWrapperWrapper>
-  )
+  let depositCard = (<></>)
+  if(atLeastOnePairsInfoFilled || atLeastOneDepositAmountFilled) {
+    const pair = pairs[0]
+    const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
+    const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
+    const currencies = [currencyBase, currencyQuote]
+    const tokenSources = currencies.map((cur:any) => {
+      let deposit: any
+      let found = false
+      let depositIndex = 0;
+      for(; depositIndex < deposits.length; depositIndex++) {
+        deposit = deposits[depositIndex]
+        if(deposit.currencyId == cur.address) {
+          found = true
+          break
+        }
+      }
+      if(!found) {
+        depositIndex = 0;
+        for(; depositIndex < deposits.length; depositIndex++) {
+          deposit = deposits[depositIndex]
+          if(deposit.currencyId == cur.address || deposit.currencyId == "ETH") {
+            found = true
+            break
+          }
+        }
+      }
+      if(!found) {
+        console.error("deposit not found 2")
+        return undefined
+      }
+
+      return (
+        <CurrencyInputPanel2
+          key={`${depositIndex}_${deposit.currencyId}`}
+          value={deposit.typedAmount}
+          onUserInput={(amount:string)=>{handleDepositAmountInput(depositIndex, amount)}}
+          onMax={()=>{handleDepositAmountInput(depositIndex, maxAmounts[depositIndex]?.toExact()??'')}}
+          showMaxButton={!atMaxAmounts[depositIndex]}
+          currency={currenciesById[deposit.currencyId||""] ?? null}
+          fiatValue={fiatValuesForDepositAmount[depositIndex]}
+          id={`deposit-amount-${deposit.currencyId}`}
+          isOptional={atLeastOneDepositAmountFilled}
+          showCommonBases
+          locked={false}
+          error={aboveBalances[depositIndex]}
+        />
+      )
+    })
+    depositCard = (
+      <SwapWrapperWrapper>
+        <SwapWrapper className={className} id={`grid-order-deposit-card`}>
+          <div style={{margin:"8px 12px"}}>
+            <AutoColumn gap="md">
+              <RowBetween paddingBottom="20px">
+                <ThemedText.DeprecatedLabel>
+                  <Trans>Deposit Amounts</Trans>
+                </ThemedText.DeprecatedLabel>
+              </RowBetween>
+              {tokenSources}
+            </AutoColumn>
+          </div>
+        </SwapWrapper>
+      </SwapWrapperWrapper>
+    )
+  }
 
   const pricesUnorderedButtons = (
     <RowBetween>

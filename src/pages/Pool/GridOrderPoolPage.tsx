@@ -44,8 +44,9 @@ import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import CurrencyInputPanel2 from 'components/CurrencyInputPanel/CurrencyInputPanel2'
 import { AutoColumn } from '../../components/Column'
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
-import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
 import { NUCLEUS_VERSION } from 'constants/index'
+import nucleusAbiV100 from 'data/abi/Hydrogen/HydrogenNucleusV100.json'
+import nucleusAbiV101 from 'data/abi/Hydrogen/HydrogenNucleusV101.json'
 import { formatUnits, Interface } from 'ethers/lib/utils'
 import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
@@ -639,7 +640,8 @@ export default function GridOrderPoolPage(props:any) {
   }, [pairs])
 
   const addIsUnsupported = false
-  const nucleusInterface = useMemo(() => new Interface(nucleusAbi), [nucleusAbi])
+  const nucleusInterfaceV101 = useMemo(() => new Interface(nucleusAbiV101), [nucleusAbiV101])
+  const nucleusInterfaceV100 = useMemo(() => new Interface(nucleusAbiV100), [nucleusAbiV100])
 
   async function handleDeposit() {
     // checks
@@ -679,7 +681,7 @@ export default function GridOrderPoolPage(props:any) {
       }
       */
       const address = currency.address
-      return nucleusInterface.encodeFunctionData("tokenTransfer", [{
+      return nucleusInterfaceV100.encodeFunctionData("tokenTransfer", [{
         token: address,
         amount: amount,
         src: userExternalLocation,
@@ -690,7 +692,7 @@ export default function GridOrderPoolPage(props:any) {
     if(txdatas.length == 0) return
     const calldata = (txdatas.length == 1
       ? (txdatas[0] || "0x")
-      : nucleusInterface.encodeFunctionData("multicall", [txdatas])
+      : nucleusInterfaceV100.encodeFunctionData("multicall", [txdatas])
     )
 
     let txn: { to: string; data: string; value: string } = {
@@ -790,7 +792,7 @@ export default function GridOrderPoolPage(props:any) {
       }
       */
       const address = currency.address
-      return nucleusInterface.encodeFunctionData("tokenTransfer", [{
+      return nucleusInterfaceV100.encodeFunctionData("tokenTransfer", [{
         token: address,
         amount: amount,
         src: poolLocation,
@@ -801,7 +803,7 @@ export default function GridOrderPoolPage(props:any) {
     if(txdatas.length == 0) return
     const calldata = (txdatas.length == 1
       ? (txdatas[0] || "0x")
-      : nucleusInterface.encodeFunctionData("multicall", [txdatas])
+      : nucleusInterfaceV100.encodeFunctionData("multicall", [txdatas])
     )
 
     let txn: { to: string; data: string; value: string } = {
@@ -868,46 +870,110 @@ export default function GridOrderPoolPage(props:any) {
     if (!chainId || !provider || !account) return
     if(!HYDROGEN_NUCLEUS_ADDRESSES[chainId]) return
     if(!allPairsInfoFilled) return
+
+    let calldata = "0x"
     // encode transaction
-    const tradeRequests = pairs.map((pair,pairIndex) => {
-      const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
-      const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
-      //console.log("encoding trade request", {pairIndex, pair, currencyBase, currencyQuote})
-      if(!currencyBase || !currencyQuote) return []
-      const tokenBase = currencyBase?.wrapped
-      const tokenQuote = currencyQuote?.wrapped
-      const baseAmount = tryParseCurrencyAmount('1', tokenBase)
-      const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
-      const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
-      if(!baseAmount || !parsedQuoteAmountBuy || !parsedQuoteAmountSell) return []
-      const baseAmountBN = currencyAmountToBigNumber(baseAmount)
-      const quoteAmountBuyBN = currencyAmountToBigNumber(parsedQuoteAmountBuy)
-      const quoteAmountSellBN = currencyAmountToBigNumber(parsedQuoteAmountSell)
-      if(!baseAmountBN || !quoteAmountBuyBN || !quoteAmountSellBN || baseAmountBN.eq(0) || quoteAmountBuyBN.eq(0) || quoteAmountSellBN.eq(0)) return []
-      const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
-      const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
-      const tradeRequests = [{
-        tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
-        tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
-        exchangeRate: exchangeRateBuy,
-        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
-      },{
-        tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
-        tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
-        exchangeRate: exchangeRateSell,
-        locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
-      }]
-      return tradeRequests
-    }).flat().filter(x=>!!x)
-
-    if(tradeRequests.length == 0) return
-
-    const params = {
-      poolID,
-      tokenSources: [],
-      tradeRequests
+    if(NUCLEUS_VERSION == "v1.0.1") {
+      let tokenAddresses = Object.keys(pool.tradeRequests)
+      if(tokenAddresses.length != 2) {
+        console.error("only works with 2 token pools")
+        return
+      }
+      const tradeRequests = pairs.map((pair,pairIndex) => {
+        const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
+        const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
+        //console.log("encoding trade request", {pairIndex, pair, currencyBase, currencyQuote})
+        if(!currencyBase || !currencyQuote) return []
+        const tokenBase = currencyBase?.wrapped
+        const tokenQuote = currencyQuote?.wrapped
+        const baseAmount = tryParseCurrencyAmount('1', tokenBase)
+        const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
+        const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
+        if(!baseAmount || !parsedQuoteAmountBuy || !parsedQuoteAmountSell) return []
+        const baseAmountBN = currencyAmountToBigNumber(baseAmount)
+        const quoteAmountBuyBN = currencyAmountToBigNumber(parsedQuoteAmountBuy)
+        const quoteAmountSellBN = currencyAmountToBigNumber(parsedQuoteAmountSell)
+        if(!baseAmountBN || !quoteAmountBuyBN || !quoteAmountSellBN || baseAmountBN.eq(0) || quoteAmountBuyBN.eq(0) || quoteAmountSellBN.eq(0)) return []
+        const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
+        const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
+        const tradeRequests = [{
+          tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+          tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+          exchangeRate: exchangeRateBuy,
+          locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+        },{
+          tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+          tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+          exchangeRate: exchangeRateSell,
+          locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+        }]
+        return tradeRequests
+      }).flat().filter(x=>!!x)
+      const exchangeRates = tokenAddresses.map((addr:string) => {
+        const trs = tradeRequests.filter((tr:any) => tr.tokenA == addr)
+        if(trs.length == 0) {
+          console.error("trade request not found")
+          return
+        }
+        else if(trs.length > 1) {
+          console.error(">1 trade request found")
+          return
+        }
+        const tr = trs[0]
+        return tr.exchangeRate
+      })
+      const params = {
+        poolID,
+        exchangeRates,
+      }
+      calldata = nucleusInterfaceV101.encodeFunctionData("updateGridOrderPoolCompact", [params])
     }
-    const calldata = nucleusInterface.encodeFunctionData("updateGridOrderPool", [params])
+
+    else if(NUCLEUS_VERSION == "v1.0.0") {
+      const tradeRequests = pairs.map((pair,pairIndex) => {
+        const currencyBase = currenciesById[pair[Field.BASE_TOKEN].currencyId||''].wrapped ?? null
+        const currencyQuote = currenciesById[pair[Field.QUOTE_TOKEN].currencyId||''].wrapped ?? null
+        if(!currencyBase || !currencyQuote) return []
+        const tokenBase = currencyBase?.wrapped
+        const tokenQuote = currencyQuote?.wrapped
+        const baseAmount = tryParseCurrencyAmount('1', tokenBase)
+        const parsedQuoteAmountBuy = tryParseCurrencyAmount(pair.typedValueBuyPrice, tokenQuote)
+        const parsedQuoteAmountSell = tryParseCurrencyAmount(pair.typedValueSellPrice, tokenQuote)
+        if(!baseAmount || !parsedQuoteAmountBuy || !parsedQuoteAmountSell) return []
+        const baseAmountBN = currencyAmountToBigNumber(baseAmount)
+        const quoteAmountBuyBN = currencyAmountToBigNumber(parsedQuoteAmountBuy)
+        const quoteAmountSellBN = currencyAmountToBigNumber(parsedQuoteAmountSell)
+        if(!baseAmountBN || !quoteAmountBuyBN || !quoteAmountSellBN || baseAmountBN.eq(0) || quoteAmountBuyBN.eq(0) || quoteAmountSellBN.eq(0)) return []
+        const exchangeRateBuy = HydrogenNucleusHelper.encodeExchangeRate(quoteAmountBuyBN, baseAmountBN)
+        const exchangeRateSell = HydrogenNucleusHelper.encodeExchangeRate(baseAmountBN, quoteAmountSellBN)
+        const tradeRequests = [{
+          tokenA: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+          tokenB: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+          exchangeRate: exchangeRateBuy,
+          locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+        },{
+          tokenA: currenciesById[pair.BASE_TOKEN.currencyId||''].wrapped.address,
+          tokenB: currenciesById[pair.QUOTE_TOKEN.currencyId||''].wrapped.address,
+          exchangeRate: exchangeRateSell,
+          locationB: HydrogenNucleusHelper.LOCATION_FLAG_POOL,
+        }]
+        return tradeRequests
+      }).flat().filter(x=>!!x)
+
+      if(tradeRequests.length == 0) return
+
+      const params = {
+        poolID,
+        tokenSources: [],
+        tradeRequests
+      }
+      calldata = nucleusInterfaceV100.encodeFunctionData("updateGridOrderPool", [params])
+    }
+
+    else {
+      throw new Error(`cannot encode create grid order for nucleus version ${NUCLEUS_VERSION}`)
+    }
+
     const txn: { to: string; data: string; value: string } = {
       to: HYDROGEN_NUCLEUS_ADDRESSES[chainId],
       data: calldata,

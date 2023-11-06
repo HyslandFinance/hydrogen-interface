@@ -6,9 +6,11 @@ import { FeeOptions } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
 import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
-import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
+import nucleusAbiV100 from 'data/abi/Hydrogen/HydrogenNucleusV100.json'
+import nucleusAbiV101 from 'data/abi/Hydrogen/HydrogenNucleusV101.json'
 import HydrogenNucleusHelper from 'lib/utils/HydrogenNucleusHelper'
 import { useMemo } from 'react'
+import { NUCLEUS_VERSION } from 'constants/index'
 
 import { useArgentWalletContract } from './useArgentWalletContract'
 import useENS from './useENS'
@@ -43,7 +45,8 @@ export function useLimitOrderCallArguments(
   const argentWalletContract = useArgentWalletContract()
 
   const nucleusAddress = chainId ? HYDROGEN_NUCLEUS_ADDRESSES[chainId] : undefined
-  const nucleusInterface = useMemo(() => new Interface(nucleusAbi), [nucleusAbi])
+  const nucleusInterfaceV101 = useMemo(() => new Interface(nucleusAbiV101), [nucleusAbiV101])
+  const nucleusInterfaceV100 = useMemo(() => new Interface(nucleusAbiV100), [nucleusAbiV100])
 
   return useMemo(() => {
     if (!trade || !recipient || !provider || !account || !chainId || !deadline || !nucleusAddress) return []
@@ -61,52 +64,98 @@ export function useLimitOrderCallArguments(
     if(!wgas) return []
     const tokenB = !!trade.outputAmount.currency.isNative ? wgas.address : trade.outputAmount.currency.address
 
-    // erc20 to erc20 case
-    if(!trade.inputAmount.currency.isNative) {
-      const calldata = nucleusInterface.encodeFunctionData('createLimitOrderPool', [
-        {
-          tokenA: trade.inputAmount.currency.address,
-          tokenB: tokenB,
-          exchangeRate: exchangeRate,
-          locationA: userExternalLocation,
-          locationB: recipientLocation,
-          amountA: amountA,
-          hptReceiver: recipient
-        },
-      ])
-      return [
-        {
-          address: nucleusAddress,
-          calldata,
-          value: '0',
-        },
-      ]
-    }
-    // gas token to erc20 case
-    else {
-      const txdatas = [
-        nucleusInterface.encodeFunctionData('wrapGasToken', [userInternalLocation]),
-        nucleusInterface.encodeFunctionData('createLimitOrderPool', [
+    if(NUCLEUS_VERSION == "v1.0.1") {
+      // erc20 to erc20 case
+      if(!trade.inputAmount.currency.isNative) {
+        const calldata = nucleusInterfaceV101.encodeFunctionData('createLimitOrderPoolCompact', [
+          {
+            tokenA: trade.inputAmount.currency.address,
+            tokenB: tokenB,
+            exchangeRate: exchangeRate,
+            amountA: amountA,
+          },
+        ])
+        return [
+          {
+            address: nucleusAddress,
+            calldata,
+            value: '0',
+          },
+        ]
+      }
+      // gas token to erc20 case
+      else {
+        const calldata = nucleusInterfaceV101.encodeFunctionData('createLimitOrderPoolCompact', [
           {
             tokenA: wgas.address,
             tokenB: tokenB,
             exchangeRate: exchangeRate,
-            locationA: userInternalLocation,
+            amountA: amountA,
+          },
+        ])
+        return [
+          {
+            address: nucleusAddress,
+            calldata,
+            value: amountA.toString(),
+          },
+        ]
+      }
+    }
+
+    else if(NUCLEUS_VERSION == "v1.0.0") {
+      // erc20 to erc20 case
+      if(!trade.inputAmount.currency.isNative) {
+        const calldata = nucleusInterfaceV100.encodeFunctionData('createLimitOrderPool', [
+          {
+            tokenA: trade.inputAmount.currency.address,
+            tokenB: tokenB,
+            exchangeRate: exchangeRate,
+            locationA: userExternalLocation,
             locationB: recipientLocation,
             amountA: amountA,
             hptReceiver: recipient
           },
         ])
-      ]
-      const calldata = nucleusInterface.encodeFunctionData('multicall', [txdatas])
-      return [
-        {
-          address: nucleusAddress,
-          calldata,
-          value: amountA.toString(),
-        },
-      ]
+        return [
+          {
+            address: nucleusAddress,
+            calldata,
+            value: '0',
+          },
+        ]
+      }
+      // gas token to erc20 case
+      else {
+        const txdatas = [
+          nucleusInterfaceV100.encodeFunctionData('wrapGasToken', [userInternalLocation]),
+          nucleusInterfaceV100.encodeFunctionData('createLimitOrderPool', [
+            {
+              tokenA: wgas.address,
+              tokenB: tokenB,
+              exchangeRate: exchangeRate,
+              locationA: userInternalLocation,
+              locationB: recipientLocation,
+              amountA: amountA,
+              hptReceiver: recipient
+            },
+          ])
+        ]
+        const calldata = nucleusInterfaceV100.encodeFunctionData('multicall', [txdatas])
+        return [
+          {
+            address: nucleusAddress,
+            calldata,
+            value: amountA.toString(),
+          },
+        ]
+      }
     }
+
+    else {
+      throw new Error(`cannot encode create limit order for nucleus version ${NUCLEUS_VERSION}`)
+    }
+    return []
   }, [
     account,
     allowedSlippage,

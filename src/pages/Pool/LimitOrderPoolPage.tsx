@@ -45,8 +45,9 @@ import CurrencyInputPanel from 'components/CurrencyInputPanel'
 import CurrencyInputPanel2 from 'components/CurrencyInputPanel/CurrencyInputPanel2'
 import { AutoColumn } from '../../components/Column'
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
-import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
 import { NUCLEUS_VERSION } from 'constants/index'
+import nucleusAbiV100 from 'data/abi/Hydrogen/HydrogenNucleusV100.json'
+import nucleusAbiV101 from 'data/abi/Hydrogen/HydrogenNucleusV101.json'
 import { formatUnits, Interface } from 'ethers/lib/utils'
 import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
@@ -660,7 +661,8 @@ export default function LimitOrderPoolPage(props:any) {
   }, [pairs])
 
   const addIsUnsupported = false
-  const nucleusInterface = useMemo(() => new Interface(nucleusAbi), [nucleusAbi])
+  const nucleusInterfaceV101 = useMemo(() => new Interface(nucleusAbiV101), [nucleusAbiV101])
+  const nucleusInterfaceV100 = useMemo(() => new Interface(nucleusAbiV100), [nucleusAbiV100])
 
   async function handleDeposit() {
     // checks
@@ -700,7 +702,7 @@ export default function LimitOrderPoolPage(props:any) {
       }
       */
       const address = currency.address
-      return nucleusInterface.encodeFunctionData("tokenTransfer", [{
+      return nucleusInterfaceV100.encodeFunctionData("tokenTransfer", [{
         token: address,
         amount: amount,
         src: userExternalLocation,
@@ -711,7 +713,7 @@ export default function LimitOrderPoolPage(props:any) {
     if(txdatas.length == 0) return
     const calldata = (txdatas.length == 1
       ? (txdatas[0] || "0x")
-      : nucleusInterface.encodeFunctionData("multicall", [txdatas])
+      : nucleusInterfaceV100.encodeFunctionData("multicall", [txdatas])
     )
 
     let txn: { to: string; data: string; value: string } = {
@@ -811,7 +813,7 @@ export default function LimitOrderPoolPage(props:any) {
       }
       */
       const address = currency.address
-      return nucleusInterface.encodeFunctionData("tokenTransfer", [{
+      return nucleusInterfaceV100.encodeFunctionData("tokenTransfer", [{
         token: address,
         amount: amount,
         src: poolLocation,
@@ -822,7 +824,7 @@ export default function LimitOrderPoolPage(props:any) {
     if(txdatas.length == 0) return
     const calldata = (txdatas.length == 1
       ? (txdatas[0] || "0x")
-      : nucleusInterface.encodeFunctionData("multicall", [txdatas])
+      : nucleusInterfaceV100.encodeFunctionData("multicall", [txdatas])
     )
 
     let txn: { to: string; data: string; value: string } = {
@@ -927,11 +929,23 @@ export default function LimitOrderPoolPage(props:any) {
     //const exchangeRate = HydrogenNucleusHelper.encodeExchangeRate(amountBperA, amountOneA)
     //const exchangeRate = HydrogenNucleusHelper.encodeExchangeRate(amountOneA, amountAperB)
     //console.log("handleSetPrices() 4", {exchangeRate})
-    const txdata = nucleusInterface.encodeFunctionData("updateLimitOrderPool", [{
-      poolID: poolID,
-      exchangeRate: exchangeRate,
-      locationB: userExternalLocation
-    }])
+    let txdata = "0x"
+    if(NUCLEUS_VERSION == "v1.0.1") {
+      txdata = nucleusInterfaceV101.encodeFunctionData("updateLimitOrderPoolCompact", [{
+        poolID: poolID,
+        exchangeRate: exchangeRate,
+      }])
+    }
+    else if(NUCLEUS_VERSION == "v1.0.0") {
+      txdata = nucleusInterfaceV100.encodeFunctionData("updateLimitOrderPool", [{
+        poolID: poolID,
+        exchangeRate: exchangeRate,
+        locationB: userExternalLocation
+      }])
+    }
+    else {
+      throw new Error(`cannot encode update order for nucleus version ${NUCLEUS_VERSION}`)
+    }
     const txn: { to: string; data: string; value: string } = {
       to: HYDROGEN_NUCLEUS_ADDRESSES[chainId],
       data: txdata,

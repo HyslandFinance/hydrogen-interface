@@ -5,9 +5,12 @@ import { Percent } from '@uniswap/sdk-core'
 import { FeeOptions } from '@uniswap/v3-sdk'
 import { useWeb3React } from '@web3-react/core'
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
-import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
+import { WRAPPED_NATIVE_CURRENCY } from 'constants/tokens'
+import nucleusAbiV100 from 'data/abi/Hydrogen/HydrogenNucleusV100.json'
+import nucleusAbiV101 from 'data/abi/Hydrogen/HydrogenNucleusV101.json'
 import HydrogenNucleusHelper from 'lib/utils/HydrogenNucleusHelper'
 import { useMemo } from 'react'
+import { NUCLEUS_VERSION } from 'constants/index'
 
 import { useArgentWalletContract } from './useArgentWalletContract'
 import useENS from './useENS'
@@ -42,7 +45,8 @@ export function useMarketOrderCallArguments(
   const argentWalletContract = useArgentWalletContract()
 
   const nucleusAddress = chainId ? HYDROGEN_NUCLEUS_ADDRESSES[chainId] : undefined
-  const nucleusInterface = useMemo(() => new Interface(nucleusAbi), [nucleusAbi])
+  const nucleusInterfaceV101 = useMemo(() => new Interface(nucleusAbiV101), [nucleusAbiV101])
+  const nucleusInterfaceV100 = useMemo(() => new Interface(nucleusAbiV100), [nucleusAbiV100])
 
   return useMemo(() => {
     if (!trade || !recipient || !provider || !account || !chainId || !deadline || !nucleusAddress) return []
@@ -57,106 +61,243 @@ export function useMarketOrderCallArguments(
     if(!hops || hops.length == 0) {
       return []
     }
-    // single hop erc20 to erc20 case
-    else if (hops.length == 1 && !route.inputAmount.currency.isNative && !route.outputAmount.currency.isNative) {
-      const hop = hops[0]
-      const calldata = nucleusInterface.encodeFunctionData('executeMarketOrder', [
-        {
-          poolID: hop.poolID,
-          tokenA: hop.tokenA,
-          tokenB: hop.tokenB,
-          amountA: hop.amountAMT,
-          amountB: hop.amountBMT,
-          locationA: recipientLocation,
-          locationB: userExternalLocation,
-          flashSwapCallee: AddressZero,
-          callbackData: '0x',
-        },
-      ])
-      return [
-        {
-          address: nucleusAddress,
-          calldata,
-          value: '0',
-        },
-      ]
-    }
-    // multi hop and/or input or output is gas token
-    else {
-      const txdatas = []
-      // input
-      const amountIn = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.amount : hydrogenRoute.quote
-      let gasTokenValue = '0'
-      // eth
-      if(!!route.inputAmount.currency.isNative) {
-        txdatas.push(
-          nucleusInterface.encodeFunctionData('wrapGasToken', [userInternalLocation])
-        )
-        gasTokenValue = amountIn
-      }
-      // erc20
-      else {
-        const tokenIn = (route.inputAmount.currency.tokenInfo || route.inputAmount.currency).address
-        txdatas.push(
-          nucleusInterface.encodeFunctionData('tokenTransfer', [
-            {
-              token: tokenIn,
-              amount: amountIn,
-              src: userExternalLocation,
-              dst: userInternalLocation,
-            },
-          ])
-        )
-      }
-      // swaps
-      for(const hop of hops) {
-        txdatas.push(
-          nucleusInterface.encodeFunctionData('executeMarketOrder', [
+
+    if(NUCLEUS_VERSION == "v1.0.1") {
+      // single hop case
+      if(hops.length == 1) {
+        // to erc20
+        if(!route.outputAmount.currency.isNative) {
+          const hop = hops[0]
+          const calldata = nucleusInterfaceV101.encodeFunctionData('executeMarketOrderDstExt', [
             {
               poolID: hop.poolID,
               tokenA: hop.tokenA,
               tokenB: hop.tokenB,
               amountA: hop.amountAMT,
               amountB: hop.amountBMT,
-              locationA: userInternalLocation,
-              locationB: userInternalLocation,
-              flashSwapCallee: AddressZero,
-              callbackData: '0x',
             },
           ])
-        )
-      }
-      // output
-      const amountOut = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.quote : hydrogenRoute.amount
-      // eth
-      if(!!route.outputAmount.currency.isNative) {
-        txdatas.push(
-          nucleusInterface.encodeFunctionData('unwrapGasToken', [amountOut, userInternalLocation, recipientLocation])
-        )
-      }
-      // erc20
-      else {
-        const tokenOut = (route.outputAmount.currency.tokenInfo || route.outputAmount.currency).address
-        txdatas.push(
-          nucleusInterface.encodeFunctionData('tokenTransfer', [
+          return [
             {
-              token: tokenOut,
-              amount: amountOut,
-              src: userInternalLocation,
-              dst: recipientLocation,
+              address: nucleusAddress,
+              calldata,
+              value: '0',
+            },
+          ]
+        }
+        // to gas token
+        else {
+          const hop = hops[0]
+          const txdata0 = nucleusInterfaceV101.encodeFunctionData('executeMarketOrderDstInt', [
+            {
+              poolID: hop.poolID,
+              tokenA: hop.tokenA,
+              tokenB: hop.tokenB,
+              amountA: hop.amountAMT,
+              amountB: hop.amountBMT,
             },
           ])
-        )
+          const txdata1 = nucleusInterfaceV101.encodeFunctionData('unwrapGasToken', [hop.amountAMT, userInternalLocation, recipientLocation])
+          const txdatas = [txdata0, txdata1]
+          const calldata = nucleusInterfaceV101.encodeFunctionData('multicall', [txdatas])
+          return [
+            {
+              address: nucleusAddress,
+              calldata,
+              value: '0',
+            },
+          ]
+        }
       }
-      const calldata = nucleusInterface.encodeFunctionData('multicall', [txdatas])
-      return [
-        {
-          address: nucleusAddress,
-          calldata,
-          value: gasTokenValue,
-        },
-      ]
+      // multi hop case
+      else {
+        const txdatas = []
+        // input
+        const amountIn = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.amount : hydrogenRoute.quote
+        let gasTokenValue = '0'
+        // eth
+        if(!!route.inputAmount.currency.isNative) {
+          gasTokenValue = amountIn
+        }
+        // erc20
+        else {
+          const tokenIn = (route.inputAmount.currency.tokenInfo || route.inputAmount.currency).address
+          txdatas.push(
+            nucleusInterfaceV101.encodeFunctionData('tokenTransferIn', [
+              {
+                token: tokenIn,
+                amount: amountIn,
+              },
+            ])
+          )
+        }
+        // swaps
+        for(const hop of hops) {
+          txdatas.push(
+            nucleusInterfaceV101.encodeFunctionData('executeMarketOrderDstInt', [
+              {
+                poolID: hop.poolID,
+                tokenA: hop.tokenA,
+                tokenB: hop.tokenB,
+                amountA: hop.amountAMT,
+                amountB: hop.amountBMT,
+              },
+            ])
+          )
+        }
+        // output
+        const amountOut = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.quote : hydrogenRoute.amount
+        // eth
+        if(!!route.outputAmount.currency.isNative) {
+          txdatas.push(
+            nucleusInterfaceV101.encodeFunctionData('unwrapGasToken', [amountOut, userInternalLocation, recipientLocation])
+          )
+        }
+        // erc20
+        else {
+          const tokenOut = (route.outputAmount.currency.tokenInfo || route.outputAmount.currency).address
+          // to msg.sender
+          if(recipientLocation == userExternalLocation) {
+            txdatas.push(
+              nucleusInterfaceV101.encodeFunctionData('tokenTransferOut', [
+                {
+                  token: tokenOut,
+                  amount: amountOut,
+                },
+              ])
+            )
+          }
+          // to other
+          else {
+            txdatas.push(
+              nucleusInterfaceV101.encodeFunctionData('tokenTransfer', [
+                {
+                  token: tokenOut,
+                  amount: amountOut,
+                  src: userInternalLocation,
+                  dst: recipientLocation,
+                },
+              ])
+            )
+          }
+        }
+        const calldata = nucleusInterfaceV101.encodeFunctionData('multicall', [txdatas])
+        return [
+          {
+            address: nucleusAddress,
+            calldata,
+            value: gasTokenValue,
+          },
+        ]
+      }
     }
+    else if(NUCLEUS_VERSION == "v1.0.0") {
+      // single hop erc20 to erc20 case
+      if(hops.length == 1 && !route.inputAmount.currency.isNative && !route.outputAmount.currency.isNative) {
+        const hop = hops[0]
+        const calldata = nucleusInterfaceV100.encodeFunctionData('executeMarketOrder', [
+          {
+            poolID: hop.poolID,
+            tokenA: hop.tokenA,
+            tokenB: hop.tokenB,
+            amountA: hop.amountAMT,
+            amountB: hop.amountBMT,
+            locationA: recipientLocation,
+            locationB: userExternalLocation,
+            flashSwapCallee: AddressZero,
+            callbackData: '0x',
+          },
+        ])
+        return [
+          {
+            address: nucleusAddress,
+            calldata,
+            value: '0',
+          },
+        ]
+      }
+      // multi hop and/or input or output is gas token
+      else {
+        const txdatas = []
+        // input
+        const amountIn = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.amount : hydrogenRoute.quote
+        let gasTokenValue = '0'
+        // eth
+        if(!!route.inputAmount.currency.isNative) {
+          txdatas.push(
+            nucleusInterfaceV100.encodeFunctionData('wrapGasToken', [userInternalLocation])
+          )
+          gasTokenValue = amountIn
+        }
+        // erc20
+        else {
+          const tokenIn = (route.inputAmount.currency.tokenInfo || route.inputAmount.currency).address
+          txdatas.push(
+            nucleusInterfaceV100.encodeFunctionData('tokenTransfer', [
+              {
+                token: tokenIn,
+                amount: amountIn,
+                src: userExternalLocation,
+                dst: userInternalLocation,
+              },
+            ])
+          )
+        }
+        // swaps
+        for(const hop of hops) {
+          txdatas.push(
+            nucleusInterfaceV100.encodeFunctionData('executeMarketOrder', [
+              {
+                poolID: hop.poolID,
+                tokenA: hop.tokenA,
+                tokenB: hop.tokenB,
+                amountA: hop.amountAMT,
+                amountB: hop.amountBMT,
+                locationA: userInternalLocation,
+                locationB: userInternalLocation,
+                flashSwapCallee: AddressZero,
+                callbackData: '0x',
+              },
+            ])
+          )
+        }
+        // output
+        const amountOut = hydrogenRoute.swapType == 'exactIn' ? hydrogenRoute.quote : hydrogenRoute.amount
+        // eth
+        if(!!route.outputAmount.currency.isNative) {
+          txdatas.push(
+            nucleusInterfaceV100.encodeFunctionData('unwrapGasToken', [amountOut, userInternalLocation, recipientLocation])
+          )
+        }
+        // erc20
+        else {
+          const tokenOut = (route.outputAmount.currency.tokenInfo || route.outputAmount.currency).address
+          txdatas.push(
+            nucleusInterfaceV100.encodeFunctionData('tokenTransfer', [
+              {
+                token: tokenOut,
+                amount: amountOut,
+                src: userInternalLocation,
+                dst: recipientLocation,
+              },
+            ])
+          )
+        }
+        const calldata = nucleusInterfaceV100.encodeFunctionData('multicall', [txdatas])
+        return [
+          {
+            address: nucleusAddress,
+            calldata,
+            value: gasTokenValue,
+          },
+        ]
+      }
+    }
+
+    else {
+      throw new Error(`cannot encode create limit order for nucleus version ${NUCLEUS_VERSION}`)
+    }
+    return []
   }, [
     account,
     allowedSlippage,
