@@ -2,6 +2,7 @@ import { useUpdateStatsApiState } from './hooks'
 import { useEffect } from 'react'
 import { useWeb3React } from '@web3-react/core'
 import { HttpClient } from './HttpClient'
+import { NUCLEUS_VERSION } from 'constants/index'
 
 export default function Updater(): null {
   const { chainId } = useWeb3React()
@@ -11,7 +12,7 @@ export default function Updater(): null {
 
   function refreshNucleusState() {
     if(!chainId) return
-    const stateUrl = `https://stats.hydrogendefi.xyz/state/?chainID=${chainId}`
+    const stateUrl = `https://stats.hydrogendefi.xyz/state/?chainID=${chainId}&v=${NUCLEUS_VERSION}`
     httpClient.get(stateUrl, false).then((nucleusState:any) => {
       nucleusState.chainId = chainId
       //console.log({nucleusState})

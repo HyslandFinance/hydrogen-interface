@@ -21,6 +21,7 @@ import { formatTransactionAmount, priceToPreciseFloat } from 'utils/formatNumber
 import { BigNumber } from '@ethersproject/bignumber'
 import { Zero } from '@ethersproject/constants'
 import { determinePairOrder } from './determinePairOrder'
+import { NUCLEUS_VERSION } from 'constants/index'
 
 const HptWrapper = styled.div`
   margin: 1em;
@@ -154,7 +155,7 @@ export default function PoolCard(props:any) {
       <HptWrapper>
         <Link to={`/pool/?poolID=${poolID}`}>
           <ImageWrapper>
-            <HptImage src={`https://assets.hydrogendefi.xyz/hpt/${chainId}/${poolID}.svg`} alt={`hpt ${poolID}`}/>
+            <HptImage src={`https://assets.hydrogendefi.xyz/hpt/${chainId}/${NUCLEUS_VERSION}/${poolID}.svg`} alt={`hpt ${poolID}`}/>
           </ImageWrapper>
         </Link>
       </HptWrapper>

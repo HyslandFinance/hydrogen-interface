@@ -45,6 +45,7 @@ import CurrencyInputPanel2 from 'components/CurrencyInputPanel/CurrencyInputPane
 import { AutoColumn } from '../../components/Column'
 import { HYDROGEN_NUCLEUS_ADDRESSES } from 'constants/addresses'
 import nucleusAbi from 'data/abi/Hydrogen/HydrogenNucleus.json'
+import { NUCLEUS_VERSION } from 'constants/index'
 import { formatUnits, Interface } from 'ethers/lib/utils'
 import { BigNumber } from '@ethersproject/bignumber'
 import type { TransactionResponse } from '@ethersproject/providers'
@@ -1229,7 +1230,7 @@ export default function GridOrderPoolPage(props:any) {
 
   const HptImage = () => (
     <HptImageCardContainer>
-      <HptImageCard src={`https://assets.hydrogendefi.xyz/hpt/${chainId}/${poolID}.svg`} />
+      <HptImageCard src={`https://assets.hydrogendefi.xyz/hpt/${chainId}/${NUCLEUS_VERSION}/${poolID}.svg`} />
     </HptImageCardContainer>
   )
 

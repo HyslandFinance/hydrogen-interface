@@ -5,6 +5,7 @@ import { RPC_PROVIDERS } from 'constants/providers'
 import { getClientSideQuote, toSupportedChainId } from 'lib/hooks/routing/clientSideSmartOrderRouter'
 import ms from 'ms.macro'
 import qs from 'qs'
+import { NUCLEUS_VERSION } from 'constants/index'
 
 import { GetQuoteResult } from './types'
 
@@ -32,6 +33,7 @@ function getRouter(chainId: ChainId): AlphaRouter {
 
 const API_QUERY_PARAMS = {
   protocols: 'hydrogen',
+  v: NUCLEUS_VERSION,
 }
 const CLIENT_PARAMS = {
   protocols: [Protocol.V2, Protocol.V3, Protocol.MIXED],

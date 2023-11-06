@@ -4,6 +4,7 @@ import { useAppDispatch, useAppSelector } from 'state/hooks'
 import { AppState } from '../index'
 import { useWeb3React } from '@web3-react/core'
 import { HttpClient } from './HttpClient'
+import { NUCLEUS_VERSION } from 'constants/index'
 
 export function useNucleusState(): AppState['statsApi'] {
   return useAppSelector((state) => state.statsApi.nucleusState)
@@ -24,7 +25,7 @@ export function useRefreshStatsApiState() {
 
   function refreshNucleusState() {
     if(!chainId) return
-    const stateUrl = `https://stats.hydrogendefi.xyz/state/?chainID=${chainId}`
+    const stateUrl = `https://stats.hydrogendefi.xyz/state/?chainID=${chainId}&v=${NUCLEUS_VERSION}`
     httpClient.get(stateUrl, false).then((nucleusState:any) => {
       nucleusState.chainId = chainId
       updateStatsApiState(nucleusState)
@@ -48,7 +49,7 @@ export function usePollStatsApiForPoolID() {
         resolve(undefined)
         return
       }
-      const stateUrl = `https://stats.hydrogendefi.xyz/state/?chainID=${chainId}`
+      const stateUrl = `https://stats.hydrogendefi.xyz/state/?chainID=${chainId}&v=${NUCLEUS_VERSION}`
       httpClient.get(stateUrl, false).then((nucleusState:any) => {
         nucleusState.chainId = chainId
         updateStatsApiState(nucleusState)

@@ -1,6 +1,8 @@
 import { FACTORY_ADDRESS as V2_FACTORY_ADDRESS } from '@uniswap/v2-sdk'
 import { FACTORY_ADDRESS as V3_FACTORY_ADDRESS } from '@uniswap/v3-sdk'
 
+import { NUCLEUS_ADDRESS } from 'constants/index'
+
 import { constructSameAddressMap } from '../utils/constructSameAddressMap'
 import { SupportedChainId } from './chains'
 
@@ -23,8 +25,7 @@ const CELO_NONFUNGIBLE_POSITION_MANAGER_ADDRESSES = '0x3d79EdAaBC0EaB6F08ED885C0
 const CELO_TICK_LENS_ADDRESSES = '0x5f115D9113F88e0a0Db1b5033D90D4a9690AcD3D'
 
 export const HYDROGEN_NUCLEUS_ADDRESSES: AddressMap = {
-  // v1.0.0
-  ...constructSameAddressMap('0x1Caba1EaA6F14b94EF732624Db1702eA41b718ff', [
+  ...constructSameAddressMap(NUCLEUS_ADDRESS, [
     SupportedChainId.BASE,
     SupportedChainId.BASE_GOERLI,
     SupportedChainId.POLYGON_MUMBAI,
