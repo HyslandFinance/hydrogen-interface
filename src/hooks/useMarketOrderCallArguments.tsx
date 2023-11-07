@@ -65,6 +65,8 @@ export function useMarketOrderCallArguments(
     if(NUCLEUS_VERSION == "v1.0.1") {
       // single hop case
       if(hops.length == 1) {
+        const hop = hops[0]
+        const gasTokenValue = (!!route.inputAmount.currency.isNative) ? hop.amountBMT : 0
         // to erc20
         if(!route.outputAmount.currency.isNative) {
           const hop = hops[0]
@@ -81,13 +83,12 @@ export function useMarketOrderCallArguments(
             {
               address: nucleusAddress,
               calldata,
-              value: '0',
+              value: gasTokenValue,
             },
           ]
         }
         // to gas token
         else {
-          const hop = hops[0]
           const txdata0 = nucleusInterfaceV101.encodeFunctionData('executeMarketOrderDstInt', [
             {
               poolID: hop.poolID,
@@ -104,7 +105,7 @@ export function useMarketOrderCallArguments(
             {
               address: nucleusAddress,
               calldata,
-              value: '0',
+              value: gasTokenValue,
             },
           ]
         }
