@@ -188,7 +188,7 @@ const CHAIN_INFO: ChainInfoMap = {
     bridge: 'https://wallet.polygon.technology/bridge',
     docs: 'https://polygon.io/',
     explorer: 'https://mumbai.polygonscan.com/',
-    analyticsLink: 'https://analytics.hydrogendefi.xyz/#/polygon/',
+    analyticsLink: 'https://analytics.hydrogendefi.xyz/#/polygon_mumbai/',
     label: 'Polygon Mumbai',
     logoUrl: polygonMaticLogo,
     nativeCurrency: { name: 'Polygon Mumbai Matic', symbol: 'mMATIC', decimals: 18 },

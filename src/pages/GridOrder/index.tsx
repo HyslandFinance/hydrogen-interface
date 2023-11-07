@@ -467,7 +467,7 @@ export default function GridOrderPage({ className }: { className?: string }) {
           depositIndex = 0;
           for(; depositIndex < deposits.length; depositIndex++) {
             deposit = deposits[depositIndex]
-            if(deposit.currencyId == cur.address || deposit.currencyId == "ETH") {
+            if(deposit.currencyId == cur.address || deposit.currencyId == "ETH" || deposit.currencyId == "MATIC") {
               found = true
               break
             }
@@ -864,7 +864,7 @@ export default function GridOrderPage({ className }: { className?: string }) {
         depositIndex = 0;
         for(; depositIndex < deposits.length; depositIndex++) {
           deposit = deposits[depositIndex]
-          if(deposit.currencyId == cur.address || deposit.currencyId == "ETH") {
+          if(deposit.currencyId == cur.address || deposit.currencyId == "ETH" || deposit.currencyId == "MATIC") {
             found = true
             break
           }
